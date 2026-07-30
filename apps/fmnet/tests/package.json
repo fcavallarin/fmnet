@@ -1,0 +1,17 @@
+{
+  "name": "node-tests",
+  "version": "1.0.0",
+  "description": "Node.js CLI that stores REST endpoint responses in SQLite",
+  "type": "module",
+  "scripts": {
+    "start": "node ./src/cli.js",
+    "dev": "node ./src/cli.js --help"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    
+  }
+}

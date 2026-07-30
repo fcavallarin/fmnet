@@ -1,0 +1,13 @@
+{
+  "name": "sept",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:worker": "npm run dev -w @sept/worker",
+    "dev:cli": "npm run dev -w @sept/cli",
+    "test": "npm run test --workspaces --if-present"
+  }
+}

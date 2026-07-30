@@ -1,0 +1,8 @@
+tmp.*
+*.db
+tmp
+data
+node_modules/
+apps/fmnet/src/mobile
+.*
+!/.gitignore

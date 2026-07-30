@@ -1,0 +1,15 @@
+{
+  "name": "@sept/core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "dependencies": {
+    "@sept/crypto": "*"
+  },
+  "files": [
+    "src"
+  ]
+}

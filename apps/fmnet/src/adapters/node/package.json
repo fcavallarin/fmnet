@@ -1,0 +1,14 @@
+{
+  "name": "node-adapters",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@roamhq/wrtc": "^0.10.0"
+  }
+}
