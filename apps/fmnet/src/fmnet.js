@@ -460,6 +460,14 @@ export class FMNet {
     return messages
   }
 
+
+  async getMessagesFrom(fromName, filters = {}) {
+    return await this.getMessages({
+      sender_device_id__in : await this.getIdentityDevices(fromName),
+      ...filters
+    })
+  }
+
   async getMessages(filters = {}) {
 
     const messages = await this.getStoredActions({ type: "message", ...filters })

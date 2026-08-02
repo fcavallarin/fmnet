@@ -35,13 +35,14 @@ export class MessageHandler extends BaseHandler {
         break
 
       case "list":
-        messages = await this.fmnet.getMessages()
+        messages = name
+          ? await this.fmnet.getMessagesFrom(name)
+          : await this.fmnet.getMessages()
         messages.reverse()
         for (const m of messages) {
           this.cli.info(formatMessage(this.cli.ui, m))
         }
         break
-
 
       default:
         this.cli.log("Usage:")
@@ -51,7 +52,7 @@ export class MessageHandler extends BaseHandler {
   usage() {
     return [
       "  message send <name> \"message\"",
-      "  message list",
+      "  message list [sender-name]",
       "  message unreads",
     ].join("\n")
   }

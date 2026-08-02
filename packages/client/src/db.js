@@ -163,6 +163,7 @@ class BaseStore {
       is: "IS",
       isnot: "IS NOT"
     }
+
     const fields = []
     const values = []
     const placeholders = []
@@ -178,18 +179,26 @@ class BaseStore {
         throw new Error(`Field not found: ${sfn}, available fields are: ${JSON.stringify(this.tableFields)}`)
       }
       const field = `${prefix}${prefix ? "." : ""}${sfn}`
+      let pn
       if (k in this.serializers) {
         values.push(this.serializers[k].in(obj[k]))
       } else if (typeof obj[k] === "boolean") {
         values.push(obj[k] ? 1 : 0)
+      } else if (Array.isArray(obj[k])) {
+        values.push(...obj[k])
+        pn = obj[k].length
       } else {
         values.push(obj[k])
       }
 
       fields.push(field)
-      placeholders.push("?")
+      const pl = (op === "in" || op === "notin")
+        ? "(" + Array(pn).fill("?").join(",") + ")"
+        : "?"
+
+      placeholders.push(pl)
       operators.push(OPS[op])
-      searchParams.push(`${field} ${OPS[op]} ?`)
+      searchParams.push(`${field} ${OPS[op]} ${pl}`)
     }
     return {
       fields,
@@ -198,6 +207,7 @@ class BaseStore {
       searchParams,
       placeholders: placeholders.join(","),
     }
+
   }
 }
 
@@ -350,7 +360,7 @@ export class EventStore extends BaseStore {
 
   async filter(filters = {}) {
     const eventFilters = Object.fromEntries(
-      Object.keys(filters).filter(f => typeof filters[f] !== "object" || filters[f] === null)
+      Object.keys(filters).filter(f => Array.isArray(filters[f]) || typeof filters[f] !== "object" || filters[f] === null)
         .map((key) => [key, filters[key]])
     )
     const relatedFilters = Object.fromEntries(
@@ -373,7 +383,7 @@ export class EventStore extends BaseStore {
       where ${where || "1"}
       order by e.sequence DESC
     `
-    // console.log(qry)
+
     const qryValues = [...qp.values, ...dqp.values, ...rqp.values]
 
     const events = await this.db.read(qry, qryValues)
@@ -570,7 +580,7 @@ export class AppKVStore extends BaseStore {
       `SELECT key, value from app_kv_store where namespace = ?`
       , [namespace]
     )
-    return rows.map(r => ({key: r.key, value: JSON.parse(r.value)}));
+    return rows.map(r => ({ key: r.key, value: JSON.parse(r.value) }));
   }
 
   async set(namespace, key, value) {

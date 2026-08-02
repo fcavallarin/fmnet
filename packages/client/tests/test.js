@@ -242,7 +242,7 @@ class SeptTest {
       type: "message",
       type__isnot: null,
       isOutgoing: true,
-      device: { role: "user" },
+      device: { role__in: ["user"] },
       recipient: { deviceId__ne: "xxx" },
       sequence__gt: 1
     })
@@ -253,7 +253,7 @@ class SeptTest {
       type: "message",
       isOutgoing: true,
       device: { role__ne: "admin" },
-      recipient: { deviceId__ne: "xxx" },
+      recipient: { deviceId__notin: ["xxx", "yyy"] },
       sequence__gt: 1
     })
     assert(r.length > 0, "Failed to filter messages 2")
