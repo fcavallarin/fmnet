@@ -1,5 +1,7 @@
 import readline from "node:readline"
 import process from "node:process"
+import { execFile } from "node:child_process";
+import { readFileSync } from 'node:fs';
 import { MessageHandler } from "./handlers/message.js"
 import { TunnelHandler } from "./handlers/tunnel.js"
 import { DeviceHandler } from "./handlers/device.js"
@@ -39,6 +41,13 @@ const ui = {
   muted: value => paint(value, ansi.gray),
 }
 
+function readJsonFile(path) {
+  return JSON.parse(
+    readFileSync(path, 'utf8')
+  );
+}
+
+
 export class FmnetCli {
   constructor(fmnet) {
     this.fmnet = fmnet
@@ -65,6 +74,7 @@ export class FmnetCli {
   async start() {
     this.running = true
 
+    this.registerCustomActions('./custom-actions.json')
     this.registerFmnetEvents()
     this.registerReadlineEvents()
     this.printBanner()
@@ -84,6 +94,26 @@ export class FmnetCli {
     // this.fmnet.on?.("tunnel.closed", tunnel => {
     //   this.warning(`Tunnel closed: ${tunnel.tunnelId}`)
     // })
+  }
+
+  registerCustomActions(configPath) {
+    const septClient = this.fmnet.septClient
+    const config = readJsonFile(configPath)
+    septClient.register("customaction.response", (data, senderDeviceId) => {
+      this.info(`Action response: ${data}`)
+    })
+    for (const action of config.actions) {
+      septClient.register(`customaction.${action.name}`, async (data, senderDeviceId) => {
+        const deviceName = await this.fmnet.getDeviceIdentity(senderDeviceId)
+        try {
+          this.info(`Action '${action.name}' requested by ${deviceName.name}`)
+          const { stdout } = execFile(action.command, data.args)
+          septClient.sendEvent("customaction.response", "ok", [senderDeviceId])
+        } catch (e) {
+          septClient.sendEvent("customaction.response", `error: ${e.code}`, [senderDeviceId])
+        }
+      })
+    }
   }
 
   registerReadlineEvents() {
@@ -182,6 +212,10 @@ export class FmnetCli {
       case "status":
         this.success(`Status:\n Relay: ${this.fmnet.getRelayStatus()}`)
         break
+      case "run-action":
+        await this.fmnet.sendEvent(args[0], `customaction.${args[1]}`, { args: [] })
+        this.success(`Action requested`)
+        break
       case "clear":
         console.clear()
         break
@@ -276,6 +310,8 @@ ${ui.title("Commands")}
   ${ui.title("permissions")}
   ${ui.title("clear")}
   ${ui.title("exit")}
+
+  run-action <device-name> <action-name>
 
 ${this.deviceHandler.usage()}
 

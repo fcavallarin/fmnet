@@ -220,8 +220,7 @@ export class SeptClient {
         // console.log(deviceId, rcptDevice.id, payload.type)
         const policyOk = await this.checkPolicy(deviceId, rcptDevice.id, payload.type)
         if (!policyOk) {
-          console.log(`Device ${deviceId} not allowed to perform action '${payload.type}'`)
-          continue;
+          throw new Error(`Device ${deviceId} not allowed to perform action '${payload.type}'`)
         }
         recipients.push(
           {
@@ -443,6 +442,9 @@ export class SeptClient {
         } else {
           // The error here may be caused by en event already received bu not acked
           throw new Error("Unexpected error 234")
+          // await this.ackEvents([e.eventId])
+          // continue
+
         }
       } else {
         await this.addEvent(

@@ -7,6 +7,9 @@ import { FmnetCli } from './fmnet-cli.js'
 
 import readline from "node:readline/promises"
 import { stdin, stdout } from "node:process"
+import fs from 'node:fs';
+import path from 'node:path';
+
 
 
 
@@ -65,7 +68,7 @@ async function main() {
     fmnet
   )
   await cli.start()
-  
+
 }
 
 main()

@@ -1,0 +1,8 @@
+{
+  "actions": [
+    {
+      "name": "door-open",
+      "command": "/bin/ls"
+    }
+  ]
+}

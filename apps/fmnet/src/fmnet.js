@@ -85,7 +85,6 @@ export class FMNet {
         await this.handleTcpTunnelEgress(tunnelId, host, port, dcmId, status, senderDeviceId)
       }
     )
-
   }
 
   async handleTcpTunnelEgress(tunnelId, host, port, dcmId, status, senderDeviceId) {
@@ -439,6 +438,11 @@ export class FMNet {
     await this.septClient.sendEvent("message", message, dstDevices)
   }
 
+  async sendEvent(dstName, eventName, data) {
+    const dstDevices = await this.identityStore.getByName(dstName)
+    await this.septClient.sendEvent(eventName, data, dstDevices)
+  }
+
   async getNewMessages() {
     const lastSequence = await this.appState.get("lastSequence")
 
@@ -463,7 +467,7 @@ export class FMNet {
 
   async getMessagesFrom(fromName, filters = {}) {
     return await this.getMessages({
-      sender_device_id__in : await this.getIdentityDevices(fromName),
+      sender_device_id__in: await this.getIdentityDevices(fromName),
       ...filters
     })
   }
