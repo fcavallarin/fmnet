@@ -29,12 +29,20 @@ export class DeviceHandler extends BaseHandler {
       case 'grant':
         await this.fmnet.grant(args[1], args[2], args[3])
         break
+      case 'revoke':
+        await this.fmnet.revoke(args[1], args[2], args[3])
+        break
       case "id":
         this.cli.log(await this.fmnet.getDeviceId())
         break
       case 'grant-tunnel':
         await this.fmnet.grantDataChannel(args[1], args[2])
         await this.fmnet.grantTcpTunnel(args[1], args[2])
+        break
+
+      case 'revoke-tunnel':
+        await this.fmnet.revokeDataChannel(args[1], args[2])
+        await this.fmnet.revokeTcpTunnel(args[1], args[2])
         break
 
       default:
@@ -45,7 +53,9 @@ export class DeviceHandler extends BaseHandler {
   usage() {
     return [
       "  device grant from-name to-name permission",
+      "  device revoke from-name to-name permission",
       "  device grant-tunnel from-name to-name",
+      "  device revoke-tunnel from-name to-name",
       "  device list",
       "  device id"
     ].join("\n")

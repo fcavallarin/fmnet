@@ -3,6 +3,7 @@ import process from "node:process"
 import { MessageHandler } from "./handlers/message.js"
 import { TunnelHandler } from "./handlers/tunnel.js"
 import { DeviceHandler } from "./handlers/device.js"
+import { formatMessage } from "./utils.js"
 
 const ansi = {
   reset: "\x1b[0m",
@@ -73,12 +74,7 @@ export class FmnetCli {
 
   registerFmnetEvents() {
     this.fmnet.on?.("message", message => {
-      const sender = message.sender ?? "unknown"
-
-      const text = message.message
-
-      this.info(`[message from ${sender}] ${text}`)
-
+      this.info(formatMessage(ui, message))
     })
 
     // this.fmnet.on?.("tunnel.opened", tunnel => {
@@ -172,6 +168,17 @@ export class FmnetCli {
         await this.fmnet.sync()
         this.success("Sync completed")
         break
+      case "whoami":
+        const i = await this.fmnet.getLocalIdentity()
+        this.success(`ID: ${i.deviceId}\nname: ${i.name}`)
+        break
+      case "permissions":
+        for (const g of await this.fmnet.getDeviceGraph()) {
+          const sn = await this.fmnet.getDeviceIdentity(g.srcDeviceId)
+          const dn = await this.fmnet.getDeviceIdentity(g.dstDeviceId)
+          this.success(`${sn.name} → ${dn.name} ${g?.policy?.allowedActions.join(",")}`)
+        }
+        break
       case "status":
         this.success(`Status:\n Relay: ${this.fmnet.getRelayStatus()}`)
         break
@@ -246,7 +253,7 @@ export class FmnetCli {
     return tokens
   }
 
-  
+
 
   printBanner() {
     this.log("")
@@ -265,14 +272,16 @@ ${ui.title("Commands")}
   ${ui.title("status")}
 
   ${ui.title("sync")}
+  ${ui.title("whoami")}
+  ${ui.title("permissions")}
   ${ui.title("clear")}
   ${ui.title("exit")}
 
-  ${this.deviceHandler.usage()}
+${this.deviceHandler.usage()}
 
-  ${this.tunnelHandler.usage()}
+${this.tunnelHandler.usage()}
 
-  ${this.messageHandler.usage()}
+${this.messageHandler.usage()}
   
   
 `)

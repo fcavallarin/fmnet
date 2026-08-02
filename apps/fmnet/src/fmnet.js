@@ -208,7 +208,7 @@ export class FMNet {
       case this.tcpTunnelStatus.CLOSED:
         tcptun = this.tcpTunnels.get(tunnelId)
         if (!tcptun) {
-          throw new Error(`Tunnel not found ${tunnelId}`)
+          logger.debug(`Zombine tunnel ${tunnelId}.. skipping close request`)
         }
         tcptun.handler.close()
         this.tcpTunnels.delete(tunnelId)
@@ -257,6 +257,9 @@ export class FMNet {
     const lp = localPort || port
     const localDeviceId = await this.getDeviceId()
     const tunnelId = `${localDeviceId}:${deviceId}:${host}:${port}:${lp}`
+    if (this.tcpTunnels.has(tunnelId)) {
+      throw new Error(`Tunnel already active`)
+    }
     logger.debug(`}}} 1 INGRESS request tcpTunnel (add to this.tcpTunnels and send sept evt to egress)`)
 
     return new Promise((resolve, reject) => {
@@ -292,11 +295,6 @@ export class FMNet {
     }, [t.dcm.peerDeviceId])
     t.handler.close()
     this.tcpTunnels.delete(tunnelId)
-    // if (this.tcpTunnels.size === 0) {
-    //   logger.debug("Closing DCM since there are no active tcpTunnels")
-    //   await t.dcm.close()
-    // }
-
   }
 
 
@@ -445,13 +443,12 @@ export class FMNet {
     const lastSequence = await this.appState.get("lastSequence")
 
     const filters = {
-      type: "message",
       isIncoming: true
     }
     if (lastSequence) {
       filters['sequence__gt'] = lastSequence
     }
-    const messages = await this.getStoredActions(filters)
+    const messages = await this.getMessages(filters)
     if (messages.length === 0) {
       return []
     }
@@ -460,13 +457,24 @@ export class FMNet {
       "lastSequence",
       Math.max(...messages.map(m => m.sequence))
     )
+    return messages
+  }
+
+  async getMessages(filters = {}) {
+
+    const messages = await this.getStoredActions({ type: "message", ...filters })
+    if (messages.length === 0) {
+      return []
+    }
+
     const ret = []
     for (const m of messages) {
       ret.push({
         message: m.payload,
         sender: await this.identityStore.getByDevice(m.senderDeviceId),
         id: m.id,
-        timestamp: m.timestamp
+        timestamp: m.timestamp,
+        sequence: m.sequence
       })
     }
     return ret
@@ -478,10 +486,6 @@ export class FMNet {
         const sp = await this.getPolicy(s, d)
         if (!sp?.allowedActions?.includes(perm)) {
           throw new Error(`Missing ${perm} permission from ${s} to ${d}`)
-        }
-        const dp = await this.getPolicy(d, s)
-        if (!dp?.allowedActions?.includes(perm)) {
-          throw new Error(`Missing ${perm} permission from ${d} to ${s}`)
         }
       }
     }
@@ -496,6 +500,20 @@ export class FMNet {
     }
   }
 
+  async hasTcpTunnelPermission(srcName, dstName) {
+
+    try {
+      await this.assertPermission(srcName, dstName, "datachannel")
+      await this.assertPermission(dstName, srcName, "datachannel")
+      await this.assertPermission(srcName, dstName, "tcptunnel.egress")
+      await this.assertPermission(dstName, srcName, "tcptunnel.ingress")
+      return true
+    } catch {
+      return false
+    }
+  }
+
+
   async grantDataChannel(srcName, dstName) {
     await this.grant(srcName, dstName, "datachannel")
     await this.grant(dstName, srcName, "datachannel")
@@ -503,8 +521,19 @@ export class FMNet {
 
   async grantTcpTunnel(srcName, dstName) {
     await this.assertPermission(srcName, dstName, "datachannel")
+    await this.assertPermission(dstName, srcName, "datachannel")
     await this.grant(srcName, dstName, "tcptunnel.egress")
     await this.grant(dstName, srcName, "tcptunnel.ingress")
+  }
+
+  async revokeDataChannel(srcName, dstName) {
+    await this.revoke(srcName, dstName, "datachannel")
+    await this.revoke(dstName, srcName, "datachannel")
+  }
+
+  async revokeTcpTunnel(srcName, dstName) {
+    await this.revoke(srcName, dstName, "tcptunnel.egress")
+    await this.revoke(dstName, srcName, "tcptunnel.ingress")
   }
 
   getActiveTcpTunnels() {

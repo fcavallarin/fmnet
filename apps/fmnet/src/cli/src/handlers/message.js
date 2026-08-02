@@ -1,3 +1,4 @@
+import { formatMessage } from "../utils.js";
 import { BaseHandler } from "./base.js";
 
 export class MessageHandler extends BaseHandler {
@@ -8,7 +9,7 @@ export class MessageHandler extends BaseHandler {
       name,
       ...messageParts
     ] = params
-
+    let messages
     switch (subcommand) {
       case "send":
         if (!name || messageParts.length === 0) {
@@ -16,15 +17,31 @@ export class MessageHandler extends BaseHandler {
             'Usage: message send <name> "message"'
           )
         }
+        const i = await this.fmnet.getLocalIdentity()
+        const hasMsgPermission = await this.fmnet.hasPermission(i.name, name, "message")
+        if (!hasMsgPermission) {
+          throw new Error(`Current device (${i.name}) has no permission to send messages to ${name}`)
+        }
         const message = messageParts.join(" ")
         await this.fmnet.sendMessage(name, message)
         this.cli.success(`Message sent to ${name}`)
         break
       case "unreads":
-        for (const m of await this.fmnet.getNewMessages()) {
-          this.cli.info(`[message from ${JSON.stringify(m)}]`)
+        messages = await this.fmnet.getNewMessages()
+        messages.reverse()
+        for (const m of messages) {
+          this.cli.info(formatMessage(this.cli.ui, m))
         }
         break
+
+      case "list":
+        messages = await this.fmnet.getMessages()
+        messages.reverse()
+        for (const m of messages) {
+          this.cli.info(formatMessage(this.cli.ui, m))
+        }
+        break
+
 
       default:
         this.cli.log("Usage:")
@@ -34,6 +51,7 @@ export class MessageHandler extends BaseHandler {
   usage() {
     return [
       "  message send <name> \"message\"",
+      "  message list",
       "  message unreads",
     ].join("\n")
   }

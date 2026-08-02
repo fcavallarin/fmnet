@@ -70,6 +70,11 @@ export class TunnelHandler extends BaseHandler {
       ? this.parsePort(localPortString)
       : undefined
 
+    const i = await this.fmnet.getLocalIdentity()
+    const hasTunPermission = await this.fmnet.hasTcpTunnelPermission(i.name, deviceName)
+    if(!hasTunPermission){
+      throw new Error(`Current device has no permission to open tunnel to ${deviceName}`)
+    }
     this.cli.log(
       this.cli.ui.muted(
         `Opening tunnel to ${deviceName} ${host}:${port}...`
