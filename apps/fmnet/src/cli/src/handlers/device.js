@@ -24,13 +24,17 @@ export class DeviceHandler extends BaseHandler {
       case "add":
         const j = Buffer.from(args[1], "base64").toString("utf8")
         const pin = await this.fmnet.addDevice(JSON.parse(j))
-        this.log(`Paring pin: ${pin}`)
+        this.cli.log(`Paring pin: ${pin}`)
         break
       case 'grant':
         await this.fmnet.grant(args[1], args[2], args[3])
         break
       case "id":
-        this.log(await this.fmnet.getDeviceId())
+        this.cli.log(await this.fmnet.getDeviceId())
+        break
+      case 'grant-tunnel':
+        await this.fmnet.grantDataChannel(args[1], args[2])
+        await this.fmnet.grantTcpTunnel(args[1], args[2])
         break
 
       default:
@@ -40,6 +44,8 @@ export class DeviceHandler extends BaseHandler {
   }
   usage() {
     return [
+      "  device grant from-name to-name permission",
+      "  device grant-tunnel from-name to-name",
       "  device list",
       "  device id"
     ].join("\n")

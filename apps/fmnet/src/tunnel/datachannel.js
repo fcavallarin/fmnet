@@ -51,7 +51,8 @@ export default class DataChannel {
   }
 
   close() {
-    this.closeFn();
+    // this.closeFn();
+    this.raw.close()
     logger.debug("Datachannel closed")
   }
 }

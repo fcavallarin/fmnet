@@ -16,7 +16,8 @@ export class FMNet {
       REQUESTED: "requested",
       EGRESS_RUNNING: "egressRunning",
       EGRESS_ACK: "egressAck",
-      PEER_DCM_READY: "peerDcmReady"
+      PEER_DCM_READY: "peerDcmReady",
+      CLOSED: "closed"
     }
     if (options?.logger) {
       setLogger(options.logger)
@@ -73,22 +74,22 @@ export class FMNet {
 
     this.septClient.registerConcurrent(
       "tcptunnel.ingress", async (actionData) => {
-        const { tunnelId, sessionId, status } = actionData
-        await this.handleTcpTunnelIngress(tunnelId, sessionId, status)
+        const { tunnelId, dcmId, status } = actionData
+        await this.handleTcpTunnelIngress(tunnelId, dcmId, status)
       }
     )
 
     this.septClient.register(
       "tcptunnel.egress", async (actionData, senderDeviceId) => {
-        const { tunnelId, host, port, sessiondId, status } = actionData
-        await this.handleTcpTunnelEgress(tunnelId, host, port, sessiondId, status, senderDeviceId)
+        const { tunnelId, host, port, dcmId, status } = actionData
+        await this.handleTcpTunnelEgress(tunnelId, host, port, dcmId, status, senderDeviceId)
       }
     )
 
   }
 
-  async handleTcpTunnelEgress(tunnelId, host, port, sessiondId, status, senderDeviceId) {
-
+  async handleTcpTunnelEgress(tunnelId, host, port, dcmId, status, senderDeviceId) {
+    let tcptun
     switch (status) {
       case this.tcpTunnelStatus.REQUESTED:
         logger.debug(`}}} 2 EGRESS request tcpTunnel from ingress (add to this.tcpTunnels and send sept evt to ingress)`)
@@ -103,25 +104,45 @@ export class FMNet {
         break
       case this.tcpTunnelStatus.PEER_DCM_READY:
         logger.debug(`}}} 5 EGRESS got asck DC connection from ingress (update this.tcpTunnels, start egress tcp tunnel and send sept evt to ingress)`)
-        const tcptun = this.tcpTunnels.get(tunnelId)
+        tcptun = this.tcpTunnels.get(tunnelId)
         if (!tcptun) {
           throw new Error(`Tunnel not found ${tunnelId}`)
         }
         tcptun.isReady = true
-        const sess = this.dcSessions.get(sessiondId)
+        const sess = this.dcSessions.get(dcmId)
+        if (!sess) {
+          // Zombie session: it exists on the peer but not locally
+          logger.debug(`Zombie dcSession (${dcmId}) .. resetting`)
+          this.septClient.sendEvent(septDst, {
+            tunnelId,
+            status: this.tcpTunnelStatus.CLOSED,
+          },
+            [senderDeviceId]
+          )
+          return
+        }
         tcptun.dcm = sess.dcm
         const egress = new TcpTunnelEgress(this.tcpAdapter, tcptun.dcm)
+        tcptun.handler = egress
         egress.start()
         this.septClient.sendEvent("tcptunnel.ingress", { tunnelId, status: this.tcpTunnelStatus.EGRESS_RUNNING }, [senderDeviceId])
+        break
+      case this.tcpTunnelStatus.CLOSED:
+        tcptun = this.tcpTunnels.get(tunnelId)
+        if (!tcptun) {
+          throw new Error(`Tunnel not found ${tunnelId}`)
+        }
+        tcptun.handler.close()
+        this.tcpTunnels.delete(tunnelId)
         break
     }
   }
 
-  async handleTcpTunnelIngress(tunnelId, sessionId, status) {
+  async handleTcpTunnelIngress(tunnelId, dcmId, status) {
     let tcptun
     switch (status) {
       case this.tcpTunnelStatus.PEER_DCM_READY:
-        const sess = this.dcSessions.get(sessionId)
+        const sess = this.dcSessions.get(dcmId)
         if (!sess) {
           throw new Error("Session not found")
         }
@@ -133,7 +154,7 @@ export class FMNet {
           tcptun.dcm = sess.dcm
           this.septClient.sendEvent("tcptunnel.egress", {
             tunnelId,
-            sessionId,
+            dcmId,
             // dcmReady: true,
             status: this.tcpTunnelStatus.PEER_DCM_READY,
           }, [sess.dcm.peerDeviceId])
@@ -156,6 +177,7 @@ export class FMNet {
         )
         const server = await ingress.listen()
         tcptun.server = server
+        tcptun.handler = ingress
         tcptun.callback(tunnelId)
         break
 
@@ -167,19 +189,29 @@ export class FMNet {
         logger.debug(`}}} 3 INGRESS ack tcpTunnel from egress (update this.tcpTunnels, request DC connection and set this.dcConnections)`)
         tcptun.isReady = true
         const dcm = await this.dataChannel.connect(tcptun.deviceId, "tcptun", {})
+        logger.debug(`INGRESS DC connected (${dcm.deviceConnectionId})`)
 
-        if (this.dcSessions.has(dcm.sessionId)) {
+        if (this.dcSessions.has(dcm.deviceConnectionId)) {
           logger.debug("}}} 4 INGRESS DC session already exists (update this.tcpTunnels with DC ref and send sept message to egress")
-          const sess = this.dcSessions.get(dcm.sessionId)
+          const sess = this.dcSessions.get(dcm.deviceConnectionId)
           sess.pendingTunnels.push(tunnelId)
           tcptun.dcm = dcm
           this.septClient.sendEvent("tcptunnel.egress", {
             tunnelId,
+            dcmId: dcm.deviceConnectionId,
             status: this.tcpTunnelStatus.PEER_DCM_READY,
           }, [tcptun.dcm.peerDeviceId])
           return
         }
-        this.dcSessions.set(dcm.sessionId, { dcm, pendingTunnels: [tunnelId] })
+        this.dcSessions.set(dcm.deviceConnectionId, { dcm, pendingTunnels: [tunnelId] })
+        break
+      case this.tcpTunnelStatus.CLOSED:
+        tcptun = this.tcpTunnels.get(tunnelId)
+        if (!tcptun) {
+          throw new Error(`Tunnel not found ${tunnelId}`)
+        }
+        tcptun.handler.close()
+        this.tcpTunnels.delete(tunnelId)
         break
     }
   }
@@ -191,14 +223,18 @@ export class FMNet {
       async dcm => {
         switch (dcm.type) {
           case "tcptun":
-            logger.debug(`}}} 4 EGRESS request DC connection (add to this.dcConnections and send sept evt to ingress)`)
-            this.dcSessions.set(dcm.sessiondId, { dcm })
+            logger.debug(`}}} 4 EGRESS request DC connection (add to this.dcConnections (${dcm.deviceConnectionId}) and send sept evt to ingress)`)
+            this.dcSessions.set(dcm.deviceConnectionId, { dcm })
             this.septClient.sendEvent("tcptunnel.ingress", {
-              sessionId: dcm.sessionId,
+              dcmId: dcm.deviceConnectionId,
               status: this.tcpTunnelStatus.PEER_DCM_READY
             }, [dcm.peerDeviceId])
             break
         }
+      },
+      async dcmId => {
+        logger.debug(`DCM closed ${dcmId}`)
+        this.dcSessions.delete(dcmId)
       }
     )
   }
@@ -228,6 +264,7 @@ export class FMNet {
         deviceId,
         dcm: null,
         isReady: false,
+        handler: null,
         callback: resolve,
         host,
         port,
@@ -248,8 +285,18 @@ export class FMNet {
     if (!t) {
       throw new Error(`Tunnel not found`)
     }
-    await t.server.close()
-    await t.dcm.close()
+    const septDst = t.handler.role === "ingress" ? "tcptunnel.egress" : "tcptunnel.ingress"
+    this.septClient.sendEvent(septDst, {
+      tunnelId,
+      status: this.tcpTunnelStatus.CLOSED,
+    }, [t.dcm.peerDeviceId])
+    t.handler.close()
+    this.tcpTunnels.delete(tunnelId)
+    // if (this.tcpTunnels.size === 0) {
+    //   logger.debug("Closing DCM since there are no active tcpTunnels")
+    //   await t.dcm.close()
+    // }
+
   }
 
 
@@ -429,11 +476,11 @@ export class FMNet {
     for (const s of await this.identityStore.getByName(srcName)) {
       for (const d of await this.identityStore.getByName(dstName)) {
         const sp = await this.getPolicy(s, d)
-        if (!sp.allowedActions.includes(perm)) {
+        if (!sp?.allowedActions?.includes(perm)) {
           throw new Error(`Missing ${perm} permission from ${s} to ${d}`)
         }
         const dp = await this.getPolicy(d, s)
-        if (!dp.allowedActions.includes(perm)) {
+        if (!dp?.allowedActions?.includes(perm)) {
           throw new Error(`Missing ${perm} permission from ${d} to ${s}`)
         }
       }
@@ -448,6 +495,7 @@ export class FMNet {
       return false
     }
   }
+
   async grantDataChannel(srcName, dstName) {
     await this.grant(srcName, dstName, "datachannel")
     await this.grant(dstName, srcName, "datachannel")
@@ -457,5 +505,38 @@ export class FMNet {
     await this.assertPermission(srcName, dstName, "datachannel")
     await this.grant(srcName, dstName, "tcptunnel.egress")
     await this.grant(dstName, srcName, "tcptunnel.ingress")
+  }
+
+  getActiveTcpTunnels() {
+    const t = {}
+    for (const [dcmId, dcm] of this.dcSessions) {
+      t[dcmId] = []
+    }
+    for (const [tunnelId, tunnel] of this.tcpTunnels) {
+      const dcmId = tunnel.dcm.deviceConnectionId
+      t[dcmId].push({
+        role: tunnel.handler.role,
+        id: tunnelId
+      })
+    }
+    return t
+  }
+
+  async shutdown() {
+    for (const [tunnelId, tunnel] of this.tcpTunnels) {
+      await this.closeTcpTunnel(tunnelId)
+    }
+    for (const [dcmId, dcms] of this.dcSessions) {
+      await dcms.dcm.close()
+    }
+    await this.relayDisconnect()
+  }
+
+  async closeDataChannel(dcmId) {
+    const d = this.dcSessions.get(dcmId)
+    if (!d) {
+      throw new Error(`DataChannel not found ${dcmId}`)
+    }
+    await d.dcm.close()
   }
 }

@@ -4,10 +4,16 @@ import { logger } from '../logger.js';
 
 
 export class DataChannelService {
-  constructor(sept, rtc, onAccept) {
+  constructor(sept, rtc, onAccept, onClose) {
     this.sept = sept;
     this.rtc = rtc;
     this.onAccept = onAccept
+    this.onClose = id => {
+      this.sessions.delete(id)
+      if (onClose) {
+        onClose(id)
+      }
+    }
     this.sessions = new Map()
     this.pendingIce = new Map();
 
@@ -31,25 +37,16 @@ export class DataChannelService {
 
   }
 
-  static async create(sept, rtc, onAccept) {
-    const i = new this(sept, rtc, onAccept)
+  static async create(sept, rtc, onAccept, onClose) {
+    const i = new this(sept, rtc, onAccept, onClose)
     i.deviceId = await sept.getDeviceId()
     return i.deviceId ? i : null
   }
 
-  makeSessionId() {
-    return [
-      "fmnet",
-      Date.now().toString(36),
-      Math.random().toString(36).slice(2),
-      Math.random().toString(36).slice(2),
-    ].join("-");
-  }
-
   async connect(targetDeviceId, type, metadata = {}, timeout = 30) {
 
-    const sessionId = `${type}:${targetDeviceId}`
-    const existingSession = this.sessions.get(sessionId)
+    const deviceConnectionId = `${type}:${targetDeviceId}`
+    const existingSession = this.sessions.get(deviceConnectionId)
     if (existingSession) {
       return existingSession.dcm
     }
@@ -59,7 +56,7 @@ export class DataChannelService {
       if (!ev.candidate) return;
 
       this.sendSignal(targetDeviceId, "ice", {
-        sessionId,
+        deviceConnectionId,
         candidate: ev.candidate.toJSON(),
       });
     };
@@ -72,7 +69,7 @@ export class DataChannelService {
       pc.close()
     }
 
-    this.sessions.set(sessionId, { pc, dc, dcm:null, metadata })
+    this.sessions.set(deviceConnectionId, { pc, dc, dcm: null, metadata })
 
     const channelPromise = new Promise((resolve, reject) => {
       let connectOk = false
@@ -87,7 +84,7 @@ export class DataChannelService {
         if (!connectOk) {
           dc.close();
           pc.close();
-          this.sessions.delete(sessionId);
+          this.sessions.delete(deviceConnectionId);
           reject("connection timeout")
         }
       }, timeout * 1000)
@@ -96,18 +93,19 @@ export class DataChannelService {
         connectOk = true
         clearTimeout(tm)
         dc.removeEventListener("error", error)
-        const session = this.sessions.get(sessionId)
+        const session = this.sessions.get(deviceConnectionId)
         session.dcm = new DataChannelManager(
-          sessionId,
+          deviceConnectionId,
           type,
           pc,
           dc,
           targetDeviceId,
           metadata,
+          this.onClose
           // () => {
           //   dc.close();
           //   pc.close();
-          //   this.sessions.delete(sessionId);
+          //   this.sessions.delete(deviceConnectionId);
           // }
         )
         resolve(session.dcm)
@@ -121,7 +119,7 @@ export class DataChannelService {
     await pc.setLocalDescription(offer);
 
     await this.sendSignal(targetDeviceId, "offer", {
-      sessionId,
+      deviceConnectionId,
       type,
       description: pc.localDescription,
       metadata
@@ -131,10 +129,10 @@ export class DataChannelService {
   }
 
   async onOffer(ev) {
-    const { sessionId, type, description, fromDeviceId, metadata } = ev;
+    const { deviceConnectionId, type, description, fromDeviceId, metadata } = ev;
 
     const pc = new this.rtc.RTCPeerConnection(this.rtcConfig);
-    this.sessions.set(sessionId, { pc, dc: null, type, metadata });
+    this.sessions.set(deviceConnectionId, { pc, dc: null, type, metadata });
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === "disconnected" || pc.connectionState === "failed") {
         pc.close()
@@ -145,7 +143,7 @@ export class DataChannelService {
       if (!ev.candidate) return;
 
       this.sendSignal(fromDeviceId, "ice", {
-        sessionId,
+        deviceConnectionId,
         candidate: ev.candidate.toJSON(),
         metadata
       });
@@ -156,19 +154,20 @@ export class DataChannelService {
       dc.onclose = () => {
         pc.close()
       }
-      const session = this.sessions.get(sessionId);
+      const session = this.sessions.get(deviceConnectionId);
       session.dc = dc;
       session.dcm = new DataChannelManager(
-        sessionId,
+        deviceConnectionId,
         session.type,
         pc,
         dc,
         fromDeviceId,
         metadata,
+        this.onClose
         // () => {
         //   dc.close();
         //   pc.close();
-        //   this.sessions.delete(sessionId);
+        //   this.sessions.delete(deviceConnectionId);
         // }
       )
       this.onAccept(session.dcm)
@@ -180,34 +179,34 @@ export class DataChannelService {
     await pc.setLocalDescription(answer);
 
     await this.sendSignal(fromDeviceId, "answer", {
-      sessionId,
+      deviceConnectionId,
       description: pc.localDescription,
     });
 
-    await this.flushPendingIce(sessionId);
+    await this.flushPendingIce(deviceConnectionId);
   }
 
   async onAnswer(ev) {
-    const { sessionId, description } = ev;
+    const { deviceConnectionId, description } = ev;
 
-    const session = this.sessions.get(sessionId);
+    const session = this.sessions.get(deviceConnectionId);
     if (!session) return;
 
     await session.pc.setRemoteDescription(description);
-    await this.flushPendingIce(sessionId);
+    await this.flushPendingIce(deviceConnectionId);
   }
 
   async onIce(ev) {
-    const { sessionId, candidate } = ev;
+    const { deviceConnectionId, candidate } = ev;
 
-    const session = this.sessions.get(sessionId);
+    const session = this.sessions.get(deviceConnectionId);
 
     if (!session || !session.pc.remoteDescription) {
-      if (!this.pendingIce.has(sessionId)) {
-        this.pendingIce.set(sessionId, []);
+      if (!this.pendingIce.has(deviceConnectionId)) {
+        this.pendingIce.set(deviceConnectionId, []);
       }
 
-      this.pendingIce.get(sessionId).push(candidate);
+      this.pendingIce.get(deviceConnectionId).push(candidate);
       return;
     }
 
@@ -216,12 +215,12 @@ export class DataChannelService {
     );
   }
 
-  async flushPendingIce(sessionId) {
-    const session = this.sessions.get(sessionId);
+  async flushPendingIce(deviceConnectionId) {
+    const session = this.sessions.get(deviceConnectionId);
     if (!session) return;
 
-    const pending = this.pendingIce.get(sessionId) ?? [];
-    this.pendingIce.delete(sessionId);
+    const pending = this.pendingIce.get(deviceConnectionId) ?? [];
+    this.pendingIce.delete(deviceConnectionId);
 
     for (const candidate of pending) {
       await session.pc.addIceCandidate(

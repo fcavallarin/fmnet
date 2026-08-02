@@ -287,6 +287,7 @@ ${ui.title("Commands")}
 
     process.stdout.write("\n")
     this.rl.close()
-    this.fmnet.relayDisconnect()
+    this.fmnet.shutdown()
+
   }
 }

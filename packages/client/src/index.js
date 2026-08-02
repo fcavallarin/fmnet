@@ -402,7 +402,7 @@ export class SeptClient {
     const deviceId = await this.getDeviceId()
     const ackEvents = [];
     for (const e of events) {
-      const {eventId} = e
+      const { eventId } = e
       const senderDevice = await this.store.device.get(e.senderDeviceId)
       if (!senderDevice) {
         throw new Error("unauthorized2 " + e.senderDeviceId);
@@ -584,8 +584,10 @@ export class SeptClient {
   }
 
   async relayDisconnect() {
-    this.wsStatus = "closing"
-    await this.ws.close();
+    if (this.ws && this.wsStatus !== "closing") {
+      this.wsStatus = "closing"
+      await this.ws.close();
+    }
   }
 
   getWebsocketStatus() {

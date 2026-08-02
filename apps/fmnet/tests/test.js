@@ -31,7 +31,7 @@ class FMnetTest {
       webRTCAdapter: webRTCAdapter,
       tcpAdapter: new TCPAdapter(),
       secretKeyProvider: async () => new Uint8Array(32),
-      // logLevel: "debug"
+      logLevel: "debug"
     }
     this.appAdmin = await FMNet.create({
       ...options,
@@ -283,46 +283,63 @@ class FMnetTest {
 
     const testTunnel2 = true
     let tunnelId2
-    if (testTunnel2) {
-      tunnelId2 = await this.appDevice1.openTcpTunnel(
-        this.appDevice2Name,
-        "127.0.0.1",
-        1222,
-        1223
-      )
 
-      let tunData2 = ""
+    tunnelId2 = await this.appDevice1.openTcpTunnel(
+      this.appDevice2Name,
+      "127.0.0.1",
+      1222,
+      1223
+    )
 
-      const cli2 = new TCPAdapter()
-      const ser2 = new TCPAdapter()
-      const sser2 = await ser2.listen("127.0.0.1", 1222, sok => {
-        sok.onData(d => {
-          tunData2 = `${d}`
-        })
+    let tunData2 = ""
+
+    const cli2 = new TCPAdapter()
+    const ser2 = new TCPAdapter()
+    const sser2 = await ser2.listen("127.0.0.1", 1222, sok => {
+      sok.onData(d => {
+        tunData2 = `${d}`
       })
+    })
 
-      const clsok2 = await cli2.connect("127.0.0.1", 1223)
+    let clsok2 = await cli2.connect("127.0.0.1", 1223)
 
-      clsok2.write("hi")
+    clsok2.write("hi")
 
-      await sleep(200)
-      assert(tunData2 === "hi", `Wrong tunData = ${tunData2}`)
+    await sleep(200)
+    assert(tunData2 === "hi", `Wrong tunData = ${tunData2}`)
 
 
-      clsok2.close()
-      sser2.close()
-    }
+    clsok2.close()
+
+    // await sleep(2000)
+    console.log("\n\n\n\n")
+
+    clsok2 = await cli2.connect("127.0.0.1", 1223)
+    // await sleep(2000)
+    clsok2.write("hi2")
+
+    await sleep(200)
+    assert(tunData2 === "hi2", `Wrong tunData = ${tunData2}`)
+    clsok2.close()
+    sser2.close()
+
     clsok.close()
     sser.close()
     await sleep(200)
 
     await this.appDevice1.closeTcpTunnel(tunnelId)
-    if(tunnelId2){
+    if (tunnelId2) {
       await this.appDevice1.closeTcpTunnel(tunnelId2)
     }
 
     await this.appDevice1.relayDisconnect()
     await this.appDevice2.relayDisconnect()
+  }
+
+  async test_shutdown(testId){
+    await this.appAdmin.shutdown()
+    await this.appDevice1.shutdown()
+    await this.appDevice2.shutdown()
   }
 }
 
