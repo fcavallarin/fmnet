@@ -3,6 +3,7 @@ tmp.*
 tmp
 data
 node_modules/
+demo-recorder/
 apps/fmnet/src/mobile
 .*
 !/.gitignore

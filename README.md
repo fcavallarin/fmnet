@@ -1,49 +1,62 @@
 # SEPT / FMNet
 
-> Private communication and trusted-device networking for families.
+> Private communication and trusted-device networking.
 
-SEPT is a privacy-first protocol and SDK for secure communication between trusted devices.
+SEPT is a privacy-first protocol and JavaScript SDK for secure communication between trusted devices through a **content-blind relay**. The relay forwards encrypted events and coordinates connectivity, but it does not hold device keys or participate in the network authorization model.
 
-It was originally created as the foundation for **FMNet**, a family-oriented application designed to provide:
+The default relay runs on Cloudflare Workers. You can use the public development relay or deploy your own relay to your Cloudflare account by running `wrangler deploy`.
 
-- private chat for families and children;
-- trusted-device pairing;
-- explicit capability-based authorization;
-- peer-to-peer WebRTC data channels;
-- TCP tunnelling without exposing ports;
-- custom device actions such as `door-open`, `light-on`, and `take-photo`.
+SEPT was originally created as the foundation for **FMNet**, an application that combines:
 
-A mobile FMNet application is currently under development for chat, TCP tunnelling, and custom actions.
+- private messaging
+- application-defined remote actions
+- TCP tunnelling over WebRTC
+- peer-to-peer WebRTC data channels
 
-> **Project status**
->
-> SEPT and the FMNet CLI are under active development. The current CLI already supports family creation, device pairing, capability grants, WebRTC data channels, and TCP tunnels.
+Devices are added to a SEPT network by the network's admin through an explicit
+pairing process. They can send or receive only the event types for which they have been granted the required capabilities.
+
+Capabilities are distributed as signed events and stored locally by each device, allowing authorization decisions to remain independent from the relay.
+
 
 ---
 
-## Demo
+## See it in action
 
-The current demo uses the public FMNet relay by default, so no relay infrastructure is required to test the project.
+![FMNet CLI demo](docs/demo/cli/fmnet-demo-quick.gif)
+
+In a few commands, one trusted device can message another, request an application-defined action, and open a TCP tunnel to a private service:
+
+```text
+message send apu "hello there"
+run-action apu door-open
+tunnel open apu 127.0.0.1 22 2222
+ssh -p 2222 127.0.0.1
+```
+
+---
+
+## Quick start
+
+The current demo uses the public FMNet relay by default, so no relay infrastructure is required for initial testing.
 
 You need two terminals or two machines:
 
-- **Device A** creates the family and exposes a TCP service.
-- **Device B** joins the family and opens a local port forwarded to Device A.
+- **Device A** creates the network.
+- **Device B** joins it and becomes a trusted peer after explicit confirmation.
 
-The example below exposes SSH running on `127.0.0.1:22` on Device A as `127.0.0.1:2222` on Device B.
+```
+$ node src/index.js
 
-```text
-Device B                          Device A
-127.0.0.1:2222                    127.0.0.1:22
-       │                                ▲
-       └──── TCP over WebRTC tunnel ────┘
+Insert your name: DeviceB
+
+What do you want to do?
+1. Create a new network
+2. Join a network
+
+Select option:
 ```
 
-### Requirements
-
-- Node.js
-- npm
-- an SSH server listening on Device A for the SSH example
 
 ### Installation
 
@@ -51,211 +64,94 @@ Device B                          Device A
 npm install
 ```
 
----
+### 1. Pair Device B
 
-## Quick start
-
-### 1. Create a new family on Device A
-
-Start the CLI:
-
-```bash
-./run.sh
-```
-
-Create a new family from the CLI.
+On Device A (the admin that created the network):
 
 ```text
-create new family
+fmnet> device add <b64-client-data>
 ```
 
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/create-family.png
-Show: CLI startup and successful family creation.
--->
+The CLI displays a pairing PIN. Enter that PIN on Device B to confirm the pairing.
 
-![Create a new family](docs/screenshots/create-family.png)
 
----
+### 2. Grant capabilities
 
-### 2. Join the family from Device B
+SEPT uses a default-deny authorization model. A paired device cannot automatically open data channels, create tunnels, or invoke arbitrary actions.
 
-In a second terminal or on another machine:
+Allow DeviceB to open TCP tunnels on DeviceA:
 
-```bash
-./run.sh
+```
+fmnet> device grant-tunnel DeviceB DeviceA
 ```
 
-Select or run:
+Allow DeviceB to send messages to DeviceA:
+```
+fmnet> device grant DeviceB DeviceA message
+```
+
+For a custom action, grant the corresponding application-defined capability as well:
 
 ```text
-join existing family
+fmnet> device grant DeviceA DeviceB customaction.response
+fmnet> device grant DeviceB DeviceA customaction.door-open
 ```
 
-Device B will display its Base64-encoded pairing data.
+### 3. List available fmnet commands:
+
+```
+fmnet> help
+```
+
+## TCP Tunnels
+
+### Quick Example
+Expose SSH on Device B as local port `2222` on Device A:
+
+```
+fmnet> tunnel open DeviceB 127.0.0.1 22 2222
+```
 
 ```text
-<b64-client-data>
+Device A                          Device B
+127.0.0.1:2222                    127.0.0.1:22
+       │                                ▲
+       └──── TCP over WebRTC tunnel ────┘
 ```
 
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/join-family.png
-Show: join flow and the generated Base64 pairing data.
-Blur or replace any sensitive values before publishing.
--->
-
-![Join an existing family](docs/screenshots/join-family.png)
-
----
-
-### 3. Add Device B from Device A
-
-On Device A, use the Base64 pairing data generated by Device B:
-
-```text
-device add <b64-client-data>
-```
-
-The CLI will display a pairing PIN.
-
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/device-add.png
-Show: `device add`, the detected device, and the pairing PIN.
--->
-
-![Add a device](docs/screenshots/device-add.png)
-
----
-
-### 4. Confirm the pairing PIN on Device B
-
-On Device B, enter the PIN displayed by Device A.
-
-```text
-enter pairing pin
-```
-
-After pairing, note the assigned device name. The examples below assume the device is named `client1`.
-
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/pairing-complete.png
-Show: PIN entry and successful pairing as `client1`.
--->
-
-![Complete device pairing](docs/screenshots/pairing-complete.png)
-
----
-
-### 5. Grant the required capabilities
-
-On Device A:
-
-```text
-device grant client1 datachannel
-device grant client1 tcptun.ingress
-device grant client1 tcptun.egress
-```
-
-SEPT uses explicit capability grants. A paired device cannot open data channels or TCP tunnels unless the required capabilities have been granted.
-
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/device-grants.png
-Show: the three grant commands and their successful output.
--->
-
-![Grant device capabilities](docs/screenshots/device-grants.png)
-
----
-
-### 6. Open the TCP tunnel
-
-Open a tunnel to the SSH service on Device A:
-
-```text
-tunnel open client1 127.0.0.1 22 2222
-```
-
-This creates the following forwarding path:
-
-```text
-Device B: 127.0.0.1:2222
-            │
-            ▼
-     WebRTC TCP tunnel
-            │
-            ▼
-Device A: 127.0.0.1:22
-```
-
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/tunnel-open.png
-Show: the tunnel command, tunnel ID, remote endpoint, and local listening port.
--->
-
-![Open a TCP tunnel](docs/screenshots/tunnel-open.png)
-
----
-
-### 7. Connect through the tunnel
-
-On Device B:
+Connect through the tunnel:
 
 ```bash
 ssh -p 2222 <username>@127.0.0.1
 ```
 
-To test file transfers:
-
-```bash
-scp -P 2222 ./example-file <username>@127.0.0.1:/tmp/
-```
-
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/ssh-over-tunnel.png
-Show: a successful SSH connection through local port 2222.
--->
-
-![SSH over the tunnel](docs/screenshots/ssh-over-tunnel.png)
-
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/scp-over-tunnel.png
-Show: an SCP transfer through the tunnel.
--->
-
-![SCP over the tunnel](docs/screenshots/scp-over-tunnel.png)
-
 ---
 
-## How TCP tunnelling works
+### How connections and tunnels work
 
-Each tunnel uses one WebRTC `RTCPeerConnection` and one control DataChannel.
+FMNet maintains a reusable WebRTC connection to each peer when needed. Opening the first tunnel to a device establishes that connection; later tunnels can reuse it.
 
-Each TCP connection inside that tunnel gets its own DataChannel.
+Closing one tunnel does not implicitly close the shared device connection.
 
 ```text
-RTCPeerConnection / tunnelId
-├── control DataChannel
-├── TCP session #1 / data DataChannel
-├── TCP session #2 / data DataChannel
-└── TCP session #N / data DataChannel
+Device connection / DataChannelManager
+├── TCP tunnel #1
+│   ├── TCP socket #1 / DataChannel
+│   └── TCP socket #2 / DataChannel
+├── TCP tunnel #2
+│   └── TCP socket #1 / DataChannel
+└── application DataChannels
 ```
 
-This allows multiple independent TCP sessions to share the same peer connection while preserving interactivity between sessions.
+Each TCP socket gets its own WebRTC DataChannel. Multiple SSH shells, file transfers, and other TCP sessions can therefore run concurrently while sharing the underlying peer connection.
 
-For example, an SCP transfer and multiple SSH shells can run concurrently over the same WebRTC connection.
-
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/tcp-tunnel-flow.png
-Show: the sequence diagram for tunnel creation and per-socket DataChannels.
--->
-
-![TCP tunnel sequence](docs/screenshots/tcp-tunnel-flow.png)
+The persistent connection can be closed explicitly when it is no longer needed.
 
 ---
 
-## Why JavaScript?
+## Why plain JavaScript?
 
-SEPT is written in **plain JavaScript** to maximise compatibility across runtimes and platforms.
+SEPT is written in **plain JavaScript** to maximize compatibility across runtimes and platforms.
 
 The same core libraries are designed to run across:
 
@@ -264,7 +160,7 @@ The same core libraries are designed to run across:
 - React Native and Expo;
 - Cloudflare Workers.
 
-JavaScript was chosen deliberately, not as a shortcut. Portability is a core project requirement, and avoiding unnecessary build complexity makes the protocol easier to embed in different applications and devices.
+JavaScript was chosen deliberately, not as a shortcut. Portability is a core project requirement, and avoiding unnecessary build complexity makes the protocol easier to embed in applications, servers, browsers, and small devices.
 
 ---
 
@@ -274,13 +170,11 @@ JavaScript was chosen deliberately, not as a shortcut. Portability is a core pro
 
 The CLI currently uses the public FMNet relay by default.
 
-This allows contributors and testers to run the demo without deploying any server-side infrastructure.
-
-The public relay should be considered suitable for development and testing while the project is under active development.
+This lets contributors and testers run the demo without deploying server-side infrastructure. The public relay should be considered suitable for development and testing while the project is under active development.
 
 ### Deploy your own relay
 
-The relay runs on Cloudflare Workers and can be deployed to your own Cloudflare account.
+The relay runs on Cloudflare Workers and can be deployed to your own Cloudflare account:
 
 ```bash
 wrangler deploy
@@ -288,75 +182,7 @@ wrangler deploy
 
 After deployment, configure the client to use your relay endpoint instead of the default public relay.
 
-> **Note**
->
-> A complete self-hosting guide will document the required Cloudflare resources, bindings, database migrations, storage configuration, secrets, and client endpoint configuration.
-
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/wrangler-deploy.png
-Show: a successful `wrangler deploy` and the resulting Worker URL.
--->
-
-![Deploy a private relay](docs/screenshots/wrangler-deploy.png)
-
----
-
-## Core concepts
-
-### Families
-
-A family is a private group of trusted devices.
-
-Devices join through an explicit pairing process and receive their own identity and permissions.
-
-### Device pairing
-
-Pairing exchanges the information required to add a device to a family and requires confirmation through a PIN.
-
-### Capabilities
-
-SEPT follows a default-deny authorization model.
-
-Devices must receive explicit capabilities before they can perform actions such as:
-
-- opening a WebRTC data channel;
-- accepting or creating a TCP tunnel;
-- invoking application-specific actions.
-
-### Custom actions
-
-Applications can define actions on top of SEPT, for example:
-
-```text
-door-open
-light-on
-take-photo
-```
-
-Authorization is handled using the same trusted-device and capability model used by messaging and TCP tunnelling.
-
----
-
-## Planned FMNet mobile application
-
-The FMNet mobile application is being developed as a family-oriented interface on top of SEPT.
-
-Planned and in-progress features include:
-
-- private family chat;
-- parent-controlled device authorization;
-- trusted-device management;
-- TCP tunnelling;
-- remote access to home devices;
-- custom actions for home automation;
-- camera and doorbell integrations.
-
-<!-- SCREENSHOT PLACEHOLDER
-Suggested filename: docs/screenshots/mobile-app-preview.png
-Show: mobile chat, devices, tunnels, or custom actions when available.
--->
-
-![FMNet mobile application preview](docs/screenshots/mobile-app-preview.png)
+> A complete self-hosting guide will document the required Cloudflare resources, bindings, migrations, storage configuration, secrets, and client endpoint configuration.
 
 ---
 
@@ -364,13 +190,14 @@ Show: mobile chat, devices, tunnels, or custom actions when available.
 
 The current implementation has been tested with:
 
+- messaging between paired devices;
+- application-defined custom actions;
 - multiple concurrent SSH sessions;
 - large SCP transfers;
-- multiple TCP sessions over one WebRTC peer connection;
-- deployment on a remote server;
-- remote TCP access without exposing the destination service publicly.
+- multiple TCP sockets over one reusable WebRTC peer connection;
+- remote deployment;
 
-Performance optimisation, documentation, packaging, and broader compatibility testing are ongoing.
+Performance optimization, documentation, packaging, and broader compatibility testing are ongoing.
 
 ---
 
@@ -382,34 +209,12 @@ Do not rely on the current implementation for high-risk or production-critical e
 
 ---
 
-## Repository structure
-
-> Replace this section with the final repository layout before publishing.
-
-```text
-packages/
-  core/
-  client/
-  crypto/
-  http/
-
-apps/
-  cli/
-  mobile/
-  relay/
-```
-
----
-
 ## Roadmap
 
-- improve CLI commands and usability;
-- complete the mobile application;
-- document protocol and authorization flows;
+- stabilize and document the CLI;
+- complete the FMNet mobile application;
+- document the protocol, cryptography, and authorization flows;
 - improve TCP tunnel throughput and flow control;
-- publish the self-hosting guide;
-- add automated integration and compatibility tests;
-- collect feedback from early testers.
 
 ---
 
@@ -423,7 +228,6 @@ Before opening a pull request, please open an issue describing the proposed chan
 
 ---
 
-## Licence
+## License
 
-> Add the selected licence here before publishing.
-
+MIT

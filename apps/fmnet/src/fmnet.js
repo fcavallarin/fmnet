@@ -401,6 +401,10 @@ export class FMNet {
     return await this.septClient.getPolicy(srcDeviceId, dstDeviceId)
   }
 
+  async checkPolicy(srcDeviceId, dstDeviceId, perm) {
+    return await this.septClient.checkPolicy(srcDeviceId, dstDeviceId, perm)
+  }
+
   async getDeviceId() {
     return await this.septClient.getDeviceId()
   }
@@ -495,8 +499,8 @@ export class FMNet {
   async assertPermission(srcName, dstName, perm) {
     for (const s of await this.identityStore.getByName(srcName)) {
       for (const d of await this.identityStore.getByName(dstName)) {
-        const sp = await this.getPolicy(s, d)
-        if (!sp?.allowedActions?.includes(perm)) {
+        const sp = await this.checkPolicy(s, d, perm)
+        if (!sp) {
           throw new Error(`Missing ${perm} permission from ${s} to ${d}`)
         }
       }
@@ -579,5 +583,9 @@ export class FMNet {
       throw new Error(`DataChannel not found ${dcmId}`)
     }
     await d.dcm.close()
+  }
+
+  async isCurrentDeviceAdmin() {
+    return await this.septClient.isCurrentDeviceAdmin()
   }
 }

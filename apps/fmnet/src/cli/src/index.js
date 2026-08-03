@@ -18,7 +18,7 @@ async function main() {
   const fmnet = await FMNet.create({
     webRTCAdapter: webRTCAdapter,
     tcpAdapter: new TCPAdapter(),
-    logLevel: "debug",
+    // logLevel: "debug",
     // restEndpoint: "https://sept.filippo-572.workers.dev",
     secretKeyProvider: async () => new Uint8Array(32),
     dataStore: {
