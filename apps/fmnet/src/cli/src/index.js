@@ -19,7 +19,7 @@ async function main() {
     webRTCAdapter: webRTCAdapter,
     tcpAdapter: new TCPAdapter(),
     // logLevel: "debug",
-    // restEndpoint: "https://sept.filippo-572.workers.dev",
+    restEndpoint: "https://sept.filippo-572.workers.dev",
     secretKeyProvider: async () => new Uint8Array(32),
     dataStore: {
       type: "better-sqlite",

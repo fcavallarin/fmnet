@@ -61,7 +61,7 @@ Select option:
 ### Installation
 
 ```bash
-npm install
+./install.sh cli
 ```
 
 ### 1. Pair Device B
