@@ -64,6 +64,12 @@ Select option:
 ./install.sh cli
 ```
 
+### Run
+
+```bash
+./run.sh
+```
+
 ### 1. Pair Device B
 
 On Device A (the admin that created the network):
