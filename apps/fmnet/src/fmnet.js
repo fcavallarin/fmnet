@@ -588,4 +588,8 @@ export class FMNet {
   async isCurrentDeviceAdmin() {
     return await this.septClient.isCurrentDeviceAdmin()
   }
+
+  async listDevices(){
+    return await this.identityStore.list()
+  }
 }

@@ -175,14 +175,21 @@ export class FmnetCli {
 
   async execute(input) {
     const [command, ...args] = this.parse(input)
-
+    let localIdentity
     switch (command) {
       case "help":
         this.printHelp()
         break
 
-      case "device":
       case "devices":
+        localIdentity = await this.fmnet.getLocalIdentity()
+        for (const d of await this.fmnet.listDevices()) {
+          if (localIdentity.name !== d.name) {
+            this.success(`${d.name}`)
+          }
+        }
+        break
+      case "device":
         await this.deviceHandler.handle(args)
         break
 
@@ -199,8 +206,8 @@ export class FmnetCli {
         this.success("Sync completed")
         break
       case "whoami":
-        const i = await this.fmnet.getLocalIdentity()
-        this.success(`ID: ${i.deviceId}\nname: ${i.name}`)
+        localIdentity = await this.fmnet.getLocalIdentity()
+        this.success(`ID: ${localIdentity.deviceId}\nname: ${localIdentity.name}`)
         break
       case "permissions":
         for (const g of await this.fmnet.getDeviceGraph()) {
@@ -304,6 +311,7 @@ ${ui.title("Commands")}
 
   ${ui.title("help")}
   ${ui.title("status")}
+  ${ui.title("devices")}
 
   ${ui.title("sync")}
   ${ui.title("whoami")}

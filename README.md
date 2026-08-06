@@ -40,24 +40,6 @@ ssh -p 2222 127.0.0.1
 
 The current demo uses the public FMNet relay by default, so no relay infrastructure is required for initial testing.
 
-You need two terminals or two machines:
-
-- **Device A** creates the network.
-- **Device B** joins it and becomes a trusted peer after explicit confirmation.
-
-```
-$ node src/index.js
-
-Insert your name: DeviceB
-
-What do you want to do?
-1. Create a new network
-2. Join a network
-
-Select option:
-```
-
-
 ### Installation
 
 ```bash
@@ -69,6 +51,24 @@ Select option:
 ```bash
 ./run.sh
 ```
+
+You need two terminals or two machines:
+
+- **Device A** creates the network.
+- **Device B** joins it and becomes a trusted peer after explicit confirmation.
+
+```
+$ ./run.sh
+
+Insert your name: DeviceB
+
+What do you want to do?
+1. Create a new network
+2. Join a network
+
+Select option:
+```
+
 
 ### 1. Pair Device B
 

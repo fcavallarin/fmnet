@@ -56,4 +56,12 @@ export class IdentityStore {
       await this.kvStore.set(nname, [deviceId])
     }
   }
+  async list() {
+    this.assertFamily();
+    const identities = await this.kvStore.all()
+    return identities.map(i => ({
+      name: i.key,
+      devices: i.value
+    }))
+  }
 }

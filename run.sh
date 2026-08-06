@@ -12,7 +12,7 @@ TARGET="cli"
 
 case "$TARGET" in
   cli)
-    cd "$ROOT_DIR/apps/fmnet/src/cli" && node src/index.js
+    cd "$ROOT_DIR/apps/fmnet/src/cli" && node --experimental-websocket src/index.js
     ;;
   mobile|react-native)
     exit 1
