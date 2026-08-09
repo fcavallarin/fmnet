@@ -91,10 +91,10 @@ class FMnetTest {
       this.appDevice1Name,
       this.appDevice2Name,
       "message",
-      {
-        srcName: this.appDevice1Name,
-        dstName: this.appDevice2Name,
-      }
+      // {
+      //   srcName: this.appDevice1Name,
+      //   dstName: this.appDevice2Name,
+      // }
     );
 
     await this.appAdmin.grant(

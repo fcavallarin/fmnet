@@ -343,6 +343,9 @@ export class FMNet {
     return pin
   };
 
+  async invalidateDevice(deviceName) { // @TODO remove device from the network
+
+  }
 
   async initDevice(name) {
     const deviceData = await this.septClient.initDevice();
@@ -357,6 +360,10 @@ export class FMNet {
 
   on(event, handler) {
     this.eventBus.on(event, handler)
+  }
+
+  off(event, handler) {
+    this.eventBus.off(event, handler)
   }
 
 
@@ -421,10 +428,14 @@ export class FMNet {
     return await this.septClient.getStoredActions(filters)
   }
 
-  async grant(srcName, dstName, action, metadata) {
+  async grant(srcName, dstName, action, metadata = {}) {
     for (const s of await this.identityStore.getByName(srcName)) {
       for (const d of await this.identityStore.getByName(dstName)) {
-        return await this.septClient.grant(s, d, action, metadata)
+        return await this.septClient.grant(s, d, action, {
+          srcName,
+          dstName,
+          ...metadata
+      })
       }
     }
   }
