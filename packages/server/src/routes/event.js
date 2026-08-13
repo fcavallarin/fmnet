@@ -58,9 +58,12 @@ export async function createEvent(request, env, params, ctx) {
       encryptedPayloadKey: recipient.encryptedPayloadKey
     }
     await relay.push(recipient.deviceId, recipientEvent);
-    ctx.eventBus.dispatch("event.received", {
-      ...recipientEvent,
-      deviceId: recipient.deviceId
+    await ctx.eventBus.dispatch("event.received", {
+      env,
+      eventData: {
+        ...recipientEvent,
+        deviceId: recipient.deviceId
+      }
     });
   }
 

@@ -11,12 +11,13 @@ export function formatTimestamp(timestamp) {
   }).format(new Date(timestamp * 1000));
 }
 
-export function formatMessage(ui, message) {
+export function formatMessage(ui, message, includeSender = true) {
   const sender = message.sender ?? "unknown"
 
   const text = message.message
   const date = formatTimestamp(message.timestamp)
-
-  return `» ${ui.muted(date)} from ${ui.title(sender)}: ${text}`
+  const i = message.isIncoming ? "<" : ">"
+  const s = includeSender ? ` from ${ui.title(sender)}` : "" 
+  return `${ui.muted(date)}${s} ${i}: ${text}`
 
 }

@@ -44,6 +44,17 @@ export class MessageHandler extends BaseHandler {
         }
         break
 
+      case "get-chat-from":
+        if(!name){
+          throw new Error("missing name")
+        }
+        messages = await this.fmnet.getConversationFrom(name)
+        messages.reverse()
+        for (const m of messages) {
+          this.cli.info(formatMessage(this.cli.ui, m, false))
+        }
+        break
+
       default:
         this.cli.log("Usage:")
         this.cli.log(this.usage())
@@ -53,6 +64,7 @@ export class MessageHandler extends BaseHandler {
     return [
       "  message send <name> \"message\"",
       "  message list [sender-name]",
+      "  message get-chat-from sender-name",
       "  message unreads",
     ].join("\n")
   }

@@ -62,12 +62,13 @@ export class FMNet {
     })
 
     this.septClient.register(
-      "message", async (data, sender, timestamp) => {
+      "message", async (data, sender, timestamp, eventId) => {
         const senderName = await this.identityStore.getByDevice(sender)
         this.eventBus.dispatch("message", {
           message: data,
           sender: senderName,
-          timestamp
+          timestamp,
+          id: eventId
         })
       }
     )
@@ -435,7 +436,7 @@ export class FMNet {
           srcName,
           dstName,
           ...metadata
-      })
+        })
       }
     }
   }
@@ -487,6 +488,17 @@ export class FMNet {
     })
   }
 
+  async getConversationFrom(fromName) {
+    const messages = await this.getMessagesFrom(fromName)
+
+    messages.push(...(await this.getMessages({
+      sender_device_id: await this.septClient.getDeviceId(),
+      recipient: { device_id__in: await this.getIdentityDevices(fromName) }
+    })))
+    return messages.sort((a, b) => a.sequence - b.sequence)
+  }
+
+
   async getMessages(filters = {}) {
 
     const messages = await this.getStoredActions({ type: "message", ...filters })
@@ -501,7 +513,9 @@ export class FMNet {
         sender: await this.identityStore.getByDevice(m.senderDeviceId),
         id: m.id,
         timestamp: m.timestamp,
-        sequence: m.sequence
+        sequence: m.sequence,
+        isIncoming: m.isIncoming,
+        isOutgoing: m.isOutgoing
       })
     }
     return ret
@@ -538,6 +552,16 @@ export class FMNet {
     } catch {
       return false
     }
+  }
+
+  async grantChat(srcName, dstName) {
+    await this.grant(srcName, dstName, "message")
+    await this.grant(dstName, srcName, "message")
+  }
+
+  async revokeChat(srcName, dstName) {
+    await this.revoke(srcName, dstName, "message")
+    await this.revoke(dstName, srcName, "message")
   }
 
 
@@ -600,7 +624,19 @@ export class FMNet {
     return await this.septClient.isCurrentDeviceAdmin()
   }
 
-  async listDevices(){
-    return await this.identityStore.list()
+  async listDevices(excludeLocal = true) {
+    const devices = await this.identityStore.list()
+    if (!excludeLocal) {
+      return devices
+    }
+    const i = await this.getLocalIdentity()
+    return devices.filter(d => d.name !== i.name)
+  }
+
+  async registerMobilePushToken(token) {
+    await this.septClient.callRest('register-push-token', {
+      method: "POST",
+      body: { token }
+    })
   }
 }

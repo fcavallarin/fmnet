@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS device (
   FOREIGN KEY (network_id) REFERENCES network(id)
 );
 
-CREATE TABLE counter (
+CREATE TABLE IF NOT EXISTS counter (
   name TEXT PRIMARY KEY,
   value INTEGER NOT NULL
 );

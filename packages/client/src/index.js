@@ -141,6 +141,10 @@ export class SeptClient {
     return await this.restClient.call(path, options);
   }
 
+  callRest = async (path, options) => { // Public API to call custom server endpoints
+    return await this._callRest(path, options)
+  }
+
   async bootstrap() {
     const networkStore = this.store.network;
     const networkId = await networkStore.create();

@@ -25,12 +25,12 @@ export class EventBus {
     this.listeners[evName].splice(i, 1);
   }
 
-  dispatch(evName, params) {
+  async dispatch(evName, params) {
     if (!Object.keys(this.listeners).includes(evName)) {
       throw new Error(`Event ${evName} not registered`)
     }
     for (const h of this.listeners[evName]) {
-      h(params)
+      await h(params)
     }
   }
 }

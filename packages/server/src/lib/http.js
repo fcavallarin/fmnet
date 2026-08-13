@@ -69,10 +69,14 @@ export async function getAuth(env, request, body) {
     headers: Object.fromEntries(request.headers.entries()),
     body
   }
+  const deviceId = SeptRequest.getDeviceId(req)
+  if (!deviceId) {
+    throw httpError(400, "Missing SEPT headers")
+  }
   const db = new D1Adapter(() => env.DB)
-  const device = await db.readOne(`SELECT * from device where id = ?`,[SeptRequest.getDeviceId(req)])
-  
-  if (! device || ! await SeptRequest.verify(req, body, deserializeBin(device.signPublicKey))) {
+  const device = await db.readOne(`SELECT * from device where id = ?`, [deviceId])
+
+  if (!device || ! await SeptRequest.verify(req, body, deserializeBin(device.signPublicKey))) {
     throw httpError(400, 'invalid_signature');
   }
 

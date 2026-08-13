@@ -2,13 +2,16 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-# TARGET="${1:-}"
+REST_ENDPOINT="${1:-}"
 TARGET="cli"
 
-# if [ "$TARGET" = "" ]; then
-#   echo "Usage: $0 <cli|mobile>"
-#   exit 1
-# fi
+if [ "$REST_ENDPOINT" = "local" ]; then
+  export FMNET_REST_ENDPOINT="http://localhost:8787"
+  echo "Rest endpoint is $FMNET_REST_ENDPOINT"
+else
+  unset FMNET_REST_ENDPOINT
+fi
+
 
 case "$TARGET" in
   cli)

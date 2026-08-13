@@ -45,6 +45,14 @@ export class DeviceHandler extends BaseHandler {
         await this.fmnet.revokeTcpTunnel(args[1], args[2])
         break
 
+      case 'grant-chat':
+        await this.fmnet.grantChat(args[1], args[2])
+        break
+      case 'revoke-chat':
+        await this.fmnet.revokeChat(args[1], args[2])
+        break
+
+
       default:
         this.cli.log("Usage:")
         this.cli.log(this.usage())
@@ -56,6 +64,8 @@ export class DeviceHandler extends BaseHandler {
       "  device revoke from-name to-name permission",
       "  device grant-tunnel from-name to-name",
       "  device revoke-tunnel from-name to-name",
+      "  device grant-chat from-name to-name",
+      "  device revoke-chat from-name to-name",
       "  device list",
       "  device id"
     ].join("\n")

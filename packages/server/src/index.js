@@ -4,10 +4,10 @@ import { addDevice, createPairing, getPairing, listDevices, setAdmin } from './r
 import { createEvent, listEvents, ackEvents } from './routes/event.js';
 import { relayConnect, relayGetTicket } from './routes/relay.js';
 import { DORelay } from "./do-relay.js";
-import {EventBus} from '@sept/core'
-
+import { EventBus } from '@sept/core'
+import { getAuth, httpError, readJson } from './lib/http.js';
 const jsonResponse = json
-export { DORelay, jsonResponse };
+export { DORelay, jsonResponse, getAuth, httpError, readJson };
 
 class SeptServerPlugin {
 
@@ -60,7 +60,7 @@ async function dispatch(request, env, ctx) {
     const params = route(request.method, url.pathname, r);
     if (params) {
       // console.log(r.handler)
-      const response = await r.handler(request, env, params, {workerCtx: ctx, eventBus});
+      const response = await r.handler(request, env, params, { workerCtx: ctx, eventBus });
       const headers = new Headers(response.headers);
       for (const [k, v] of Object.entries(corsHeaders())) headers.set(k, v);
       return new Response(response.body, { status: response.status, webSocket: response.webSocket, headers });
@@ -71,11 +71,11 @@ async function dispatch(request, env, ctx) {
 }
 
 export function createSeptServer(plugins) {
-  for(const p of plugins){
-    if(p.routes){
+  for (const p of plugins) {
+    if (p.routes) {
       ROUTES.push(...p.routes);
     }
-    for(const ev in p.events || []){
+    for (const ev in p.events || {}) {
       eventBus.on(ev, p.events[ev])
     }
   }
