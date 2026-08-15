@@ -1,7 +1,7 @@
 // import { terminal as term } from "terminal-kit";
-import { FMNet } from "../../../src/fmnet.js";
+import { FMNet } from "@fmnet/core";
 
-import { webRTCAdapter, TCPAdapter } from "../../../src/adapters/node/net-adapters.js";
+import { webRTCAdapter, TCPAdapter } from "@fmnet/node";
 import Database from 'better-sqlite3';
 import { FmnetCli } from './fmnet-cli.js'
 

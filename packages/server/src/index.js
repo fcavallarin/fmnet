@@ -85,6 +85,7 @@ export function createSeptServer(plugins) {
       try {
         return await dispatch(request, env, ctx);
       } catch (err) {
+        throw err
         const status = err.status || 500;
         const code = err.code || (status === 500 ? 'internal_error' : 'error');
         return json({ error: code, message: err.message }, status, corsHeaders());

@@ -2,7 +2,10 @@
   "name": "sept",
   "private": true,
   "workspaces": [
-    "apps/*",
+    "apps/fmnet/src/packages/*",
+    "apps/fmnet/src/cli",
+    "apps/fmnet/src/mobile",
+    "apps/worker",
     "packages/*"
   ],
   "scripts": {

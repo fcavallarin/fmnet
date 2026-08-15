@@ -40,12 +40,13 @@ import {
   initDb,
   DeviceGraphEdgeStore,
   RecipientStore,
-  AppKVStore
+  AppKVStore,
+  resetDb
 } from './db.js'
 
 import { EventRouter } from './event-router.js';
 
-export { initDb } from './db.js'
+export { initDb, resetDb } from './db.js'
 
 
 
@@ -485,7 +486,8 @@ export class SeptClient {
           payload.message,
           e.senderDeviceId,
           e.timestamp,
-          eventId
+          eventId,
+          e.sequence
         ]
 
         try {
@@ -790,5 +792,9 @@ export class SeptClient {
       keys: () => this.store.appKVStore.keys(namespace),
       all: () => this.store.appKVStore.all(namespace),
     }
+  }
+
+  resetDevice = async () => {
+    await resetDb(this.dbAdapter)
   }
 }

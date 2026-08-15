@@ -232,17 +232,6 @@ export class FmnetCli {
         this.stop()
         break
 
-      case "push-token":
-        this.fmnet.registerMobilePushToken("test2")
-        break
-      case "send-push":
-        this.fmnet.septClient.callRest("push-notification/dev_SEmjyB4knSQkMvcPhQ5dT3fPb06SzEFM",{
-          method: "POST",
-          body:{}
-        })
-        break
-
-
       default:
         this.warning(`Unknown command: ${command}`)
         this.log(`Type ${ui.title("help")} to list available commands.`)

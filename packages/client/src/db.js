@@ -8,19 +8,23 @@ import {
 import { deserializeBin, makeId, serializeBin, makeIdFromStr, serializeEvent } from '@sept/core';
 
 
+export async function resetDb(db) {
+  await db.write(`DROP TABLE network`);
+  await db.write(`DROP TABLE setting`);
+  await db.write(`DROP TABLE device`);
+  await db.write(`DROP TABLE event`);
+  await db.write(`DROP TABLE event_recipient`);
+  await db.write(`DROP TABLE device_graph_edge`);
+  await db.write(`DROP TABLE app_kv_store`);
+  await createTables(db)
+
+}
 
 export async function initDb(db, force = false) {
 
   if (force) {
     try {
-      await db.write(`DROP TABLE network`);
-      await db.write(`DROP TABLE setting`);
-      await db.write(`DROP TABLE device`);
-      await db.write(`DROP TABLE event`);
-      await db.write(`DROP TABLE event_recipient`);
-      await db.write(`DROP TABLE device_graph_edge`);
-      await db.write(`DROP TABLE app_kv_store`);
-
+      await resetDb(db)
       await db.write(`PRAGMA user_version = 0`);
     } catch { }
   }
@@ -33,6 +37,11 @@ export async function initDb(db, force = false) {
 
   await db.write(`PRAGMA user_version = 1`);
 
+  await createTables(db)
+
+}
+
+async function createTables(db) {
   await db.write(`
     CREATE TABLE IF NOT EXISTS network (
       id TEXT PRIMARY KEY NOT NULL,

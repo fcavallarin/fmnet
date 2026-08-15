@@ -13,8 +13,8 @@ cd $ROOT_DIR && npm install
 
 case "$TARGET" in
   cli|node)
-    cd "$ROOT_DIR/apps/fmnet/src/adapters/node" && npm install
-    mkdir "$ROOT_DIR/apps/fmnet/src/cli/data"
+    #cd "$ROOT_DIR/apps/fmnet/src/adapters/node" && npm install
+    mkdir "$ROOT_DIR/apps/fmnet/src/cli/data" || true
     ;;
   mobile|react-native)
     cd "$ROOT_DIR/apps/fmnet/src/mobile" && npm install

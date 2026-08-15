@@ -1,0 +1,10 @@
+{
+  "name": "@fmnet/core",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "main": "./src/fmnet.js",
+  "exports": {
+    ".": "./src/fmnet.js"
+  }
+}

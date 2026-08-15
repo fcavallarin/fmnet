@@ -1,7 +1,7 @@
 import { randomDigits } from "../../../packages/crypto/src/random.js";
-import { FMNet } from "../src/fmnet.js";
+import { FMNet } from "@fmnet/core";
 import Database from 'better-sqlite3';
-import { webRTCAdapter, TCPAdapter } from "../src/adapters/node/net-adapters.js";
+import { webRTCAdapter, TCPAdapter } from "@fmnet/node";
 
 function assert(cond, err) {
   if (!cond) {

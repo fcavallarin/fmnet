@@ -639,4 +639,8 @@ export class FMNet {
       body: { token }
     })
   }
+
+  async resetDevice() {
+    await this.septClient.resetDevice()
+  }
 }

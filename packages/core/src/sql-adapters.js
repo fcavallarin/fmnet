@@ -3,7 +3,13 @@
 class BaseSQLAdapter {
   constructor(openDb, closeDb) {
     this.openDb = openDb || async function () { };
-    this.closeDb = closeDb || async function () { };
+    this.closeDb = async function (db) {
+      if (closeDb) {
+        try {
+          await closeDb(db)
+        } catch { }
+      }
+    };
   }
   _snakeToCamel(str) {
     return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
@@ -121,18 +127,30 @@ export class ExpoSqliteAdapter extends BaseSQLAdapter {
 
   async read(sql, params = []) {
     const db = await this.openDb();
-    const rows = await db.getAllAsync(sql, params);
-    return rows.map(r => this.toObject(r));
+    try {
+      const rows = await db.getAllAsync(sql, params);
+      return rows.map(r => this.toObject(r));
+    } finally {
+      await this.closeDb(db);
+    }
   }
 
   async readOne(sql, params = []) {
     const db = await this.openDb();
-    const row = await db.getFirstAsync(sql, params);
-    return row ? this.toObject(row) : null;
+    try {
+      const row = await db.getFirstAsync(sql, params);
+      return row ? this.toObject(row) : null;
+    } finally {
+      await this.closeDb(db);
+    }
   }
 
   async write(sql, params = []) {
     const db = await this.openDb();
-    return db.runAsync(sql, params);
+    try {
+      return await db.runAsync(sql, params);
+    } finally {
+      await this.closeDb(db);
+    }
   }
 }

@@ -1,0 +1,8 @@
+{
+  "name": "fmnet-cli",
+  "type": "module",
+  "dependencies": {
+    "@fmnet/core": "*",
+    "@fmnet/node": "*"
+  }
+}

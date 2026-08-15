@@ -1,23 +1,14 @@
 {
-  "name": "node-sqlite-rest-cli",
-  "version": "1.0.0",
-  "description": "Node.js CLI that stores REST endpoint responses in SQLite",
+  "name": "fmnet-monorepo",
+  "private": true,
   "type": "module",
-  "bin": {
-    "rest-sqlite": "./src/cli.js"
-  },
-  "scripts": {
-    "start": "node ./src/cli.js",
-    "dev": "node ./src/cli.js --help"
-  },
   "dependencies": {
     "@sept/client": "*",
-    "@sept/core": "*",
-    "node-datachannel": "^0.32.3",
-    "terminal-kit": "^3.1.2"
+    "@sept/core": "*"
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "license": "MIT"
+  "workspaces": [
+    "packages/*",
+    "src/mobile",
+    "src/cli"
+  ]
 }

@@ -1,9 +1,11 @@
 {
-  "name": "node-adapters",
+  "name": "@fmnet/node",
   "version": "1.0.0",
   "description": "",
   "type": "module",
-
+  "exports": {
+    ".": "./src/index.js"
+  },
   "engines": {
     "node": ">=20"
   },
