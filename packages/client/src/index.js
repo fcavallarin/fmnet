@@ -1,6 +1,3 @@
-
-
-
 import { RestClient } from './rest.js';
 
 import {
@@ -71,8 +68,9 @@ export class SeptClient {
       "sept.policy.update",
       "sept.admin.grant",
       "sept.admin.revoke",
-
+      "sept.device.added",
     ]
+
     this.uiEvents = new EventBus([
       ...this.systemActions,
       "connection.open",
@@ -214,13 +212,14 @@ export class SeptClient {
       message
     }
     const payloadKey = randomBytes(32);
-    const encryptedPayload = serializeBin(encryptWithPayloadKey(payloadKey, canonicalJson(payload)))
+    const encryptedPayload = serializeBin(
+      encryptWithPayloadKey(payloadKey, canonicalJson(payload))
+    )
     const rcptDevices = await deviceStore.getMulti(dstDeviceIds)
 
     const recipients = []
     for (const rcptDevice of rcptDevices) {
       if (rcptDevice.cryptPublicKey) {
-        // console.log(deviceId, rcptDevice.id, payload.type)
         const policyOk = await this.checkPolicy(deviceId, rcptDevice.id, payload.type)
         if (!policyOk) {
           throw new Error(`Device ${deviceId} not allowed to perform action '${payload.type}'`)
@@ -279,7 +278,7 @@ export class SeptClient {
     const networkId = (await networkStore.get()).id;
     const localDevice = await this.getDeviceData()
     const pin = randomDigits(4)
-
+    const admins = await this.store.device.getAdmins()
     await this._callRest("devices/create-pairing", {
       method: "POST",
       body: {
@@ -294,10 +293,11 @@ export class SeptClient {
             deserializeBin(deviceData.cryptPublicKey),
             new TextEncoder().encode(canonicalJson({
               networkId,
-              // @TODO this should be the list of the adminS deviceS
-              rootDeviceId: localDevice.deviceId,
-              rootDeviceSignPublicKey: serializeBin(localDevice.signPublicKey),
-              rootDeviceCryptPublicKey: serializeBin(localDevice.cryptPublicKey),
+              rootDevices: admins.map(d => ({
+                deviceId: d.id,
+                signPublicKey: serializeBin(d.signPublicKey),
+                cryptPublicKey: serializeBin(d.cryptPublicKey),
+              })),
               metadata: metadata || {}
             })
             ))
@@ -317,7 +317,7 @@ export class SeptClient {
         )
       }
     });
-  
+
     const pollPairing = async () => {
       for (let pairingTime = 0; pairingTime < pairingTimeout; pairingTime++) {
         await new Promise(resolve => setTimeout(resolve, 1000))
@@ -338,18 +338,27 @@ export class SeptClient {
           if (pairedDevice.deviceId !== deviceData.deviceId) {
             continue
           }
-
-          await this.store.device.import({
+          const newDeviceData = {
             id: pairedDevice.deviceId,
             networkId: pairedDevice.networkId,
             signPublicKey: deserializeBin(pairedDevice.signPublicKey),
             cryptPublicKey: deserializeBin(pairedDevice.cryptPublicKey),
-          })
+          }
+          await this.store.device.import(newDeviceData)
 
           await this._callRest(
             `paired-devices/${deviceData.deviceId}`,
             { method: "DELETE" }
           )
+          const admins = await this.store.device.getAdmins()
+          const recipients = admins.filter(d => d.id !== localDevice.deviceId).map(d => d.id)
+          if(recipients.length > 0){
+            await this.sendEvent(
+              "sept.device.added",
+              newDeviceData,
+              recipients
+            )
+          }
 
           await onPaired?.(deviceData.deviceId, pairedDevice.metadata)
           return
@@ -359,7 +368,7 @@ export class SeptClient {
       await onPairingTimeout?.(deviceData.deviceId)
     }
 
-    pollPairing()
+    void pollPairing()
 
     return pin
   };
@@ -380,10 +389,8 @@ export class SeptClient {
     // The relay is the source of truth for whether this pairing was created by an admin.
     // After accepting the pairing, rootDeviceSignPublicKey becomes the local trust anchor.
     const {
-      rootDeviceId,
       networkId,
-      rootDeviceSignPublicKey,
-      rootDeviceCryptPublicKey,
+      rootDevices,
       metadata
     } = pairingData;
 
@@ -395,12 +402,14 @@ export class SeptClient {
     )
     await this.store.settings.delete("deviceSignPublicKey")
     await this.store.settings.delete("deviceCryptPublicKey")
-    await this.store.device.import({
-      id: rootDeviceId,
-      networkId,
-      signPublicKey: deserializeBin(rootDeviceSignPublicKey),
-      cryptPublicKey: deserializeBin(rootDeviceCryptPublicKey),
-    }, "admin")
+    for(const adm of rootDevices){
+      await this.store.device.import({
+        id: adm.deviceId,
+        networkId,
+        signPublicKey: deserializeBin(adm.signPublicKey),
+        cryptPublicKey: deserializeBin(adm.cryptPublicKey),
+      }, "admin")
+    }
 
     return metadata
   }
@@ -411,8 +420,8 @@ export class SeptClient {
     const cryptKeys = await generateEncryptionKeypair();
     await settingsStore.set("deviceSignPrivateKey", serializeBin(signKeys.privateKey));
     await settingsStore.set("deviceSignPublicKey", serializeBin(signKeys.publicKey));
-    await settingsStore.set("deviceCryptPrivateKey", serializeBin(cryptKeys.privateKey));
-    await settingsStore.set("deviceCryptPublicKey", serializeBin(cryptKeys.publicKey));
+    await settingsStore.set("deviceCryptPrivateKey", serializeBin(cryptKeys.privateKey), true);
+    await settingsStore.set("deviceCryptPublicKey", serializeBin(cryptKeys.publicKey), true);
     const settings = await settingsStore.get()
 
     const deviceId = makeId("dev", deserializeBin(settings.deviceSignPublicKey));
@@ -490,10 +499,10 @@ export class SeptClient {
       const existing = await this.store.event.get(e.eventId)
       if (existing) {
         if (existing.isOutgoing) {
-          // Evnets sent to mysqlf have isOutgoing = true and isIncoming=true
+          // Evnets sent to myself have isOutgoing = true and isIncoming=true
           await this.store.event.update(e.eventId, { isIncoming: true })
         } else {
-          // The error here may be caused by en event already received bu not acked
+          // The error here may be caused by en event already received but not acked
           throw new Error("Unexpected error 234")
           // await this.ackEvents([e.eventId])
           // continue

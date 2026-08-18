@@ -39,6 +39,13 @@ export class DeviceStore extends BaseStore {
     return devices.map(d => this.deserialize(d));
   }
 
+  async getAdmins() {
+    const qry = `SELECT * from device where revoked_at is null and role = 'admin'`
+    const devices = await this.db.read(qry)
+    return devices.map(d => this.deserialize(d));
+  }
+
+
   async add(networkId, signPublicKey, cryptPublicKey, role = "user") {
     const id = makeId("dev", signPublicKey);
     const { fields, values, placeholders } = this.getQryParts({
