@@ -1,14 +1,9 @@
 {
-  "name": "fmnet-monorepo",
+  "name": "fmnet",
   "private": true,
   "type": "module",
   "dependencies": {
     "@sept/client": "*",
     "@sept/core": "*"
-  },
-  "workspaces": [
-    "packages/*",
-    "src/mobile",
-    "src/cli"
-  ]
+  }
 }

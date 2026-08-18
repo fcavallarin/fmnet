@@ -41,12 +41,10 @@ import {
   DeviceGraphEdgeStore,
   RecipientStore,
   AppKVStore,
-  resetDb
-} from './db.js'
+  resetDb,
+} from './stores/index.js'
 
 import { EventRouter } from './event-router.js';
-
-export { initDb, resetDb } from './db.js'
 
 
 
@@ -785,12 +783,59 @@ export class SeptClient {
   // for applications that need small persistent state without owning
   // another cross-platform storage adapter.
   appStorage = (namespace) => {
+    const q = new AsyncQueue(async i => {
+      const { key, value, action, resolve, reject } = i
+
+      try {
+        switch (action) {
+          case "get":
+            resolve(await this.store.appKVStore.get(namespace, key))
+            break
+
+          case "set": {
+            const newValue = typeof value === "function"
+              ? await value(
+                await this.store.appKVStore.get(namespace, key)
+              )
+              : value
+
+            await this.store.appKVStore.set(namespace, key, newValue)
+            resolve()
+            break
+          }
+
+          case "delete":
+            await this.store.appKVStore.delete(namespace, key)
+            resolve()
+            break
+
+          case "keys":
+            resolve(await this.store.appKVStore.keys(namespace))
+            break
+
+          case "all":
+            resolve(await this.store.appKVStore.all(namespace))
+            break
+
+          default:
+            throw new Error(`Unknown appStorage action: ${action}`)
+        }
+      } catch (err) {
+        reject(err)
+      }
+    })
+
+    const enqueue = (action, key, value) =>
+      new Promise((resolve, reject) => {
+        q.push({ action, key, value, resolve, reject })
+      })
+
     return {
-      get: key => this.store.appKVStore.get(namespace, key),
-      set: (key, value) => this.store.appKVStore.set(namespace, key, value),
-      delete: key => this.store.appKVStore.delete(namespace, key),
-      keys: () => this.store.appKVStore.keys(namespace),
-      all: () => this.store.appKVStore.all(namespace),
+      get: key => enqueue("get", key),
+      set: (key, value) => enqueue("set", key, value),
+      delete: key => enqueue("delete", key),
+      keys: () => enqueue("keys"),
+      all: () => enqueue("all"),
     }
   }
 
