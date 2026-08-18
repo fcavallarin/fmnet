@@ -65,7 +65,10 @@ CREATE TABLE IF NOT EXISTS device_pairing (
   sender_crypt_public_key TEXT NOT NULL,
   sign_public_key TEXT NOT NULL,
   encrypted_payload TEXT NOT NULL,
+  encrypted_admin_payload TEXT NOT NULL,
   created_at INTEGER NOT NULL,
+  redeemed_at INTEGER,
+  FOREIGN KEY (network_id) REFERENCES network(id),
   UNIQUE(device_id, pin)
 );
 

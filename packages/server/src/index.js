@@ -1,6 +1,6 @@
 import { json, route } from './lib/http.js';
 import { bootstrap } from './routes/bootstrap.js';
-import { addDevice, createPairing, getPairing, listDevices, setAdmin } from './routes/devices.js';
+import { addDevice, createPairing, getPairing, getPairedDevices, deletePairedDevice, setAdmin } from './routes/devices.js';
 import { createEvent, listEvents, ackEvents } from './routes/event.js';
 import { relayConnect, relayGetTicket } from './routes/relay.js';
 import { DORelay } from "./do-relay.js";
@@ -25,8 +25,10 @@ const eventBus = new EventBus([
 
 const ROUTES = [
   { method: 'POST', path: '/bootstrap', handler: bootstrap },
-  { method: 'POST', path: '/devices', handler: addDevice },
-  { method: 'GET', path: '/devices', handler: listDevices },
+  // { method: 'POST', path: '/devices', handler: addDevice },
+  // { method: 'GET', path: '/devices', handler: listDevices },
+  { method: 'GET', path: '/paired-devices', handler: getPairedDevices },
+  { method: 'DELETE', path: '/paired-devices/:deviceId', handler: deletePairedDevice },
   { method: 'POST', path: '/event', handler: createEvent },
   { method: 'GET', path: '/events', handler: listEvents },
   { method: 'PATCH', path: '/events', handler: ackEvents },

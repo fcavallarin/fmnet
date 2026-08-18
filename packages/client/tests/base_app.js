@@ -56,9 +56,9 @@ export class BaseSeptApp {
     })
 
 
-    this.septClient.on("export.device", async deviceData => {
-      writeJsonFile(`./data/cl-${this.clientName}.json`, deviceData)
-    })
+    // this.septClient.on("export.device", async deviceData => {
+    //   writeJsonFile(`./data/cl-${this.clientName}.json`, deviceData)
+    // })
 
     this.septClient.on("policy.update", async deviceData => {
       const deviceId = await this.septClient.getDeviceId()
@@ -97,17 +97,17 @@ export class BaseSeptApp {
   };
 
 
-  async addDevice(clientName) {
-    const deviceData = readJsonFile(`./data/cl-${clientName}.json`)
+  async addDevice(deviceData, metadata, onPaired, onPairingTimeout) {
+    // const deviceData = readJsonFile(`./data/cl-${clientName}.json`)
     // console.log(deviceData)
     return await this.septClient.addDevice(
-      deviceData
+      deviceData, metadata, onPaired, onPairingTimeout
     )
   };
 
 
   async initDevice() {
-    await this.septClient.initDevice();
+    return await this.septClient.initDevice();
   };
 
   async getPairing(pin) {

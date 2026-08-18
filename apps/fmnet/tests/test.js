@@ -82,7 +82,7 @@ class FMnetTest {
     console.log(`Device2 added`)
     await this.appDevice2.getPairing(pin2)
     console.log(`Device 2 paired`)
-
+    await sleep(2000)
     this.appAdminDeviceId = await this.appAdmin.getDeviceId()
     this.appDevice1DeviceId = await this.appDevice1.getDeviceId()
     this.appDevice2DeviceId = await this.appDevice2.getDeviceId()

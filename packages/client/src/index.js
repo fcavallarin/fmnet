@@ -273,7 +273,7 @@ export class SeptClient {
     await this.store.event.setSequence(eventId, sequence)
   };
 
-  async addDevice(deviceData, metadata) {
+  async addDevice(deviceData, metadata, onPaired, onPairingTimeout, pairingTimeout = 60,) {
 
     const networkStore = this.store.network
     const networkId = (await networkStore.get()).id;
@@ -301,16 +301,66 @@ export class SeptClient {
               metadata: metadata || {}
             })
             ))
+        ),
+        encryptedAdminPayload: serializeBin(
+          encryptAsymmetric(
+            localDevice.cryptPrivateKey,
+            localDevice.cryptPublicKey,
+            new TextEncoder().encode(canonicalJson({
+              deviceId: deviceData.deviceId,
+              networkId,
+              signPublicKey: deviceData.signPublicKey,
+              cryptPublicKey: deviceData.cryptPublicKey,
+              metadata: metadata || {}
+            })
+            ))
         )
       }
     });
+  
+    const pollPairing = async () => {
+      for (let pairingTime = 0; pairingTime < pairingTimeout; pairingTime++) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
 
-    await this.store.device.import({
-      id: deviceData.deviceId,
-      networkId,
-      signPublicKey: deserializeBin(deviceData.signPublicKey),
-      cryptPublicKey: deserializeBin(deviceData.cryptPublicKey)
-    })
+        const r = await this._callRest("paired-devices")
+
+        for (const d of r.json.devices) {
+          const pairedDevice = JSON.parse(
+            new TextDecoder().decode(
+              decryptAsymmetric(
+                localDevice.cryptPrivateKey,
+                localDevice.cryptPublicKey,
+                deserializeBin(d.encryptedPayload),
+              )
+            )
+          )
+
+          if (pairedDevice.deviceId !== deviceData.deviceId) {
+            continue
+          }
+
+          await this.store.device.import({
+            id: pairedDevice.deviceId,
+            networkId: pairedDevice.networkId,
+            signPublicKey: deserializeBin(pairedDevice.signPublicKey),
+            cryptPublicKey: deserializeBin(pairedDevice.cryptPublicKey),
+          })
+
+          await this._callRest(
+            `paired-devices/${deviceData.deviceId}`,
+            { method: "DELETE" }
+          )
+
+          await onPaired?.(deviceData.deviceId, pairedDevice.metadata)
+          return
+        }
+      }
+
+      await onPairingTimeout?.(deviceData.deviceId)
+    }
+
+    pollPairing()
+
     return pin
   };
 
@@ -555,7 +605,7 @@ export class SeptClient {
         this.uiEvents.dispatch("connection.open", {})
         console.log("connected to websocket");
         this.wsStatus = "connected"
-        resolve()
+        this.sync().then(resolve)
       });
 
       this.ws.addEventListener("message", (event) => {
@@ -845,5 +895,9 @@ export class SeptClient {
 
   resetDevice = async () => {
     await resetDb(this.dbAdapter)
+  }
+
+  getDevices = async () => {
+    return await this.store.device.getAll()
   }
 }

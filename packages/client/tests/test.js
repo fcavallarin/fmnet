@@ -22,9 +22,14 @@ class SeptTest {
     await this.appAdmin.bootstrap()
     console.log(`Bootstrap done`)
 
-    await this.appDevice1.initDevice()
+    const deviceData1 = await this.appDevice1.initDevice()
     console.log(`Init device1 done`)
-    const pin1 = await this.appAdmin.addDevice(this.appDevice1.clientName)
+    // const pin1 = await this.appAdmin.addDevice(this.appDevice1.clientName)
+    let d1Paired, d2Paired
+    const d1P = new Promise(resolve => d1Paired = resolve)
+    const d2P = new Promise(resolve => d2Paired = resolve)
+
+    const pin1 = await this.appAdmin.addDevice(deviceData1, {}, d1Paired)
     console.log(`Device1 added`)
     let pairingFailed = false
     try {
@@ -34,15 +39,19 @@ class SeptTest {
     }
     assert(pairingFailed, "Pairing PIN check failed")
     await this.appDevice1.getPairing(pin1)
+    await d1P
     console.log(`Device 1 paired with pin ${pin1}`)
 
 
-    await this.appDevice2.initDevice()
+    const deviceData2 = await this.appDevice2.initDevice()
     console.log(`Init device2 done`)
-    const pin2 = await this.appAdmin.addDevice(this.appDevice2.clientName)
+    const pin2 = await this.appAdmin.addDevice(deviceData2, {}, d2Paired)
     console.log(`Device2 added`)
     await this.appDevice2.getPairing(pin2)
+    await d2P
     console.log(`Device 2 paired`)
+    const aDevices = await this.appAdmin.septClient.getDevices();
+    assert(aDevices.length == 3, `aDevices len = ${aDevices.length}`)
 
     this.appAdminDeviceId = await this.appAdmin.getDeviceId()
     this.appDevice1DeviceId = await this.appDevice1.getDeviceId()
@@ -298,7 +307,7 @@ class SeptTest {
     await this.appDevice2.sync()
     try {
       console.log("> Ignore message below:")
-     await this.appDevice2.sendEvent("message", `${testId}-1`, [this.appAdminDeviceId])
+      await this.appDevice2.sendEvent("message", `${testId}-1`, [this.appAdminDeviceId])
     } catch { }
     await this.appAdmin.sync()
     adminMessages = await this.appAdmin.getStoredActions({
@@ -328,13 +337,13 @@ class SeptTest {
     d1Data = await this.appDevice1.getDeviceData()
     assert(!d1Data.isAdmin, "Device1 should be NOT admin")
     let failed = false
-    try{
+    try {
       await this.appDevice1.grant(
         this.appDevice2DeviceId,
         this.appAdminDeviceId,
         ["message"]
       )
-    }catch{
+    } catch {
       failed = true
     }
 
@@ -344,7 +353,7 @@ class SeptTest {
     assert(d1DataOfD2.role !== "admin", "Device1 should NOT be admin on Device2")
   }
 
-  async test_app_storage(testId){
+  async test_app_storage(testId) {
     const st = this.appAdmin.septClient.appStorage("test")
     await st.set("test1", "value 1")
     await st.set("test2", "value 2")
