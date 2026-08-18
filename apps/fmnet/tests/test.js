@@ -90,21 +90,17 @@ class FMnetTest {
     await this.appAdmin.grant(
       this.appDevice1Name,
       this.appDevice2Name,
-      "message",
-      // {
-      //   srcName: this.appDevice1Name,
-      //   dstName: this.appDevice2Name,
-      // }
+      ["message"],
     );
 
     await this.appAdmin.grant(
       this.appDevice1Name,
       this.appAdminName,
-      "message",
-      {
-        srcName: this.appDevice1Name,
-        dstName: this.appAdminName,
-      }
+      ["message"],
+      // {
+      //   srcName: this.appDevice1Name,
+      //   dstName: this.appAdminName,
+      // }
     );
     console.log(`Policy updated`)
 
@@ -209,7 +205,7 @@ class FMnetTest {
     await this.appAdmin.revoke(
       this.appDevice1Name,
       this.appAdminName,
-      "message",
+      ["message"],
     );
     await this.appDevice1.sync()
 
@@ -336,7 +332,7 @@ class FMnetTest {
     await this.appDevice2.relayDisconnect()
   }
 
-  async test_shutdown(testId){
+  async test_shutdown(testId) {
     await this.appAdmin.shutdown()
     await this.appDevice1.shutdown()
     await this.appDevice2.shutdown()

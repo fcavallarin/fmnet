@@ -52,6 +52,12 @@ export class DeviceHandler extends BaseHandler {
         await this.fmnet.revokeChat(args[1], args[2])
         break
 
+      case 'grant-admin':
+        await this.fmnet.grantAdmin(args[1])
+        break
+      case 'revoke-admin':
+        await this.fmnet.revokeAdmin(args[1])
+        break
 
       default:
         this.cli.log("Usage:")

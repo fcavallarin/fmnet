@@ -51,7 +51,7 @@ class SeptTest {
     await this.appAdmin.grant(
       this.appDevice1DeviceId,
       this.appDevice2DeviceId,
-      "message"
+      ["message"]
     );
     console.log(`Policy updated`)
 
@@ -118,7 +118,7 @@ class SeptTest {
     await this.appAdmin.revoke(
       this.appDevice2DeviceId,
       this.appDevice1DeviceId,
-      "message"
+      ["message"]
     );
     console.log(`Policy updated`)
 
@@ -179,7 +179,7 @@ class SeptTest {
       await this.appDevice1.grant(
         this.appDevice2DeviceId,
         this.appDevice1DeviceId,
-        "message"
+        ["message"]
       );
     } catch {
       return
@@ -191,7 +191,7 @@ class SeptTest {
     await this.appAdmin.grant(
       this.appDevice1DeviceId,
       this.appAdminDeviceId,
-      "message"
+      ["message"]
     );
     console.log(`Policy updated`)
 
@@ -216,7 +216,7 @@ class SeptTest {
     await this.appAdmin.grant(
       this.appDevice1DeviceId,
       this.appDevice1DeviceId,
-      "message"
+      ["message"]
     );
     await this.appDevice1.sync()
     await this.appDevice1.sendEvent("message", testId, [this.appDevice1DeviceId])
@@ -310,7 +310,7 @@ class SeptTest {
     await this.appDevice1.grant(
       this.appDevice2DeviceId,
       this.appAdminDeviceId,
-      "message"
+      ["message"]
     )
     await this.appDevice2.sync()
     await this.appAdmin.sync()
@@ -332,7 +332,7 @@ class SeptTest {
       await this.appDevice1.grant(
         this.appDevice2DeviceId,
         this.appAdminDeviceId,
-        "message"
+        ["message"]
       )
     }catch{
       failed = true

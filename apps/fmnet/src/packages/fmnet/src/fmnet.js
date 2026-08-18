@@ -429,10 +429,10 @@ export class FMNet {
     return await this.septClient.getStoredActions(filters)
   }
 
-  async grant(srcName, dstName, action, metadata = {}) {
+  async grant(srcName, dstName, actions, metadata = {}) {
     for (const s of await this.identityStore.getByName(srcName)) {
       for (const d of await this.identityStore.getByName(dstName)) {
-        return await this.septClient.grant(s, d, action, {
+        return await this.septClient.grant(s, d, actions, {
           srcName,
           dstName,
           ...metadata
@@ -441,11 +441,23 @@ export class FMNet {
     }
   }
 
-  async revoke(srcName, dstName, action, metadata) {
+  async revoke(srcName, dstName, actions, metadata) {
     for (const s of await this.identityStore.getByName(srcName)) {
       for (const d of await this.identityStore.getByName(dstName)) {
-        return await this.septClient.revoke(s, d, action, metadata)
+        return await this.septClient.revoke(s, d, actions, metadata)
       }
+    }
+  }
+
+  async grantAdmin(name){
+    for (const d of await this.identityStore.getByName(name)) {
+      await this.septClient.grantAdmin(d)
+    }
+  }
+
+  async revokeAdmin(name){
+    for (const d of await this.identityStore.getByName(name)) {
+      await this.septClient.revokeAdmin(d)
     }
   }
 
@@ -555,36 +567,36 @@ export class FMNet {
   }
 
   async grantChat(srcName, dstName) {
-    await this.grant(srcName, dstName, "message")
-    await this.grant(dstName, srcName, "message")
+    await this.grant(srcName, dstName, ["message"])
+    await this.grant(dstName, srcName, ["message"])
   }
 
   async revokeChat(srcName, dstName) {
-    await this.revoke(srcName, dstName, "message")
-    await this.revoke(dstName, srcName, "message")
+    await this.revoke(srcName, dstName, ["message"])
+    await this.revoke(dstName, srcName, ["message"])
   }
 
 
   async grantDataChannel(srcName, dstName) {
-    await this.grant(srcName, dstName, "datachannel")
-    await this.grant(dstName, srcName, "datachannel")
+    await this.grant(srcName, dstName, ["datachannel"])
+    await this.grant(dstName, srcName, ["datachannel"])
   }
 
   async grantTcpTunnel(srcName, dstName) {
     await this.assertPermission(srcName, dstName, "datachannel")
     await this.assertPermission(dstName, srcName, "datachannel")
-    await this.grant(srcName, dstName, "tcptunnel.egress")
-    await this.grant(dstName, srcName, "tcptunnel.ingress")
+    await this.grant(srcName, dstName, ["tcptunnel.egress"])
+    await this.grant(dstName, srcName, ["tcptunnel.ingress"])
   }
 
   async revokeDataChannel(srcName, dstName) {
-    await this.revoke(srcName, dstName, "datachannel")
-    await this.revoke(dstName, srcName, "datachannel")
+    await this.revoke(srcName, dstName, ["datachannel"])
+    await this.revoke(dstName, srcName, ["datachannel"])
   }
 
   async revokeTcpTunnel(srcName, dstName) {
-    await this.revoke(srcName, dstName, "tcptunnel.egress")
-    await this.revoke(dstName, srcName, "tcptunnel.ingress")
+    await this.revoke(srcName, dstName, ["tcptunnel.egress"])
+    await this.revoke(dstName, srcName, ["tcptunnel.ingress"])
   }
 
   getActiveTcpTunnels() {
@@ -643,4 +655,5 @@ export class FMNet {
   async resetDevice() {
     await this.septClient.resetDevice()
   }
+
 }

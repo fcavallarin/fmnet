@@ -710,23 +710,27 @@ export class SeptClient {
     return await this.store.event.filter(filters);
   }
 
-  async grant(srcDeviceId, dstDeviceId, action, metadata) {
+  async grant(srcDeviceId, dstDeviceId, actions, metadata) {
     const policy = await this.getPolicy(srcDeviceId, dstDeviceId);
     const allowedActions = [...(policy?.allowedActions || [])]
-    if (!allowedActions.includes(action)) {
-      allowedActions.push(action);
+    for (const action of actions) {
+      if (!allowedActions.includes(action)) {
+        allowedActions.push(action);
+      }
     }
     await this.updatePolicy(srcDeviceId, dstDeviceId, allowedActions, metadata);
   }
 
-  async revoke(srcDeviceId, dstDeviceId, action, metadata) {
+  async revoke(srcDeviceId, dstDeviceId, actions, metadata) {
     const policy = await this.getPolicy(srcDeviceId, dstDeviceId);
     const allowedActions = [...(policy?.allowedActions || [])]
-    if (allowedActions.includes(action)) {
-      allowedActions.splice(
-        allowedActions.indexOf(action),
-        1
-      );
+    for (const action of actions) {
+      if (allowedActions.includes(action)) {
+        allowedActions.splice(
+          allowedActions.indexOf(action),
+          1
+        );
+      }
     }
     await this.updatePolicy(srcDeviceId, dstDeviceId, allowedActions, metadata);
   }
