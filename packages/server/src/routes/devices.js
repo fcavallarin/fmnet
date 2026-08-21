@@ -47,8 +47,18 @@ export async function createPairing(request, env, params) {
   const db = new D1Adapter(() => env.DB)
   const rows = await db.write(
     `INSERT INTO device_pairing 
-    (device_id, network_id, sign_public_key, pin, sender_crypt_public_key, encrypted_payload, encrypted_admin_payload, created_at)
-    values (?, ? ,?, ?, ?, ?, ?, ?)
+    (
+      device_id,
+      network_id,
+      sign_public_key,
+      pin,
+      sender_crypt_public_key,
+      encrypted_payload,
+      encrypted_admin_payload,
+      initiator_device_id,
+      created_at
+    )
+    values (?, ? ,?, ?, ?, ?, ?, ?, ?)
     `
     , [
       body.id,
@@ -58,6 +68,7 @@ export async function createPairing(request, env, params) {
       body.senderPublicCryptKey,
       body.encryptedPayload,
       body.encryptedAdminPayload,
+      auth.deviceId,
       now()
     ]);
 
@@ -120,8 +131,9 @@ export async function getPairedDevices(request, env, params) {
     `SELECT *
      FROM device_pairing
      WHERE network_id = ?
-     AND redeemed_at IS NOT NULL`
-    , [auth.networkId]
+     AND redeemed_at IS NOT NULL
+     AND initiator_device_id = ?`
+    , [auth.networkId, auth.deviceId]
   )
 
   const devices = pairingData.map(d => ({
@@ -137,7 +149,11 @@ export async function deletePairedDevice(request, env, params) {
     throw httpError(404, "Unauthorized")
   }
   const db = new D1Adapter(() => env.DB)
-  await db.write(`DELETE from device_pairing where network_id = ? AND device_id = ?`, [auth.networkId, params.deviceId])
+  await db.write(`
+    DELETE from device_pairing where network_id = ?
+    AND device_id = ?
+    AND initiator_device_id = ?
+    `, [auth.networkId, params.deviceId, auth.deviceId])
   return json({ ok: true });
 }
 

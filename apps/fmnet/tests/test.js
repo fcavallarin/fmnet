@@ -233,7 +233,6 @@ class FMnetTest {
 
 
   async test_get_new_messages(testId) {
-
     let newMessages
     await this.sent_mess_and_assert("Device1", "Device2", testId)
     newMessages = await this.appDevice2.getNewMessages()
@@ -244,6 +243,23 @@ class FMnetTest {
     newMessages = await this.appDevice2.getNewMessages()
     assert(newMessages.length === 1, "No new messages 2 " + JSON.stringify(newMessages))
 
+  }
+
+  async test_get_new_messages2(testId) {
+    let newMessages
+    await this.appDevice2.appState.set("unreads", {})
+    await this.sent_mess_and_assert("Device1", "Device2", testId)
+    await this.sent_mess_and_assert("Device1", "Device2", `${testId}-1`)
+    const contacts = await this.appDevice2.getContacts()
+    assert(contacts[0].name == this.appDevice1Name && contacts[0].unreads_number === 2, `Contacts without unreads`)
+    newMessages = await this.appDevice2.appState.get("unreads")
+    assert(newMessages[this.appDevice1DeviceId].length === 2, "No unread messages")
+    await this.appDevice2.setMessageAsRead(newMessages[this.appDevice1DeviceId][0])
+    newMessages = await this.appDevice2.appState.get("unreads")
+    assert(newMessages[this.appDevice1DeviceId].length === 1, "No unread messages 2")
+    await this.appDevice2.setMessageAsRead(newMessages[this.appDevice1DeviceId][0])
+    newMessages = await this.appDevice2.appState.get("unreads")
+    assert(!(this.appDevice1DeviceId in newMessages), "Still unread messages")
   }
 
   async test_tunnel(testId) {

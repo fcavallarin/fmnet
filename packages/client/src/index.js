@@ -68,7 +68,7 @@ export class SeptClient {
       "sept.policy.update",
       "sept.admin.grant",
       "sept.admin.revoke",
-      "sept.device.added",
+      "sept.device.added",  // Device added to the network, only admins will get this event
     ]
 
     this.uiEvents = new EventBus([
@@ -77,7 +77,7 @@ export class SeptClient {
       "connection.close",
       "connection.error",
       "connection.message",
-      "export.device",
+      // "export.device",
     ])
 
     this.actions = {}
@@ -432,7 +432,7 @@ export class SeptClient {
       signPublicKey: settings.deviceSignPublicKey,
       cryptPublicKey: settings.deviceCryptPublicKey,
     };
-    this.uiEvents.dispatch("export.device", deviceData)
+    // this.uiEvents.dispatch("export.device", deviceData)`
     return deviceData;
   };
 
@@ -593,7 +593,7 @@ export class SeptClient {
     await this.handleEvents(call.json.events)
   };
 
-  async relayConnect() { // @TODO make it a promise that resolves on connect
+  async relayConnect() { // @TODO rename to connect()
     const settings = await this.store.settings.get()
     const networkId = await this.getNetworkId()
     const purl = new URL(this.restEndpoint);

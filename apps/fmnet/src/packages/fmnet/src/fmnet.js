@@ -11,7 +11,7 @@ export class FMNet {
     this.options = options;
     this.dcSessions = new Map()
     this.tcpTunnels = new Map()
-    this.eventBus = new EventBus(["message"])
+    this.eventBus = new EventBus(["message", "policy.update", "device.added"])
     this.tcpTunnelStatus = {
       REQUESTED: "requested",
       EGRESS_RUNNING: "egressRunning",
@@ -43,12 +43,12 @@ export class FMNet {
     this.tcpAdapter = this.options.tcpAdapter
 
     await this.registerDataChannelService()
-    this.septClient.on("export.device", async deviceData => {
-      if (this.options?.onExportDevice) {
-        this.options.onExportDevice(deviceData)
-        return
-      }
-    })
+    // this.septClient.on("export.device", async deviceData => {
+    //   if (this.options?.onExportDevice) {
+    //     this.options.onExportDevice(deviceData)
+    //     return
+    //   }
+    // })
 
     this.septClient.on("policy.update", async deviceData => {
       const deviceId = await this.septClient.getDeviceId()
@@ -59,11 +59,27 @@ export class FMNet {
       if (deviceData.dstDeviceId === deviceId && deviceData.metadata.srcName) {
         await this.identityStore.set(deviceData.srcDeviceId, deviceData.metadata.srcName)
       }
+
+      this.eventBus.dispatch("policy.update", deviceData)
+    })
+
+    // Device added to the network, only admins will get this event
+    this.septClient.on("device.added", async deviceData => {
+      this.eventBus.dispatch("device.added", deviceData)
     })
 
     this.septClient.register(
       "message", async (data, sender, timestamp, eventId) => {
         const senderName = await this.identityStore.getByDevice(sender)
+        await this.appState.set("unreads", cur => {
+          const next = cur ? { ...cur } : {}
+          if (next[sender]) {
+            next[sender].push(eventId)
+          } else {
+            next[sender] = [eventId]
+          }
+          return next
+        })
         this.eventBus.dispatch("message", {
           message: data,
           sender: senderName,
@@ -449,13 +465,13 @@ export class FMNet {
     }
   }
 
-  async grantAdmin(name){
+  async grantAdmin(name) {
     for (const d of await this.identityStore.getByName(name)) {
       await this.septClient.grantAdmin(d)
     }
   }
 
-  async revokeAdmin(name){
+  async revokeAdmin(name) {
     for (const d of await this.identityStore.getByName(name)) {
       await this.septClient.revokeAdmin(d)
     }
@@ -471,7 +487,7 @@ export class FMNet {
     await this.septClient.sendEvent(eventName, data, dstDevices)
   }
 
-  async getNewMessages() {
+  async getNewMessages() {  // @TODO deprecated
     const lastSequence = await this.appState.get("lastSequence")
 
     const filters = {
@@ -531,6 +547,51 @@ export class FMNet {
       })
     }
     return ret
+  }
+
+  setMessageAsRead = async (eventId) => {
+    await this.appState.set("unreads", cur => {
+      if (!cur) return {}
+      for (const sender in cur) {
+        const idx = cur[sender].indexOf(eventId)
+        if (idx > -1) {
+          cur[sender].splice(idx, 1)
+          if (cur[sender].length === 0) {
+            delete cur[sender]
+          }
+          return cur
+        }
+      }
+      return cur
+    })
+  }
+
+  getContacts = async () => {
+    const graph = await this.getDeviceGraph()
+    const contacts = {}
+    const deviceId = await this.getDeviceId()
+
+    for (const g of graph) {
+      if (g.dstDeviceId === deviceId && g.policy.allowedActions.includes("message")) {
+        const i = await this.getDeviceIdentity(g.srcDeviceId)
+        contacts[i.name] = { unreads_number: 0, unreads: [] }
+      }
+    }
+
+    const unreads = await this.appState.get("unreads")
+    for (const u in unreads) {
+      const i = await this.getDeviceIdentity(u)
+      contacts[i.name].unreads = unreads[u]
+      contacts[i.name].unreads_number = unreads[u].length
+    }
+    const contactList = []
+    for (const c in contacts) {
+      contactList.push({
+        name: c,
+        ...contacts[c]
+      })
+    }
+    return contactList
   }
 
   async assertPermission(srcName, dstName, perm) {
