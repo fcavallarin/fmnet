@@ -20,8 +20,12 @@ export class DeviceGraphEdgeStore extends BaseStore {
   async get(srcDeviceId, dstDeviceId) {
     return this.deserialize(
       await this.db.readOne(
-        `SELECT * from device_graph_edge where src_device_id = ? and dst_device_id = ?`,
-        [srcDeviceId, dstDeviceId])
+        `
+        SELECT * from device_graph_edge where src_device_id = ? and dst_device_id = ?
+        AND EXISTS (select 1 from device where id = ? and revoked_at is null)
+        AND EXISTS (select 1 from device where id = ? and revoked_at is null)
+        `,
+        [srcDeviceId, dstDeviceId, srcDeviceId, dstDeviceId])
     );
   }
 
@@ -42,7 +46,16 @@ export class DeviceGraphEdgeStore extends BaseStore {
   }
 
   async getGraph() {
-    const graph = await this.db.read("SELECT * FROM device_graph_edge");
+    const graph = await this.db.read(`
+      SELECT e.*
+      FROM device_graph_edge e
+      JOIN device src
+        ON src.id = e.src_device_id
+        AND src.revoked_at IS NULL
+      JOIN device dst
+        ON dst.id = e.dst_device_id
+        AND dst.revoked_at IS NULL
+    `);
     return graph.map(edge => this.deserialize(edge));
   }
 }

@@ -173,3 +173,20 @@ export async function setAdmin(request, env, params) {
 
   return json({ ok: true });
 }
+
+export async function invalidate(request, env, params) {
+  const body = await readJson(request);
+  const auth = await getAuth(env, request, body);
+  if (!auth.isAdmin) {
+    throw httpError(404, "Unauthorized")
+  }
+  const { deviceId } = body
+
+  const db = new D1Adapter(() => env.DB)
+  await db.write(
+    `UPDATE device set revoked_at = ? where id = ? and network_id = ?`
+    , [now(), deviceId, auth.networkId]
+  );
+
+  return json({ ok: true });
+}

@@ -1,4 +1,4 @@
-import { canonicalJson, deserializeBin } from "@sept/core";
+import { canonicalJson, deserializeBin, now } from "@sept/core";
 import { verifyString } from "@sept/crypto";
 import { BaseEventHandler } from './base.js'
 
@@ -20,10 +20,14 @@ export class DeviceHandler extends BaseEventHandler {
         await this.store.device.import(this.payload)
         this.uiEvents.dispatch("sept.device.added", this.payload)
         break
+      case "invalidated":
+        await this.store.device.update(undefined, this.payload.deviceId, { revokedAt: now() }) // @TODO: rename revokedAt to invalidatedAt
+        this.uiEvents.dispatch("sept.device.added", this.payload)
+        break
     }
   }
 
-  async update(networkId, deviceId, signPublicKey, cryptPublicKey) {
-    await this.store.device.update(networkId, deviceId, { signPublicKey, cryptPublicKey })
-  }
+  // async update(networkId, deviceId, signPublicKey, cryptPublicKey) {
+  //   await this.store.device.update(networkId, deviceId, { signPublicKey, cryptPublicKey })
+  // }
 }

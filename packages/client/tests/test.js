@@ -48,6 +48,8 @@ class SeptTest {
     const pin2 = await this.appAdmin.addDevice(deviceData2, {}, d2Paired)
     console.log(`Device2 added`)
     await this.appDevice2.getPairing(pin2)
+    await this.appDevice2.sync()
+    await this.appDevice2.relayConnect()
     await d2P
     console.log(`Device 2 paired`)
     const aDevices = await this.appAdmin.septClient.getDevices();
@@ -80,6 +82,8 @@ class SeptTest {
     assert(d2Graph[0].srcDeviceId == this.appDevice1DeviceId, `d2Graph[0].srcDeviceId = ${d2Graph[0].srcDeviceId}`)
     assert(d2Graph[0].dstDeviceId == this.appDevice2DeviceId, `d2Graph[0].dstDeviceId = ${d2Graph[0].dstDeviceId}`)
     assert(d2Graph[0].policy.allowedActions[0] == "message", `d2Graph[0].policy = ${JSON.stringify(d2Graph[0].policy)}`)
+
+    await this.appDevice2.relayDisconnect()
 
   }
 
@@ -384,6 +388,31 @@ class SeptTest {
     await this.appDevice1.relayDisconnect()
     await sleep(500)
     assert(!connectionOpen, "WS connection close failed")
+  }
+
+  async test_invalidate_device(testId) {
+    const devices = await this.appDevice1.septClient.getDevices()
+    await this.appAdmin.septClient.invalidateDevice(this.appDevice2DeviceId)
+    await this.appDevice1.sync()
+    const devices1 = await this.appDevice1.septClient.getDevices()
+
+    assert(devices1.length === devices.length - 1, "Device not invalidated")
+    let exception = false
+    try{
+      await this.appDevice2.sendEvent("message", testId, [this.appDevice1DeviceId])
+    } catch{
+      exception = true
+    }
+    assert(exception, "Exception not raised after device invalidation")
+
+    const graph = await this.appDevice1.septClient.getDeviceGraph()
+    for(const g of graph){
+      assert(
+        g.srcDeviceId !== this.appDevice2DeviceId && g.dstDeviceId !== this.appDevice2DeviceId,
+        "Revoked device still in device_graph"
+      )
+    }
+
   }
 
 }

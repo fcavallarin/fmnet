@@ -69,6 +69,7 @@ export class SeptClient {
       "sept.admin.grant",
       "sept.admin.revoke",
       "sept.device.added",  // Device added to the network, only admins will get this event
+      "sept.device.invalidated",
     ]
 
     this.uiEvents = new EventBus([
@@ -215,7 +216,7 @@ export class SeptClient {
     const encryptedPayload = serializeBin(
       encryptWithPayloadKey(payloadKey, canonicalJson(payload))
     )
-    const rcptDevices = await deviceStore.getMulti(dstDeviceIds)
+    const rcptDevices = await deviceStore.getMulti(dstDeviceIds || [])
 
     const recipients = []
     for (const rcptDevice of rcptDevices) {
@@ -352,7 +353,7 @@ export class SeptClient {
           )
           const admins = await this.store.device.getAdmins()
           const recipients = admins.filter(d => d.id !== localDevice.deviceId).map(d => d.id)
-          if(recipients.length > 0){
+          if (recipients.length > 0) {
             await this.sendEvent(
               "sept.device.added",
               newDeviceData,
@@ -402,7 +403,7 @@ export class SeptClient {
     )
     await this.store.settings.delete("deviceSignPublicKey")
     await this.store.settings.delete("deviceCryptPublicKey")
-    for(const adm of rootDevices){
+    for (const adm of rootDevices) {
       await this.store.device.import({
         id: adm.deviceId,
         networkId,
@@ -594,6 +595,10 @@ export class SeptClient {
   };
 
   async relayConnect() { // @TODO rename to connect()
+    if (this.wsStatus === "connected") {
+      return
+    }
+
     const settings = await this.store.settings.get()
     const networkId = await this.getNetworkId()
     const purl = new URL(this.restEndpoint);
@@ -710,8 +715,15 @@ export class SeptClient {
       policy,
       metadata: metadata || {}
     }
-    // @TODO include admin devices on dst
-    await this.sendEvent("sept.policy.update", evtPayload, [srcDeviceId, dstDeviceId])
+
+    const admins = await this.store.device.getAdmins()
+    const deviceId = await this.getDeviceId()
+    const admRecipients = admins.filter(d => d.id !== deviceId).map(d => d.id)
+    await this.sendEvent(
+      "sept.policy.update",
+      evtPayload,
+      [srcDeviceId, dstDeviceId, ...admRecipients]
+    )
   }
 
   async getDeviceId() {
@@ -908,5 +920,36 @@ export class SeptClient {
 
   getDevices = async () => {
     return await this.store.device.getAll()
+  }
+
+  async invalidateDevice(deviceId) {
+    if (!await this.isCurrentDeviceAdmin()) {
+      throw new Error("Device must be admin")
+    }
+    const curDeviceId = await this.getDeviceId()
+    const admins = await this.store.device.getAdmins()
+    const recipients = admins.filter(d => d.id !== curDeviceId).map(d => d.id)
+    const graph = await this.getDeviceGraph()
+    for (const g of graph) {
+      if (g.srcDeviceId === deviceId) {
+        recipients.push(g.dstDeviceId)
+        continue
+      }
+      if (g.dstDeviceId === deviceId) {
+        recipients.push(g.srcDeviceId)
+        continue
+      }
+    }
+
+    await this.sendEvent(
+      "sept.device.invalidated",
+      { deviceId },
+      [...new Set(recipients)]
+    )
+
+    await this._callRest("devices/invalidate", {
+      method: "POST",
+      body: { deviceId }
+    })
   }
 }

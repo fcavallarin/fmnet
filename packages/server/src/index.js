@@ -1,6 +1,6 @@
 import { json, route } from './lib/http.js';
 import { bootstrap } from './routes/bootstrap.js';
-import { addDevice, createPairing, getPairing, getPairedDevices, deletePairedDevice, setAdmin } from './routes/devices.js';
+import { addDevice, createPairing, getPairing, getPairedDevices, deletePairedDevice, setAdmin, invalidate } from './routes/devices.js';
 import { createEvent, listEvents, ackEvents } from './routes/event.js';
 import { relayConnect, relayGetTicket } from './routes/relay.js';
 import { DORelay } from "./do-relay.js";
@@ -39,6 +39,7 @@ const ROUTES = [
   { method: 'GET', path: '/get-relay-ticket', handler: relayGetTicket },
 
   { method: 'PATCH', path: '/devices/set-admin', handler: setAdmin },
+  { method: 'POST', path: '/devices/invalidate', handler: invalidate },
 ];
 
 function corsHeaders() {

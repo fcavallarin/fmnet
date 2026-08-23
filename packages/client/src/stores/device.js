@@ -69,6 +69,8 @@ export class DeviceStore extends BaseStore {
     )
   }
 
+  // @TODO: see how this method is used and if it makes sense to be refactored.
+  // This is an update_or_create, so maybe we want to split into update and create
   async update(networkId, deviceId, updFields) {
     const { fields, values, placeholders } = this.getQryParts(updFields)
     const d = await this.get(deviceId)
@@ -78,6 +80,9 @@ export class DeviceStore extends BaseStore {
       return await this.db.write(
         `UPDATE device set ${fields.map(f => `${f} = ?`).join(",")} where id = ?`
         , pars)
+    }
+    if(!networkId){
+      throw new Error("missing networkId")
     }
     await this.db.write(`
       INSERT INTO device (network_id, ${fields.join(",")}, id) values (?,?,${placeholders})
