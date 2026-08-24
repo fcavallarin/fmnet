@@ -47,6 +47,11 @@ class FMnetTest {
       ...options,
       dataStore: createDs("cl2"),
     })
+
+    this.appDevice3 = await FMNet.create({
+      ...options,
+      dataStore: createDs("cl3"),
+    })
   }
 
   async sent_mess_and_assert(srcDevKey, dstDevKey, message) {
@@ -82,10 +87,19 @@ class FMnetTest {
     console.log(`Device2 added`)
     await this.appDevice2.getPairing(pin2)
     console.log(`Device 2 paired`)
+
+    this.appDevice3Name = "user3"
+    const device3Data = await this.appDevice3.initDevice(this.appDevice3Name)
+    console.log(`Init device3 done`)
+    const pin3 = await this.appAdmin.addDevice(device3Data)
+    console.log(`Device3 added`)
+    await this.appDevice3.getPairing(pin3)
+    console.log(`Device 3 paired`)
     await sleep(2000)
     this.appAdminDeviceId = await this.appAdmin.getDeviceId()
     this.appDevice1DeviceId = await this.appDevice1.getDeviceId()
     this.appDevice2DeviceId = await this.appDevice2.getDeviceId()
+    this.appDevice3DeviceId = await this.appDevice3.getDeviceId()
 
     await this.appAdmin.grant(
       this.appDevice1Name,
@@ -95,13 +109,17 @@ class FMnetTest {
 
     await this.appAdmin.grant(
       this.appDevice1Name,
+      this.appDevice3Name,
+      ["message"],
+    );
+
+    await this.appAdmin.grant(
+      this.appDevice1Name,
       this.appAdminName,
       ["message"],
-      // {
-      //   srcName: this.appDevice1Name,
-      //   dstName: this.appAdminName,
-      // }
     );
+
+
     console.log(`Policy updated`)
 
     await this.appDevice1.sync()
@@ -348,10 +366,30 @@ class FMnetTest {
     await this.appDevice2.relayDisconnect()
   }
 
+
+
   async test_shutdown(testId) {
     await this.appAdmin.shutdown()
     await this.appDevice1.shutdown()
     await this.appDevice2.shutdown()
+    await sleep(500)
+  }
+
+  async test_invalidate_device(testId) {
+    await this.appDevice1.relayConnect()
+    let c = await this.appDevice1.getContacts()
+    assert(c.map(x => x.name).includes(this.appDevice3Name), "Device3 not in Contacts")
+    const devices = await this.appDevice1.listDevices()
+    await this.appAdmin.invalidateDevice(this.appDevice3Name)
+
+    await sleep(200)
+    const devices1 = await this.appDevice1.listDevices()
+
+    assert(devices1.length === devices.length - 1, "Device not invalidated")
+    c = await this.appDevice1.getContacts()
+    assert(!c.map(x => x.name).includes(this.appDevice3Name), "Device3 still in Contacts")
+
+    await this.appDevice1.relayDisconnect()
   }
 }
 

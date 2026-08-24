@@ -64,4 +64,21 @@ export class IdentityStore {
       devices: i.value
     }))
   }
+
+  async deleteDevice(deviceId) {
+    this.assertFamily();
+    for (const kv of await this.kvStore.all()) {
+      const idx = kv.value.indexOf(deviceId)
+      if (idx > -1) {
+        kv.value.splice(idx, 1)
+        if(kv.value.length > 0){
+          await this.kvStore.set(kv.key, kv.value)
+        } else {
+          await this.kvStore.delete(kv.key)
+        }
+        return
+      }
+    }
+    throw new Error(`Device ${deviceId} not found`)
+  }
 }

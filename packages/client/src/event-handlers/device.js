@@ -21,8 +21,8 @@ export class DeviceHandler extends BaseEventHandler {
         this.uiEvents.dispatch("sept.device.added", this.payload)
         break
       case "invalidated":
-        await this.store.device.update(undefined, this.payload.deviceId, { revokedAt: now() }) // @TODO: rename revokedAt to invalidatedAt
-        this.uiEvents.dispatch("sept.device.added", this.payload)
+        await this.store.device.update(undefined, this.payload.deviceId, { revokedAt: now() })
+        this.uiEvents.dispatch("sept.device.invalidated", this.payload)
         break
     }
   }

@@ -506,7 +506,7 @@ export class SeptClient {
           // The error here may be caused by en event already received but not acked
           throw new Error("Unexpected error 234")
           // await this.ackEvents([e.eventId])
-          // continue
+          continue
 
         }
       } else {
@@ -951,5 +951,16 @@ export class SeptClient {
       method: "POST",
       body: { deviceId }
     })
+
+    await this.store.device.update(undefined, deviceId, { revokedAt: now() })
+  }
+
+  async getAdmins() {
+    const admins = await this.store.device.getAdmins()
+    return admins.map(d => ({
+      deviceId: d.id,
+      signPublicKey: d.signPublicKey,
+      cryptPublicKey: d.cryptPublicKey,
+    }))
   }
 }

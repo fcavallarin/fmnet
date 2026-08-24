@@ -11,7 +11,7 @@ export class FMNet {
     this.options = options;
     this.dcSessions = new Map()
     this.tcpTunnels = new Map()
-    this.eventBus = new EventBus(["message", "policy.update", "device.added"])
+    this.eventBus = new EventBus(["message", "policy.update", "device.added", "device.invalidated"])
     this.tcpTunnelStatus = {
       REQUESTED: "requested",
       EGRESS_RUNNING: "egressRunning",
@@ -66,6 +66,11 @@ export class FMNet {
     // Device added to the network, only admins will get this event
     this.septClient.on("device.added", async deviceData => {
       this.eventBus.dispatch("device.added", deviceData)
+    })
+
+    this.septClient.on("device.invalidated", async deviceData => {
+      await this.identityStore.deleteDevice(deviceData.deviceId)
+      this.eventBus.dispatch("device.invalidated", deviceData)
     })
 
     this.septClient.register(
@@ -225,8 +230,9 @@ export class FMNet {
         tcptun = this.tcpTunnels.get(tunnelId)
         if (!tcptun) {
           logger.debug(`Zombine tunnel ${tunnelId}.. skipping close request`)
+        } else {
+          await tcptun.handler.close()
         }
-        tcptun.handler.close()
         this.tcpTunnels.delete(tunnelId)
         break
     }
@@ -309,7 +315,7 @@ export class FMNet {
       tunnelId,
       status: this.tcpTunnelStatus.CLOSED,
     }, [t.dcm.peerDeviceId])
-    t.handler.close()
+    await t.handler.close()
     this.tcpTunnels.delete(tunnelId)
   }
 
@@ -360,8 +366,11 @@ export class FMNet {
     return pin
   };
 
-  async invalidateDevice(deviceName) { // @TODO remove device from the network
-
+  async invalidateDevice(deviceName) {
+    for (const d of await this.getIdentityDevices(deviceName)) {
+      await this.septClient.invalidateDevice(d)
+      await this.identityStore.deleteDevice(d)
+    }
   }
 
   async initDevice(name) {
@@ -570,12 +579,22 @@ export class FMNet {
     const graph = await this.getDeviceGraph()
     const contacts = {}
     const deviceId = await this.getDeviceId()
-
+    
     for (const g of graph) {
-      if (g.dstDeviceId === deviceId && g.policy.allowedActions.includes("message")) {
-        const i = await this.getDeviceIdentity(g.srcDeviceId)
+      if ( g.policy.allowedActions.includes("message")) {
+        const did = g.dstDeviceId === deviceId ? g.srcDeviceId : g.dstDeviceId
+        const i = await this.getDeviceIdentity(did)
         contacts[i.name] = { unreads_number: 0, unreads: [] }
       }
+    }
+
+    // Admins can send events event without an expplicit grant
+    for (const a of await this.septClient.getAdmins()) {
+      const i = await this.getDeviceIdentity(a.deviceId)
+      if (i.name in contacts) {
+        continue
+      }
+      contacts[i.name] = { unreads_number: 0, unreads: [] }
     }
 
     const unreads = await this.appState.get("unreads")
