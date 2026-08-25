@@ -100,7 +100,7 @@ class FMnetTest {
     this.appDevice1DeviceId = await this.appDevice1.getDeviceId()
     this.appDevice2DeviceId = await this.appDevice2.getDeviceId()
     this.appDevice3DeviceId = await this.appDevice3.getDeviceId()
-
+  
     await this.appAdmin.grant(
       this.appDevice1Name,
       this.appDevice2Name,

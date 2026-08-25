@@ -9,7 +9,7 @@ import readline from "node:readline/promises"
 import { stdin, stdout } from "node:process"
 import fs from 'node:fs';
 import path from 'node:path';
-
+import qrcode from 'qrcode-terminal';
 
 
 
@@ -55,6 +55,9 @@ async function main() {
         console.log("Your pairing data:\n")
         const b64 = Buffer.from(JSON.stringify(deviceData)).toString("base64")
         console.log(b64)
+        qrcode.generate(JSON.stringify(deviceData), {
+          small: true,
+        })
         const pin = await rl.question("Pairing PIN: ")
         await fmnet.getPairing(pin)
         break

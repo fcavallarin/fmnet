@@ -576,8 +576,7 @@ export class SeptClient {
     if (eventIds.length > 0) {
       for (const e of eventIds) {
         if (!e) {
-          console.log(e)
-          throw new Error("ggg")
+          throw new Error(`Unable to ACK event ${e}`)
         }
       }
       await this._callRest("events", {
@@ -617,20 +616,17 @@ export class SeptClient {
     return new Promise((resolve, reject) => {
       this.ws.addEventListener("open", () => {
         this.uiEvents.dispatch("connection.open", {})
-        console.log("connected to websocket");
         this.wsStatus = "connected"
         this.sync().then(resolve)
       });
 
       this.ws.addEventListener("message", (event) => {
         this.uiEvents.dispatch("connection.message", event)
-        // console.log("WEBSOCKET IN", JSON.parse(event.data))
         queue.push(JSON.parse(event.data))
       });
 
       this.ws.addEventListener("close", () => {
         this.uiEvents.dispatch("connection.close", {})
-        console.log("closed");
         if (this.wsStatus == "connected") {
           this.wsStatus = "reconnecting"
           this.sync().then(() => this.relayConnect())
@@ -641,7 +637,6 @@ export class SeptClient {
 
       this.ws.addEventListener("error", (err) => {
         this.uiEvents.dispatch("connection.error", {})
-        console.error(err);
         if (this.wsStatus == "connected") {
           this.wsStatus = "reconnectingOnError"
           this.sync().then(() => this.relayConnect())

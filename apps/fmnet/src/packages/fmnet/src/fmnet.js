@@ -488,6 +488,9 @@ export class FMNet {
 
   async sendMessage(dstName, message) {
     const dstDevices = await this.identityStore.getByName(dstName)
+    if (!dstDevices || dstDevices.length === 0) {
+      throw new Error(`No devices associated to ${dstName}`)
+    }
     await this.septClient.sendEvent("message", message, dstDevices)
   }
 
@@ -579,12 +582,18 @@ export class FMNet {
     const graph = await this.getDeviceGraph()
     const contacts = {}
     const deviceId = await this.getDeviceId()
-    
-    for (const g of graph) {
-      if ( g.policy.allowedActions.includes("message")) {
-        const did = g.dstDeviceId === deviceId ? g.srcDeviceId : g.dstDeviceId
-        const i = await this.getDeviceIdentity(did)
-        contacts[i.name] = { unreads_number: 0, unreads: [] }
+
+    if (await this.isCurrentDeviceAdmin()) {
+      for (const d of await this.identityStore.list()) {
+        contacts[d.name] = { unreads_number: 0, unreads: [] }
+      }
+    } else {
+      for (const g of graph) {
+        if (g.policy.allowedActions.includes("message")) {
+          const did = g.dstDeviceId === deviceId ? g.srcDeviceId : g.dstDeviceId
+          const i = await this.getDeviceIdentity(did)
+          contacts[i.name] = { unreads_number: 0, unreads: [] }
+        }
       }
     }
 
@@ -736,4 +745,12 @@ export class FMNet {
     await this.septClient.resetDevice()
   }
 
+  async isAdmin(name) {
+    for (const d of await this.identityStore.getByName(name)) {
+      if (! await this.septClient.isAdmin(d)) {
+        return false
+      }
+    }
+    return true
+  }
 }
