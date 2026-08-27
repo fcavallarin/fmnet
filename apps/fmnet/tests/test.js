@@ -100,7 +100,7 @@ class FMnetTest {
     this.appDevice1DeviceId = await this.appDevice1.getDeviceId()
     this.appDevice2DeviceId = await this.appDevice2.getDeviceId()
     this.appDevice3DeviceId = await this.appDevice3.getDeviceId()
-  
+
     await this.appAdmin.grant(
       this.appDevice1Name,
       this.appDevice2Name,
@@ -280,6 +280,18 @@ class FMnetTest {
     assert(!(this.appDevice1DeviceId in newMessages), "Still unread messages")
   }
 
+
+  async test_grant_admin(testId) {
+    let c = (await this.appDevice2.getContacts()).map(i => i.name)
+    assert(!c.includes(this.appDevice3Name, "Device2 contacts includes Device3, this test may be incomplete"))
+    await this.appAdmin.grantAdmin(this.appDevice2Name)
+    await this.appDevice2.sync()
+    c = (await this.appDevice2.getContacts()).map(i => i.name)
+    assert(c.includes(this.appDevice3Name, "Device2 contacts don't includes Device3"))
+  }
+
+
+
   async test_tunnel(testId) {
     await this.appDevice1.relayConnect()
     await this.appDevice2.relayConnect()
@@ -374,6 +386,7 @@ class FMnetTest {
     await this.appDevice2.shutdown()
     await sleep(500)
   }
+
 
   async test_invalidate_device(testId) {
     await this.appDevice1.relayConnect()

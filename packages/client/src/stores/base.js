@@ -178,6 +178,7 @@ export class BaseStore {
     const placeholders = []
     const operators = []
     const searchParams = []
+    const updateParams = []
     for (const k in obj) {
       const [fn, op = "eq"] = k.split("__")
       if (!(op in OPS)) {

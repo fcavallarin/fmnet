@@ -46,62 +46,46 @@ export class DeviceStore extends BaseStore {
   }
 
 
-  async add(networkId, signPublicKey, cryptPublicKey, role = "user") {
-    const id = makeId("dev", signPublicKey);
-    const { fields, values, placeholders } = this.getQryParts({
-      id, networkId, signPublicKey, cryptPublicKey, role
-    })
-    await this.db.write(
-      `INSERT INTO device (${fields.join(",")}) VALUES (${placeholders})`,
-      values
-    )
-    return id;
 
+  // async import(deviceData, role = "user") {
+  //   const { fields, values, placeholders } = this.getQryParts({
+  //     ...deviceData, role
+  //   })
+  //   return this.db.write(
+  //     `INSERT INTO device (${fields.join(',')}) VALUES (${placeholders})`,
+  //     values
+  //   )
+  // }
+
+
+  // async add(networkId, signPublicKey, cryptPublicKey, role = "user") {
+  async create(deviceData) {
+    const id = makeId("dev", deviceData.signPublicKey);
+    await this.add({ ...deviceData, id })
+    return id
   }
 
-  async import(deviceData, role = "user") {
-    const { fields, values, placeholders } = this.getQryParts({
-      ...deviceData, role
-    })
+  async add(deviceData) {
+    const { fields, values, placeholders } = this.getQryParts(deviceData)
     return this.db.write(
       `INSERT INTO device (${fields.join(',')}) VALUES (${placeholders})`,
       values
     )
   }
 
-  // @TODO: see how this method is used and if it makes sense to be refactored.
-  // This is an update_or_create, so maybe we want to split into update and create
-  async update(networkId, deviceId, updFields) {
-    const { fields, values, placeholders } = this.getQryParts(updFields)
-    const d = await this.get(deviceId)
-
-    const pars = [...values, deviceId]
-    if (d) {
-      return await this.db.write(
-        `UPDATE device set ${fields.map(f => `${f} = ?`).join(",")} where id = ?`
-        , pars)
+  async upsert(deviceId, data) {
+    if ("id" in data) {
+      throw new Error("upsert data must not contain id")
     }
-    if(!networkId){
-      throw new Error("missing networkId")
-    }
-    await this.db.write(`
-      INSERT INTO device (network_id, ${fields.join(",")}, id) values (?,?,${placeholders})
-    `, [networkId, ...pars])
-  }
 
-  async sync(devices) {
-    for (const d of devices) {
-      await this.db.write(
-        `
-        INSERT OR IGNORE INTO device (id, network_id, sign_public_key, crypt_public_key)
-        VALUES
-        (?, ?, ?, ?)
-      `, [
-        d.id,
-        d.networkId,
-        d.signPublicKey,
-        null
-      ])
+    const { fields, values } = this.getQryParts(data)
+    const res = await this.db.write(
+      `UPDATE device set ${fields.map(f => `${f} = ?`).join(",")} where id = ?`
+      , [...values, deviceId]
+    )
+
+    if (res.changes === 0) {
+      await this.add({ ...data, id: deviceId })
     }
   }
 

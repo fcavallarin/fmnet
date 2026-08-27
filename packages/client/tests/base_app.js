@@ -60,16 +60,17 @@ export class BaseSeptApp {
     //   writeJsonFile(`./data/cl-${this.clientName}.json`, deviceData)
     // })
 
-    this.septClient.on("policy.update", async deviceData => {
-      const deviceId = await this.septClient.getDeviceId()
-      if (deviceData.srcDeviceId === deviceId) {
-        // await this.identityStore.set(deviceData.dstDeviceId, deviceData.metadata.dstName)
-      }
+    // this.septClient.on("policy.update", async deviceData => {
+    //   const deviceId = await this.septClient.getDeviceId()
+    //   if (deviceData.srcDeviceId === deviceId) {
+    //     await this.identityStore.set(deviceData.dstDeviceId, deviceData.metadata.dstName)
+    //   }
 
-      if (deviceData.dstDeviceId === deviceId) {
-        // await this.identityStore.set(deviceData.srcDeviceId, deviceData.metadata.srcName)
-      }
-    })
+    //   if (deviceData.dstDeviceId === deviceId) {
+    //     await this.identityStore.set(deviceData.srcDeviceId, deviceData.metadata.srcName)
+    //   }
+    // })
+
     this.septClient.register(
       "message", (actionData) => {
         console.log(`---RECV---`)

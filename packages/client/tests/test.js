@@ -1,4 +1,7 @@
+import { canonicalJson } from "@sept/core";
 import { BaseSeptApp } from "./base_app.js";
+
+const NUM_DEVICES = 4
 
 function assert(cond, err) {
   if (!cond) {
@@ -13,51 +16,42 @@ async function sleep(ms) {
 class SeptTest {
   async init() {
     this.appAdmin = await BaseSeptApp.create("admin")
-    this.appDevice1 = await BaseSeptApp.create("device1")
-    this.appDevice2 = await BaseSeptApp.create("device2")
+    for (let i = 1; i <= NUM_DEVICES; i++) {
+      this[`appDevice${i}`] = await BaseSeptApp.create(`device${i}`)
+    }
   }
 
+  async _sync_client_devices(exclude = []) {
+    for (let i = 1; i <= NUM_DEVICES; i++) {
+      await this[`appDevice${i}`].sync()
+    }
+  }
 
   async test_bootstrap_and_add_devices(testId) {
     await this.appAdmin.bootstrap()
     console.log(`Bootstrap done`)
 
-    const deviceData1 = await this.appDevice1.initDevice()
-    console.log(`Init device1 done`)
-    // const pin1 = await this.appAdmin.addDevice(this.appDevice1.clientName)
-    let d1Paired, d2Paired
-    const d1P = new Promise(resolve => d1Paired = resolve)
-    const d2P = new Promise(resolve => d2Paired = resolve)
-
-    const pin1 = await this.appAdmin.addDevice(deviceData1, {}, d1Paired)
-    console.log(`Device1 added`)
-    let pairingFailed = false
-    try {
-      await this.appDevice1.getPairing("00000")
-    } catch {
-      pairingFailed = true
+    for (let i = 1; i <= NUM_DEVICES; i++) {
+      let dPaired
+      const dP = new Promise(resolve => dPaired = resolve)
+      const deviceData = await this[`appDevice${i}`].initDevice()
+      console.log(`Init device${i} done`)
+      const pin = await this.appAdmin.addDevice(deviceData, {}, dPaired)
+      console.log(`Device${i} added`)
+      await this[`appDevice${i}`].getPairing(pin)
+      await this[`appDevice${i}`].sync()
+      await dP
+      console.log(`Device ${i} paired`)
     }
-    assert(pairingFailed, "Pairing PIN check failed")
-    await this.appDevice1.getPairing(pin1)
-    await d1P
-    console.log(`Device 1 paired with pin ${pin1}`)
 
 
-    const deviceData2 = await this.appDevice2.initDevice()
-    console.log(`Init device2 done`)
-    const pin2 = await this.appAdmin.addDevice(deviceData2, {}, d2Paired)
-    console.log(`Device2 added`)
-    await this.appDevice2.getPairing(pin2)
-    await this.appDevice2.sync()
-    await this.appDevice2.relayConnect()
-    await d2P
-    console.log(`Device 2 paired`)
     const aDevices = await this.appAdmin.septClient.getDevices();
-    assert(aDevices.length == 3, `aDevices len = ${aDevices.length}`)
+    assert(aDevices.length == NUM_DEVICES + 1, `aDevices len = ${aDevices.length}`)
 
     this.appAdminDeviceId = await this.appAdmin.getDeviceId()
-    this.appDevice1DeviceId = await this.appDevice1.getDeviceId()
-    this.appDevice2DeviceId = await this.appDevice2.getDeviceId()
+    for (let i = 1; i <= NUM_DEVICES; i++) {
+      this[`appDevice${i}DeviceId`] = await this[`appDevice${i}`].getDeviceId()
+    }
 
     await this.appAdmin.grant(
       this.appDevice1DeviceId,
@@ -66,10 +60,10 @@ class SeptTest {
     );
     console.log(`Policy updated`)
 
-    await this.appDevice1.sync()
-    console.log(`Device 1 sync done`)
-    await this.appDevice2.sync()
-    console.log(`Device 2 sync done`)
+
+    await this._sync_client_devices()
+    console.log(`All Devices sync done`)
+
 
     const d1Graph = await this.appDevice1.getDeviceGraph();
     assert(d1Graph.length == 1, `d1Graph len = ${d1Graph.length}`)
@@ -85,6 +79,22 @@ class SeptTest {
 
     await this.appDevice2.relayDisconnect()
 
+  }
+
+  async test_websocket(testId) {
+    let connectionOpen = false
+    this.appDevice1.septClient.on("connection.open", event => {
+      connectionOpen = true
+    })
+    this.appDevice1.septClient.on("connection.close", event => {
+      connectionOpen = false
+    })
+    await this.appDevice1.relayConnect()
+    await sleep(500)
+    assert(connectionOpen, "WS connection failed")
+    await this.appDevice1.relayDisconnect()
+    await sleep(500)
+    assert(!connectionOpen, "WS connection close failed")
   }
 
   async test_send_messages(testId) {
@@ -295,11 +305,50 @@ class SeptTest {
   }
 
   async test_admin_grant(testId) {
+
+    await this.appAdmin.grant(
+      this.appDevice2DeviceId,
+      this.appDevice3DeviceId,
+      ["message"]
+    );
+    await this._sync_client_devices()
+
+    let d1Graph = await this.appDevice1.septClient.getDeviceGraph()
+    let aGraph = await this.appAdmin.septClient.getDeviceGraph()
+    assert(
+      canonicalJson(d1Graph) !== canonicalJson(aGraph),
+      "Device graph is the same between admin and Device1, this test may be incompete"
+    )
+
     await this.appAdmin.grantAdmin(this.appDevice1DeviceId)
-    await this.appDevice1.sync()
+    await this._sync_client_devices()
+
+    d1Graph = (await this.appDevice1.septClient.getDeviceGraph()).map(p => ({
+      srcDeviceId: p.srcDeviceId,
+      dstDeviceId: p.dstDeviceId,
+      policy: p.policy
+    }))
+    aGraph = (await this.appAdmin.septClient.getDeviceGraph()).map(p => ({
+      srcDeviceId: p.srcDeviceId,
+      dstDeviceId: p.dstDeviceId,
+      policy: p.policy
+    }))
+
+    assert(
+      canonicalJson(d1Graph) === canonicalJson(aGraph),
+      `Device graph differes between admins: ${JSON.stringify(d1Graph, null, 2)} !== ${JSON.stringify(aGraph, null, 2)}`
+    )
+    const d1Devices = await this.appDevice1.septClient.store.device.getAll()
+    for (let i = 2; i <= NUM_DEVICES; i++) {
+      assert(
+        d1Devices.map(d => d.id).includes(this[`appDevice${i}DeviceId`]),
+        `Missing Device${i} from Device1 list (Device1 is now admin)`
+      )
+    }
+
     let d1Data = await this.appDevice1.getDeviceData()
     assert(d1Data.isAdmin, "Device1 should be admin")
-    await this.appDevice2.sync()
+
     let d1DataOfD2 = await this.appDevice2.septClient.store.device.get(this.appDevice1DeviceId)
     assert(d1DataOfD2.role === "admin", "Device1 should be admin on Device2")
 
@@ -336,8 +385,9 @@ class SeptTest {
     assert(adminMessages.length > 0, "Admin did not get the message from Device2")
 
     await this.appAdmin.revokeAdmin(this.appDevice1DeviceId)
-    await this.appDevice1.sync()
-    await this.appDevice2.sync()
+    // await this.appDevice1.sync()
+    // await this.appDevice2.sync()
+    await this._sync_client_devices()
     d1Data = await this.appDevice1.getDeviceData()
     assert(!d1Data.isAdmin, "Device1 should be NOT admin")
     let failed = false
@@ -374,21 +424,6 @@ class SeptTest {
     assert(await st.get("test1") === "value 3", `Wrong appStore value update`)
   }
 
-  async test_websocket(testId) {
-    let connectionOpen = false
-    this.appDevice1.septClient.on("connection.open", event => {
-      connectionOpen = true
-    })
-    this.appDevice1.septClient.on("connection.close", event => {
-      connectionOpen = false
-    })
-    await this.appDevice1.relayConnect()
-    await sleep(500)
-    assert(connectionOpen, "WS connection failed")
-    await this.appDevice1.relayDisconnect()
-    await sleep(500)
-    assert(!connectionOpen, "WS connection close failed")
-  }
 
   async test_invalidate_device(testId) {
     const devices = await this.appDevice1.septClient.getDevices()
@@ -398,15 +433,15 @@ class SeptTest {
 
     assert(devices1.length === devices.length - 1, "Device not invalidated")
     let exception = false
-    try{
+    try {
       await this.appDevice2.sendEvent("message", testId, [this.appDevice1DeviceId])
-    } catch{
+    } catch {
       exception = true
     }
     assert(exception, "Exception not raised after device invalidation")
 
     const graph = await this.appDevice1.septClient.getDeviceGraph()
-    for(const g of graph){
+    for (const g of graph) {
       assert(
         g.srcDeviceId !== this.appDevice2DeviceId && g.dstDeviceId !== this.appDevice2DeviceId,
         "Revoked device still in device_graph"

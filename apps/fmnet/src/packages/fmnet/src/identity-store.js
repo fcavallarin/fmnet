@@ -13,7 +13,7 @@ export class IdentityStore {
   }
 
   normalizeName(name) {
-    return name.trim().toLowerCase()
+    return name.trim()
   }
 
   setFamilyId(familyId) {

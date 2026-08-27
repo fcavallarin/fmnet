@@ -52,14 +52,22 @@ export class FMNet {
 
     this.septClient.on("policy.update", async deviceData => {
       const deviceId = await this.septClient.getDeviceId()
-      if (deviceData.srcDeviceId === deviceId && deviceData.metadata.dstName) {
-        await this.identityStore.set(deviceData.dstDeviceId, deviceData.metadata.dstName)
-      }
+      // for (const p of deviceData.policies) {
+      //   if (p.srcDeviceId === deviceId && p.metadata.dstName) {
+      //     await this.identityStore.set(p.dstDeviceId, p.metadata.dstName)
+      //   }
 
-      if (deviceData.dstDeviceId === deviceId && deviceData.metadata.srcName) {
-        await this.identityStore.set(deviceData.srcDeviceId, deviceData.metadata.srcName)
-      }
+      //   if (p.dstDeviceId === deviceId && p.metadata.srcName) {
 
+      //     await this.identityStore.set(p.srcDeviceId, p.metadata.srcName)
+      //   }
+      // }
+      for (const id in deviceData.metadata.identities) {
+        if (id != deviceId) {
+          await this.identityStore.set(id, deviceData.metadata.identities[id])
+        }
+
+      }
       this.eventBus.dispatch("policy.update", deviceData)
     })
 
@@ -445,12 +453,12 @@ export class FMNet {
   async getFamilyId() {
     return await this.septClient.getNetworkId()
   }
+
   async getNetworkId() {
     return await this.septClient.getNetworkId()
   }
 
-
-  async getStoredActions(filters) {
+  async getStoredActions(filters) { // @TODO rename 'actions'
     return await this.septClient.getStoredActions(filters)
   }
 
@@ -458,8 +466,10 @@ export class FMNet {
     for (const s of await this.identityStore.getByName(srcName)) {
       for (const d of await this.identityStore.getByName(dstName)) {
         return await this.septClient.grant(s, d, actions, {
-          srcName,
-          dstName,
+          identities: {
+            [s]: srcName,
+            [d]: dstName,
+          },
           ...metadata
         })
       }
@@ -475,8 +485,13 @@ export class FMNet {
   }
 
   async grantAdmin(name) {
+    const identities = await this.identityStore.list()
     for (const d of await this.identityStore.getByName(name)) {
-      await this.septClient.grantAdmin(d)
+      await this.septClient.grantAdmin(d, {
+        identities: Object.fromEntries(
+          identities.map(({ id, name }) => [id, name])
+        )
+      })
     }
   }
 

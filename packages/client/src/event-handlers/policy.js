@@ -7,35 +7,42 @@ export class PolicyHandler extends BaseEventHandler {
     switch (this.event) {
       case "update":
         const networkId = this.payload.networkId;
-        await this.update(networkId, this.payload.srcDevice, this.payload.dstDevice, this.payload.policy);
+        await this.update(networkId, this.payload.devices, this.payload.policies)
+        // this.uiEvents.dispatch("sept.policy.update", {
+        //   policies: this.payload.policies.map(p => ({
+        //     srcDeviceId: p.srcDevice.deviceId,
+        //     dstDeviceId: p.dstDevice.deviceId,
+        //     metadata: p.metadata
+        //   })),
+        // })
+        this.uiEvents.dispatch("sept.policy.update", {
+          policies: this.payload.policies,
+          metadata: this.payload.metadata,
+        })
+        break
     }
   }
-  async update(networkId, srcDevice, dstDevice, policy) {
+  async update(networkId, devices, policies) {
     const settings = await this.store.settings.get()
-    if (settings.deviceId === srcDevice.deviceId) {
-      await this.store.device.update(networkId, dstDevice.deviceId, {
-        signPublicKey: deserializeBin(dstDevice.signPublicKey),
-        cryptPublicKey: deserializeBin(dstDevice.cryptPublicKey)
-      })
+    for (const d of devices) {
+
+      if (settings.deviceId !== d.id) {
+        await this.store.device.upsert(d.id, {
+          networkId,
+          signPublicKey: deserializeBin(d.signPublicKey),
+          cryptPublicKey: deserializeBin(d.cryptPublicKey)
+        })
+      }
     }
 
-    if (settings.deviceId === dstDevice.deviceId) {
-      await this.store.device.update(networkId, srcDevice.deviceId, {
-        signPublicKey: deserializeBin(srcDevice.signPublicKey),
-        cryptPublicKey: deserializeBin(srcDevice.cryptPublicKey)
-      })
+    for (const p of policies) {
+      const { srcDeviceId, dstDeviceId, policy } = p
+      await this.store.deviceGraphEdge.setPolicy(
+        srcDeviceId,
+        dstDeviceId,
+        policy
+      );
     }
-
-    await this.store.deviceGraphEdge.setPolicy(
-      srcDevice.deviceId,
-      dstDevice.deviceId,
-      policy
-    );
-    this.uiEvents.dispatch("sept.policy.update", {
-      srcDeviceId: srcDevice.deviceId,
-      dstDeviceId: dstDevice.deviceId,
-      metadata: this.payload.metadata
-    })
   }
 
 }

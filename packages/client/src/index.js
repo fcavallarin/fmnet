@@ -154,12 +154,12 @@ export class SeptClient {
     const cryptKeys = await generateEncryptionKeypair();
     await this.store.settings.set("deviceSignPrivateKey", serializeBin(signKeys.privateKey), true);
     await this.store.settings.set("deviceCryptPrivateKey", serializeBin(cryptKeys.privateKey), true);
-    const deviceId = await this.store.device.add(
+    const deviceId = await this.store.device.create({
       networkId,
-      signKeys.publicKey,
-      cryptKeys.publicKey,
-      'admin'
-    )
+      signPublicKey: signKeys.publicKey,
+      cryptPublicKey: cryptKeys.publicKey,
+      role: 'admin'
+    })
     await this.store.settings.set("deviceId", deviceId);
     settings = await this.store.settings.get()
 
@@ -340,12 +340,12 @@ export class SeptClient {
             continue
           }
           const newDeviceData = {
-            id: pairedDevice.deviceId,
             networkId: pairedDevice.networkId,
             signPublicKey: deserializeBin(pairedDevice.signPublicKey),
             cryptPublicKey: deserializeBin(pairedDevice.cryptPublicKey),
           }
-          await this.store.device.import(newDeviceData)
+
+          await this.store.device.upsert(pairedDevice.deviceId, newDeviceData)
 
           await this._callRest(
             `paired-devices/${deviceData.deviceId}`,
@@ -356,17 +356,20 @@ export class SeptClient {
           if (recipients.length > 0) {
             await this.sendEvent(
               "sept.device.added",
-              newDeviceData,
+              {
+                id: pairedDevice.deviceId,
+                ...newDeviceData,
+              },
               recipients
             )
           }
 
-          await onPaired?.(deviceData.deviceId, pairedDevice.metadata)
+          await onPaired?.(pairedDevice.deviceId, pairedDevice.metadata)
           return
         }
       }
 
-      await onPairingTimeout?.(deviceData.deviceId)
+      await onPairingTimeout?.(pairedDevice.deviceId)
     }
 
     void pollPairing()
@@ -396,20 +399,21 @@ export class SeptClient {
     } = pairingData;
 
     await this.store.network.add(networkId)
-    await this.store.device.add(
+    await this.store.device.create({
       networkId,
-      deserializeBin(settings.deviceSignPublicKey),
-      deserializeBin(settings.deviceCryptPublicKey),
-    )
+      signPublicKey: deserializeBin(settings.deviceSignPublicKey),
+      cryptPublicKey: deserializeBin(settings.deviceCryptPublicKey),
+    })
     await this.store.settings.delete("deviceSignPublicKey")
     await this.store.settings.delete("deviceCryptPublicKey")
     for (const adm of rootDevices) {
-      await this.store.device.import({
+      await this.store.device.add({
         id: adm.deviceId,
         networkId,
         signPublicKey: deserializeBin(adm.signPublicKey),
         cryptPublicKey: deserializeBin(adm.cryptPublicKey),
-      }, "admin")
+        role: "admin"
+      })
     }
 
     return metadata
@@ -433,7 +437,7 @@ export class SeptClient {
       signPublicKey: settings.deviceSignPublicKey,
       cryptPublicKey: settings.deviceCryptPublicKey,
     };
-    // this.uiEvents.dispatch("export.device", deviceData)`
+
     return deviceData;
   };
 
@@ -696,18 +700,24 @@ export class SeptClient {
     }
     await this.store.deviceGraphEdge.setPolicy(srcDeviceId, dstDeviceId, policy)
     const evtPayload = {
-      networkId,
-      dstDevice: {
-        deviceId: dstDevice.id,
-        signPublicKey: serializeBin(dstDevice.signPublicKey),
-        cryptPublicKey: serializeBin(dstDevice.cryptPublicKey)
-      },
-      srcDevice: {
-        deviceId: srcDevice.id,
-        signPublicKey: serializeBin(srcDevice.signPublicKey),
-        cryptPublicKey: serializeBin(srcDevice.cryptPublicKey)
-      },
-      policy,
+      networkId,  // @TODO [security]: should the client validate networkId? is it possible that admin of networkX updates the policy of networkY?
+      devices: [
+        {
+          id: dstDevice.id,
+          signPublicKey: serializeBin(dstDevice.signPublicKey),
+          cryptPublicKey: serializeBin(dstDevice.cryptPublicKey)
+        },
+        {
+          id: srcDevice.id,
+          signPublicKey: serializeBin(srcDevice.signPublicKey),
+          cryptPublicKey: serializeBin(srcDevice.cryptPublicKey)
+        }
+      ],
+      policies: [{
+        dstDeviceId: dstDevice.id,
+        srcDeviceId: srcDevice.id,
+        policy,
+      }],
       metadata: metadata || {}
     }
 
@@ -801,23 +811,65 @@ export class SeptClient {
     await this.updatePolicy(srcDeviceId, dstDeviceId, allowedActions, metadata);
   }
 
-  async grantAdmin(deviceId) {
+  async grantAdmin(deviceId, devicesMetadata = {}) {
     if (!await this.isCurrentDeviceAdmin()) {
       throw new Error("Device must be admin")
     }
     const curDeviceId = await this.getDeviceId()
     const networkId = await this.getNetworkId()
     const recipients = await this.store.device.getAll()
-    await this.store.device.update(networkId, deviceId, { role: "admin" })
+    const device = await this.store.device.get(deviceId)
+    if (!device) {
+      throw new Error(`Device ${deviceId} not found`)
+    }
+
+    await this.store.device.upsert(deviceId, { role: "admin" })
+
     await this.sendEvent(
       "sept.admin.grant",
-      { networkId, deviceId },
+      {
+        networkId,
+        deviceId,
+        signPublicKey: serializeBin(device.signPublicKey),
+        cryptPublicKey: serializeBin(device.cryptPublicKey),
+      },
       recipients.map(r => r.id).filter(id => id !== curDeviceId)
     )
+
     await this._callRest("devices/set-admin", {
       method: "PATCH",
       body: { isAdmin: true, deviceId }
     });
+
+    const evtPayload = {
+      networkId,
+      devices: [],
+      policies: [],
+      metadata: devicesMetadata
+    }
+
+    for (const d of await this.getDevices()) {
+      evtPayload.devices.push({
+        id: d.id,
+        signPublicKey: serializeBin(d.signPublicKey),
+        cryptPublicKey: serializeBin(d.cryptPublicKey)
+      })
+    }
+
+    for (const g of await this.getDeviceGraph()) {
+      evtPayload.policies.push({
+        dstDeviceId: g.dstDeviceId,
+        srcDeviceId: g.srcDeviceId,
+        policy: g.policy,
+      })
+    }
+
+    await this.sendEvent(
+      "sept.policy.update",
+      evtPayload,
+      [deviceId]
+    )
+
   }
 
   async revokeAdmin(deviceId) {
@@ -827,7 +879,8 @@ export class SeptClient {
     const curDeviceId = await this.getDeviceId()
     const networkId = await this.getNetworkId()
     const recipients = await this.store.device.getAll()
-    await this.store.device.update(networkId, deviceId, { role: "user" })
+    // await this.store.device.update(networkId, deviceId, { role: "user" })
+    await this.store.device.upsert(deviceId, { role: "user" })
     await this.sendEvent(
       "sept.admin.revoke",
       { networkId, deviceId },
@@ -947,7 +1000,7 @@ export class SeptClient {
       body: { deviceId }
     })
 
-    await this.store.device.update(undefined, deviceId, { revokedAt: now() })
+    await this.store.device.upsert(deviceId, { revokedAt: now() })
   }
 
   async getAdmins() {
