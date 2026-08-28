@@ -53,10 +53,10 @@ class FMnetTest {
       ...options,
       dataStore: createDs("cl3"),
     })
-    // this.appDevice4 = await FMNet.create({
-    //   ...options,
-    //   dataStore: createDs("cl4"),
-    // })
+    this.appDevice4 = await FMNet.create({
+      ...options,
+      dataStore: createDs("cl4"),
+    })
   }
 
   async sent_mess_and_assert(srcDevKey, dstDevKey, message) {
@@ -101,20 +101,11 @@ class FMnetTest {
     await this.appDevice3.getPairing(pin3)
     console.log(`Device 3 paired`)
 
-    // this.appDevice4Name = "user4"
-    // const device4Data = await this.appDevice4.initDevice(this.appDevice4Name)
-    // console.log(`Init device4 done`)
-    // const pin4 = await this.appAdmin.addDevice(device4Data)
-    // console.log(`Device4 added`)
-    // await this.appDevice4.getPairing(pin4)
-    // console.log(`Device 4 paired`)
-
     await sleep(2000)
     this.appAdminDeviceId = await this.appAdmin.getDeviceId()
     this.appDevice1DeviceId = await this.appDevice1.getDeviceId()
     this.appDevice2DeviceId = await this.appDevice2.getDeviceId()
     this.appDevice3DeviceId = await this.appDevice3.getDeviceId()
-    // this.appDevice4DeviceId = await this.appDevice4.getDeviceId()
 
     await this.appAdmin.grant(
       this.appDevice1Name,
@@ -322,6 +313,27 @@ class FMnetTest {
     assert(
       d2Identities.map(d => d.name).includes(this.appDevice3Name),
       `Missing Device3 identity from Device2 list (Device2 is now admin)`
+    )
+
+    this.appDevice4Name = "user4"
+    const device4Data = await this.appDevice4.initDevice(this.appDevice4Name)
+    console.log(`Init device4 done`)
+    const pin4 = await this.appAdmin.addDevice(device4Data)
+    console.log(`Device4 added`)
+    await this.appDevice4.getPairing(pin4)
+    console.log(`Device 4 paired`)
+    await sleep(1500)
+    this.appDevice4DeviceId = await this.appDevice4.getDeviceId()
+    const d4Identities = await this.appDevice4.listDevices()
+    assert(
+      d4Identities.map(d => d.name).includes(this.appDevice2Name),
+      `Missing Device2 identity from Device4 list (Device2 is now admin)`
+    )
+    await this.appDevice2.sync()
+    d2Identities = await this.appDevice2.listDevices()
+    assert(
+      d2Identities.map(d => d.name).includes(this.appDevice4Name),
+      `Missing Device4 identity from Device2 list (Device2 is now admin)`
     )
 
   }

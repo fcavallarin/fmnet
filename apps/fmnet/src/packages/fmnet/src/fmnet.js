@@ -53,7 +53,6 @@ export class FMNet {
             await this.identityStore.set(id, deviceName)
           }
         }
-
       }
       this.eventBus.dispatch("policy.update", deviceData)
     })
@@ -69,6 +68,7 @@ export class FMNet {
 
     // Device added to the network, only admins will get this event
     this.septClient.on("device.added", async deviceData => {
+      await this.identityStore.set(deviceData.id, deviceData.metadata.deviceName)
       this.eventBus.dispatch("device.added", deviceData)
     })
 
@@ -358,12 +358,20 @@ export class FMNet {
   async addDevice(deviceData) {
     const deviceId = await this.septClient.getDeviceId()
     const adminDevices = {}
-    adminDevices[deviceId] = await this.identityStore.getByDevice(deviceId)
+    for (const a of await this.getAdmins()) {
+      adminDevices[a] = await this.identityStore.getByName(a)
+    }
 
     const pin = await this.septClient.addDevice(
       deviceData,
       {
-        identities: { ...adminDevices, [deviceData.deviceId]: deviceData.name }
+        deviceMetadata: {
+          identities: { ...adminDevices, [deviceData.name]: [deviceData.deviceId] }
+        },
+        adminMetadata: {
+          //identities: { [deviceData.name]: [deviceData.deviceId] }
+          deviceName: deviceData.name
+        }
       }
     )
     await this.identityStore.set(deviceData.deviceId, deviceData.name)
@@ -402,8 +410,10 @@ export class FMNet {
     this.identityStore.setFamilyId(
       await this.septClient.getNetworkId()
     )
-    for (const name in metadata?.identities || []) {
-      await this.identityStore.set(name, metadata.identities[name])
+    for (const name in metadata?.identities || {}) {
+      for (const id of metadata.identities[name]) {
+        await this.identityStore.set(id, name)
+      }
     }
     await this.registerDataChannelService()
   };

@@ -299,7 +299,7 @@ export class SeptClient {
                 signPublicKey: serializeBin(d.signPublicKey),
                 cryptPublicKey: serializeBin(d.cryptPublicKey),
               })),
-              metadata: metadata || {}
+              metadata: metadata?.deviceMetadata || {}
             })
             ))
         ),
@@ -312,7 +312,7 @@ export class SeptClient {
               networkId,
               signPublicKey: deviceData.signPublicKey,
               cryptPublicKey: deviceData.cryptPublicKey,
-              metadata: metadata || {}
+              metadata: metadata?.adminMetadata || {}
             })
             ))
         )
@@ -339,13 +339,12 @@ export class SeptClient {
           if (pairedDevice.deviceId !== deviceData.deviceId) {
             continue
           }
-          const newDeviceData = {
+
+          await this.store.device.upsert(pairedDevice.deviceId, {
             networkId: pairedDevice.networkId,
             signPublicKey: deserializeBin(pairedDevice.signPublicKey),
             cryptPublicKey: deserializeBin(pairedDevice.cryptPublicKey),
-          }
-
-          await this.store.device.upsert(pairedDevice.deviceId, newDeviceData)
+          })
 
           await this._callRest(
             `paired-devices/${deviceData.deviceId}`,
@@ -358,7 +357,10 @@ export class SeptClient {
               "sept.device.added",
               {
                 id: pairedDevice.deviceId,
-                ...newDeviceData,
+                networkId: pairedDevice.networkId,
+                signPublicKey: pairedDevice.signPublicKey,
+                cryptPublicKey: pairedDevice.cryptPublicKey,
+                metadata: pairedDevice.metadata
               },
               recipients
             )
@@ -811,7 +813,6 @@ export class SeptClient {
     await this.updatePolicy(srcDeviceId, dstDeviceId, allowedActions, metadata);
   }
 
-  // async grantAdmin(deviceId, adminMetadata = {}, devicesMetadata = {}) {
   async grantAdmin(deviceId, metadata = {}) {
     if (!await this.isCurrentDeviceAdmin()) {
       throw new Error("Device must be admin")

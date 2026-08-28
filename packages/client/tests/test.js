@@ -346,6 +346,11 @@ class SeptTest {
       )
     }
 
+    const d4Devices = await this.appDevice4.septClient.getDevices()
+    assert(
+      d4Devices.map(d => d.id).includes(this.appDevice1DeviceId),
+      "Missing Device1 from Device4"
+    )
 
     let d1Data = await this.appDevice1.getDeviceData()
     assert(d1Data.isAdmin, "Device1 should be admin")
@@ -386,8 +391,7 @@ class SeptTest {
     assert(adminMessages.length > 0, "Admin did not get the message from Device2")
 
     await this.appAdmin.revokeAdmin(this.appDevice1DeviceId)
-    // await this.appDevice1.sync()
-    // await this.appDevice2.sync()
+
     await this._sync_client_devices()
     d1Data = await this.appDevice1.getDeviceData()
     assert(!d1Data.isAdmin, "Device1 should be NOT admin")
