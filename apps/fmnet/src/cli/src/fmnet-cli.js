@@ -207,8 +207,13 @@ export class FmnetCli {
         break
       case "whoami":
         localIdentity = await this.fmnet.getLocalIdentity()
-        this.success(`ID: ${localIdentity.deviceId}\nname: ${localIdentity.name}`)
+        this.success(`ID: ${localIdentity.deviceId}\nname: ${localIdentity.name}\nisAdmin: ${await this.fmnet.isCurrentDeviceAdmin()}`)
         break
+      case "admins":
+        const admins = await this.fmnet.getAdmins()
+        for(const a of admins){
+          this.success(a)
+        }
       case "permissions":
         for (const g of await this.fmnet.getDeviceGraph()) {
           const sn = await this.fmnet.getDeviceIdentity(g.srcDeviceId)

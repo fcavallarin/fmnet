@@ -811,7 +811,8 @@ export class SeptClient {
     await this.updatePolicy(srcDeviceId, dstDeviceId, allowedActions, metadata);
   }
 
-  async grantAdmin(deviceId, devicesMetadata = {}) {
+  // async grantAdmin(deviceId, adminMetadata = {}, devicesMetadata = {}) {
+  async grantAdmin(deviceId, metadata = {}) {
     if (!await this.isCurrentDeviceAdmin()) {
       throw new Error("Device must be admin")
     }
@@ -826,12 +827,13 @@ export class SeptClient {
     await this.store.device.upsert(deviceId, { role: "admin" })
 
     await this.sendEvent(
-      "sept.admin.grant",
+      "sept.admin.grant",  // @TODO rename to admin.granted
       {
         networkId,
         deviceId,
         signPublicKey: serializeBin(device.signPublicKey),
         cryptPublicKey: serializeBin(device.cryptPublicKey),
+        metadata: metadata.adminMetadata || {}
       },
       recipients.map(r => r.id).filter(id => id !== curDeviceId)
     )
@@ -845,7 +847,7 @@ export class SeptClient {
       networkId,
       devices: [],
       policies: [],
-      metadata: devicesMetadata
+      metadata: metadata.devicesMetadata || {}
     }
 
     for (const d of await this.getDevices()) {

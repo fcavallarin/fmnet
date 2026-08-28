@@ -11,7 +11,7 @@ export class FMNet {
     this.options = options;
     this.dcSessions = new Map()
     this.tcpTunnels = new Map()
-    this.eventBus = new EventBus(["message", "policy.update", "device.added", "device.invalidated"])
+    this.eventBus = new EventBus(["message", "policy.update", "device.added", "device.invalidated", "admin.grant", "admin.revoke"])
     this.tcpTunnelStatus = {
       REQUESTED: "requested",
       EGRESS_RUNNING: "egressRunning",
@@ -69,6 +69,15 @@ export class FMNet {
 
       }
       this.eventBus.dispatch("policy.update", deviceData)
+    })
+
+    this.septClient.on("admin.grant", async deviceData => {
+      const deviceId = await this.septClient.getDeviceId()
+      if (deviceData.deviceId !== deviceId) {
+        await this.identityStore.set(deviceData.deviceId, deviceData.metadata.deviceName)
+      }
+
+      this.eventBus.dispatch("admin.grant", deviceData)
     })
 
     // Device added to the network, only admins will get this event
@@ -488,9 +497,14 @@ export class FMNet {
     const identities = await this.identityStore.list()
     for (const d of await this.identityStore.getByName(name)) {
       await this.septClient.grantAdmin(d, {
-        identities: Object.fromEntries(
-          identities.map(({ id, name }) => [id, name])
-        )
+        adminMetadata: {
+          deviceName: name
+        },
+        devicesMetadata: {
+          identities: Object.fromEntries(
+            identities.map(({ id, name }) => [id, name])
+          )
+        }
       })
     }
   }
@@ -767,5 +781,13 @@ export class FMNet {
       }
     }
     return true
+  }
+
+  async getAdmins() {
+    const admins = new Set()
+    for (const a of await this.septClient.getAdmins()) {
+      admins.add(await this.identityStore.getByDevice(a.deviceId))
+    }
+    return [...admins]
   }
 }

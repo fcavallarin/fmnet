@@ -2,6 +2,7 @@ import { randomDigits } from "../../../packages/crypto/src/random.js";
 import { FMNet } from "@fmnet/core";
 import Database from 'better-sqlite3';
 import { webRTCAdapter, TCPAdapter } from "@fmnet/node";
+import { canonicalJson } from "@sept/core";
 
 function assert(cond, err) {
   if (!cond) {
@@ -288,6 +289,9 @@ class FMnetTest {
     await this.appDevice2.sync()
     c = (await this.appDevice2.getContacts()).map(i => i.name)
     assert(c.includes(this.appDevice3Name, "Device2 contacts don't includes Device3"))
+    await this.appDevice3.sync()
+    const d3Admins = await this.appDevice3.getAdmins()
+    assert(d3Admins.includes(this.appDevice2Name), "Device2 is not admin for Device3")
   }
 
 
