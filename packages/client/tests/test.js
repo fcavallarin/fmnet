@@ -346,6 +346,7 @@ class SeptTest {
       )
     }
 
+
     let d1Data = await this.appDevice1.getDeviceData()
     assert(d1Data.isAdmin, "Device1 should be admin")
 

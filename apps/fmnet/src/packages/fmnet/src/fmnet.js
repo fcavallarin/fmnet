@@ -43,28 +43,15 @@ export class FMNet {
     this.tcpAdapter = this.options.tcpAdapter
 
     await this.registerDataChannelService()
-    // this.septClient.on("export.device", async deviceData => {
-    //   if (this.options?.onExportDevice) {
-    //     this.options.onExportDevice(deviceData)
-    //     return
-    //   }
-    // })
+
 
     this.septClient.on("policy.update", async deviceData => {
-      const deviceId = await this.septClient.getDeviceId()
-      // for (const p of deviceData.policies) {
-      //   if (p.srcDeviceId === deviceId && p.metadata.dstName) {
-      //     await this.identityStore.set(p.dstDeviceId, p.metadata.dstName)
-      //   }
-
-      //   if (p.dstDeviceId === deviceId && p.metadata.srcName) {
-
-      //     await this.identityStore.set(p.srcDeviceId, p.metadata.srcName)
-      //   }
-      // }
-      for (const id in deviceData.metadata.identities) {
-        if (id != deviceId) {
-          await this.identityStore.set(id, deviceData.metadata.identities[id])
+      const i = await this.getLocalIdentity()
+      for (const deviceName in deviceData.metadata.identities) {
+        if (deviceName !== i.name) {
+          for (const id of deviceData.metadata.identities[deviceName]) {
+            await this.identityStore.set(id, deviceName)
+          }
         }
 
       }
@@ -472,12 +459,14 @@ export class FMNet {
   }
 
   async grant(srcName, dstName, actions, metadata = {}) {
-    for (const s of await this.identityStore.getByName(srcName)) {
-      for (const d of await this.identityStore.getByName(dstName)) {
+    const srcDevices = await this.identityStore.getByName(srcName)
+    const dstDevices = await this.identityStore.getByName(dstName)
+    for (const s of srcDevices) {
+      for (const d of dstDevices) {
         return await this.septClient.grant(s, d, actions, {
           identities: {
-            [s]: srcName,
-            [d]: dstName,
+            [srcName]: srcDevices,
+            [dstName]: dstDevices,
           },
           ...metadata
         })
@@ -496,16 +485,18 @@ export class FMNet {
   async grantAdmin(name) {
     const identities = await this.identityStore.list()
     for (const d of await this.identityStore.getByName(name)) {
-      await this.septClient.grantAdmin(d, {
+      const metadata = {
         adminMetadata: {
           deviceName: name
         },
         devicesMetadata: {
           identities: Object.fromEntries(
-            identities.map(({ id, name }) => [id, name])
+            identities.map(({ name, devices }) => [name, devices])
           )
         }
-      })
+      }
+
+      await this.septClient.grantAdmin(d, metadata)
     }
   }
 

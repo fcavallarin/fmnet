@@ -53,6 +53,10 @@ class FMnetTest {
       ...options,
       dataStore: createDs("cl3"),
     })
+    // this.appDevice4 = await FMNet.create({
+    //   ...options,
+    //   dataStore: createDs("cl4"),
+    // })
   }
 
   async sent_mess_and_assert(srcDevKey, dstDevKey, message) {
@@ -96,11 +100,21 @@ class FMnetTest {
     console.log(`Device3 added`)
     await this.appDevice3.getPairing(pin3)
     console.log(`Device 3 paired`)
+
+    // this.appDevice4Name = "user4"
+    // const device4Data = await this.appDevice4.initDevice(this.appDevice4Name)
+    // console.log(`Init device4 done`)
+    // const pin4 = await this.appAdmin.addDevice(device4Data)
+    // console.log(`Device4 added`)
+    // await this.appDevice4.getPairing(pin4)
+    // console.log(`Device 4 paired`)
+
     await sleep(2000)
     this.appAdminDeviceId = await this.appAdmin.getDeviceId()
     this.appDevice1DeviceId = await this.appDevice1.getDeviceId()
     this.appDevice2DeviceId = await this.appDevice2.getDeviceId()
     this.appDevice3DeviceId = await this.appDevice3.getDeviceId()
+    // this.appDevice4DeviceId = await this.appDevice4.getDeviceId()
 
     await this.appAdmin.grant(
       this.appDevice1Name,
@@ -283,15 +297,33 @@ class FMnetTest {
 
 
   async test_grant_admin(testId) {
+    let d2Identities = await this.appDevice2.listDevices()
+    assert(
+      !(d2Identities.map(d => d.name).includes(this.appDevice3Name)),
+      `Device2 identities includes Device3, this test may be incomplete`
+    )
     let c = (await this.appDevice2.getContacts()).map(i => i.name)
     assert(!c.includes(this.appDevice3Name, "Device2 contacts includes Device3, this test may be incomplete"))
+    
     await this.appAdmin.grantAdmin(this.appDevice2Name)
+    
     await this.appDevice2.sync()
     c = (await this.appDevice2.getContacts()).map(i => i.name)
-    assert(c.includes(this.appDevice3Name, "Device2 contacts don't includes Device3"))
+    assert(c.includes(this.appDevice3Name), "Device2 contacts don't includes Device3")
     await this.appDevice3.sync()
     const d3Admins = await this.appDevice3.getAdmins()
     assert(d3Admins.includes(this.appDevice2Name), "Device2 is not admin for Device3")
+
+    d2Identities = await this.appDevice2.listDevices()
+    assert(
+      d2Identities.map(d => d.name).includes(this.appDevice1Name),
+      `Missing Device1 identity from Device2 list (Device2 is now admin)`
+    )
+    assert(
+      d2Identities.map(d => d.name).includes(this.appDevice3Name),
+      `Missing Device3 identity from Device2 list (Device2 is now admin)`
+    )
+
   }
 
 
