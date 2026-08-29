@@ -66,6 +66,10 @@ export class FMNet {
       this.eventBus.dispatch("admin.grant", deviceData)
     })
 
+    this.septClient.on("admin.revoke", async deviceData => {
+      this.eventBus.dispatch("admin.revoke", deviceData)
+    })
+
     // Device added to the network, only admins will get this event
     this.septClient.on("device.added", async deviceData => {
       await this.identityStore.set(deviceData.id, deviceData.metadata.deviceName)
@@ -369,7 +373,6 @@ export class FMNet {
           identities: { ...adminDevices, [deviceData.name]: [deviceData.deviceId] }
         },
         adminMetadata: {
-          //identities: { [deviceData.name]: [deviceData.deviceId] }
           deviceName: deviceData.name
         }
       }
@@ -575,17 +578,19 @@ export class FMNet {
     if (messages.length === 0) {
       return []
     }
-
+    const unreads = await this.appState.get("unreads")
     const ret = []
     for (const m of messages) {
+      const sender = await this.identityStore.getByDevice(m.senderDeviceId)
       ret.push({
         message: m.payload,
-        sender: await this.identityStore.getByDevice(m.senderDeviceId),
+        sender,
         id: m.id,
         timestamp: m.timestamp,
         sequence: m.sequence,
         isIncoming: m.isIncoming,
-        isOutgoing: m.isOutgoing
+        isOutgoing: m.isOutgoing,
+        isUnread: unreads[m.senderDeviceId] && unreads[m.senderDeviceId].includes(m.id)
       })
     }
     return ret
@@ -615,14 +620,14 @@ export class FMNet {
 
     if (await this.isCurrentDeviceAdmin()) {
       for (const d of await this.identityStore.list()) {
-        contacts[d.name] = { unreads_number: 0, unreads: [] }
+        contacts[d.name] = { unreadsNumber: 0, unreads: [] }
       }
     } else {
       for (const g of graph) {
         if (g.policy.allowedActions.includes("message")) {
           const did = g.dstDeviceId === deviceId ? g.srcDeviceId : g.dstDeviceId
           const i = await this.getDeviceIdentity(did)
-          contacts[i.name] = { unreads_number: 0, unreads: [] }
+          contacts[i.name] = { unreadsNumber: 0, unreads: [] }
         }
       }
     }
@@ -633,14 +638,14 @@ export class FMNet {
       if (i.name in contacts) {
         continue
       }
-      contacts[i.name] = { unreads_number: 0, unreads: [] }
+      contacts[i.name] = { unreadsNumber: 0, unreads: [] }
     }
 
     const unreads = await this.appState.get("unreads")
     for (const u in unreads) {
       const i = await this.getDeviceIdentity(u)
       contacts[i.name].unreads = unreads[u]
-      contacts[i.name].unreads_number = unreads[u].length
+      contacts[i.name].unreadsNumber = unreads[u].length
     }
     const contactList = []
     for (const c in contacts) {
@@ -649,7 +654,7 @@ export class FMNet {
         ...contacts[c]
       })
     }
-    return contactList
+    return contactList.sort((a, b) => (b.unreadsNumber - a.unreadsNumber))
   }
 
   async assertPermission(srcName, dstName, perm) {
@@ -790,5 +795,16 @@ export class FMNet {
       admins.add(await this.identityStore.getByDevice(a.deviceId))
     }
     return [...admins]
+  }
+
+  async getChatPermissions(deviceName) {
+    const devices = []
+    for (const d of await this.listDevices()) {
+      devices.push({
+        deviceName: d.name,
+        granted: await this.hasPermission(d.name, deviceName, "message")
+      })
+    }
+    return devices
   }
 }

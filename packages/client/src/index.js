@@ -882,7 +882,7 @@ export class SeptClient {
     const curDeviceId = await this.getDeviceId()
     const networkId = await this.getNetworkId()
     const recipients = await this.store.device.getAll()
-    // await this.store.device.update(networkId, deviceId, { role: "user" })
+
     await this.store.device.upsert(deviceId, { role: "user" })
     await this.sendEvent(
       "sept.admin.revoke",

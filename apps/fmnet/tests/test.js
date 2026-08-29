@@ -275,7 +275,7 @@ class FMnetTest {
     await this.sent_mess_and_assert("Device1", "Device2", testId)
     await this.sent_mess_and_assert("Device1", "Device2", `${testId}-1`)
     const contacts = await this.appDevice2.getContacts()
-    assert(contacts[0].name == this.appDevice1Name && contacts[0].unreads_number === 2, `Contacts without unreads`)
+    assert(contacts[0].name == this.appDevice1Name && contacts[0].unreadsNumber === 2, `Contacts without unreads`)
     newMessages = await this.appDevice2.appState.get("unreads")
     assert(newMessages[this.appDevice1DeviceId].length === 2, "No unread messages")
     await this.appDevice2.setMessageAsRead(newMessages[this.appDevice1DeviceId][0])

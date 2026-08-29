@@ -45,20 +45,6 @@ export class DeviceStore extends BaseStore {
     return devices.map(d => this.deserialize(d));
   }
 
-
-
-  // async import(deviceData, role = "user") {
-  //   const { fields, values, placeholders } = this.getQryParts({
-  //     ...deviceData, role
-  //   })
-  //   return this.db.write(
-  //     `INSERT INTO device (${fields.join(',')}) VALUES (${placeholders})`,
-  //     values
-  //   )
-  // }
-
-
-  // async add(networkId, signPublicKey, cryptPublicKey, role = "user") {
   async create(deviceData) {
     const id = makeId("dev", deviceData.signPublicKey);
     await this.add({ ...deviceData, id })
