@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS event (
   signature TEXT NOT NULL,
   sequence INTEGER UNIQUE NOT NULL,
   timestamp INTEGER NOT NULL,
+  has_attachment INTEGER DEFAULT 0,
   FOREIGN KEY (network_id) REFERENCES network(id),
   FOREIGN KEY (sender_device_id) REFERENCES device(id)
 );

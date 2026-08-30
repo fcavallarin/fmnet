@@ -87,6 +87,7 @@ async function createTables(db) {
       is_system INTEGER NOT NULL,
       is_outgoing INTEGER NOT NULL,
       is_incoming INTEGER NOT NULL,
+      has_attachment INTEGER DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
   `);

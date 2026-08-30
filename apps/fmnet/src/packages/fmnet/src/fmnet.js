@@ -799,7 +799,7 @@ export class FMNet {
 
   async getChatPermissions(deviceName) {
     const devices = []
-    for (const d of await this.listDevices()) {
+    for (const d of await this.listDevices(false)) {
       devices.push({
         deviceName: d.name,
         granted: await this.hasPermission(d.name, deviceName, "message")
