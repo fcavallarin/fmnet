@@ -673,7 +673,7 @@ export class SeptClient {
     return network.id;
   }
 
-  async updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata) {
+  async _updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata) {
     if (!await this.isCurrentDeviceAdmin()) {
       throw new Error("Device must be admin")
     }
@@ -796,7 +796,7 @@ export class SeptClient {
         allowedEventTypes.push(eventType);
       }
     }
-    await this.updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata);
+    await this._updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata);
   }
 
   revoke = async (srcDeviceId, dstDeviceId, eventTypes, metadata) => {
@@ -810,7 +810,7 @@ export class SeptClient {
         );
       }
     }
-    await this.updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata);
+    await this._updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata);
   }
 
   grantAdmin = async (deviceId, metadata = {}) => {
@@ -828,7 +828,7 @@ export class SeptClient {
     await this.store.device.upsert(deviceId, { role: "admin" })
 
     await this.sendEvent(
-      "sept.admin.grant",  // @TODO rename to admin.granted
+      "sept.admin.grant",
       {
         networkId,
         deviceId,

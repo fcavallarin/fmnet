@@ -129,8 +129,8 @@ export class BaseSeptApp {
   };
 
 
-  async updatePolicy(srcDeviceId, dstDeviceId, policy) {
-    return await this.septClient.updatePolicy(
+  async _updatePolicy(srcDeviceId, dstDeviceId, policy) {
+    return await this.septClient._updatePolicy(
       srcDeviceId,
       dstDeviceId,
       policy,

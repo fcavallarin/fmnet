@@ -51,6 +51,17 @@ export class EventStore extends BaseStore {
       rqp.searchParams.join(' AND '),
     ].filter(v => Boolean(v)).join(" AND ")
 
+
+    // @TODO: This JOIN can return the same event multiple times when an outgoing
+    // event has multiple recipients, because each event_recipient row produces
+    // a separate result row.
+    //
+    // EventStore.filter() should probably return unique events and use recipients
+    // only as a filtering criterion (e.g. via EXISTS), instead of returning the
+    // event x recipient cartesian result.
+    //
+    // Keep this in mind before using filter() for outgoing event history.
+
     const qry = `SELECT e.*, er.device_id as recipientDeviceId from event e 
       left join event_recipient er on e.id = er.event_id
       left join device d on d.id = er.device_id

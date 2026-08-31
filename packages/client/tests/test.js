@@ -111,7 +111,7 @@ class SeptTest {
 
   async test_policy_device2_to_device1(testId) {
 
-    await this.appAdmin.updatePolicy(
+    await this.appAdmin._updatePolicy(
       this.appDevice2DeviceId,
       this.appDevice1DeviceId,
       []

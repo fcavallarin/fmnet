@@ -527,26 +527,27 @@ export class FMNet {
     await this.septClient.sendEvent(eventName, data, dstDevices)
   }
 
-  async getNewMessages() {  // @TODO deprecated
-    const lastSequence = await this.appState.get("lastSequence")
+  // async getNewMessages() {
+  //   console.warn("deprecated")
+  //   const lastSequence = await this.appState.get("lastSequence")
 
-    const filters = {
-      isIncoming: true
-    }
-    if (lastSequence) {
-      filters['sequence__gt'] = lastSequence
-    }
-    const messages = await this.getMessages(filters)
-    if (messages.length === 0) {
-      return []
-    }
+  //   const filters = {
+  //     isIncoming: true
+  //   }
+  //   if (lastSequence) {
+  //     filters['sequence__gt'] = lastSequence
+  //   }
+  //   const messages = await this.getMessages(filters)
+  //   if (messages.length === 0) {
+  //     return []
+  //   }
 
-    await this.appState.set(
-      "lastSequence",
-      Math.max(...messages.map(m => m.sequence))
-    )
-    return messages
-  }
+  //   await this.appState.set(
+  //     "lastSequence",
+  //     Math.max(...messages.map(m => m.sequence))
+  //   )
+  //   return messages
+  // }
 
 
   async getMessagesFrom(fromName, filters = {}) {
