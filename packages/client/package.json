@@ -3,14 +3,18 @@
   "version": "0.1.0",
   "type": "module",
   "main": "./src/index.js",
+  "types": "./src/index.d.ts",
   "exports": {
-    ".": "./src/index.js"
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    }
   },
   "files": [
     "src"
   ],
   "dependencies": {
-    "better-sqlite3": "^11.8.1",
     "@sept/crypto": "*",
     "@sept/core": "*"
   }
