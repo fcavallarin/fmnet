@@ -446,8 +446,8 @@ export class FMNet {
     return await this.septClient.getPolicy(srcDeviceId, dstDeviceId)
   }
 
-  async checkPolicy(srcDeviceId, dstDeviceId, perm) {
-    return await this.septClient.checkPolicy(srcDeviceId, dstDeviceId, perm)
+  async checkPolicy(srcDeviceId, dstDeviceId, eventType) {
+    return await this.septClient.checkPolicy(srcDeviceId, dstDeviceId, eventType)
   }
 
   async getDeviceId() {
@@ -471,7 +471,7 @@ export class FMNet {
     const dstDevices = await this.identityStore.getByName(dstName)
     for (const s of srcDevices) {
       for (const d of dstDevices) {
-        return await this.septClient.grant(s, d, eventTypes, {
+        await this.septClient.grant(s, d, eventTypes, {
           identities: {
             [srcName]: srcDevices,
             [dstName]: dstDevices,
@@ -485,7 +485,7 @@ export class FMNet {
   async revoke(srcName, dstName, eventTypes, metadata) {
     for (const s of await this.identityStore.getByName(srcName)) {
       for (const d of await this.identityStore.getByName(dstName)) {
-        return await this.septClient.revoke(s, d, eventTypes, metadata)
+        await this.septClient.revoke(s, d, eventTypes, metadata)
       }
     }
   }
@@ -652,20 +652,20 @@ export class FMNet {
     return contactList.sort((a, b) => (b.unreadsNumber - a.unreadsNumber))
   }
 
-  async assertPermission(srcName, dstName, perm) {
+  async assertPermission(srcName, dstName, eventType) {
     for (const s of await this.identityStore.getByName(srcName)) {
       for (const d of await this.identityStore.getByName(dstName)) {
-        const sp = await this.checkPolicy(s, d, perm)
+        const sp = await this.checkPolicy(s, d, eventType)
         if (!sp) {
-          throw new Error(`Missing ${perm} permission from ${s} to ${d}`)
+          throw new Error(`Missing ${eventType} permission from ${s} to ${d}`)
         }
       }
     }
   }
 
-  async hasPermission(srcName, dstName, perm) {
+  async hasPermission(srcName, dstName, eventType) {
     try {
-      await this.assertPermission(srcName, dstName, perm)
+      await this.assertPermission(srcName, dstName, eventType)
       return true
     } catch {
       return false

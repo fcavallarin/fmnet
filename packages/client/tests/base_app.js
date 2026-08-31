@@ -150,12 +150,12 @@ export class BaseSeptApp {
     return await this.septClient.getStoredEvents(filters)
   }
 
-  async grant(srcDeviceId, dstDeviceId, action, metadata) {
-    return await this.septClient.grant(srcDeviceId, dstDeviceId, action, metadata)
+  async grant(srcDeviceId, dstDeviceId, eventTypes, metadata) {
+    return await this.septClient.grant(srcDeviceId, dstDeviceId, eventTypes, metadata)
   }
 
-  async revoke(srcDeviceId, dstDeviceId, action, metadata) {
-    return await this.septClient.revoke(srcDeviceId, dstDeviceId, action, metadata)
+  async revoke(srcDeviceId, dstDeviceId, eventTypes, metadata) {
+    return await this.septClient.revoke(srcDeviceId, dstDeviceId, eventTypes, metadata)
   }
 
   async getPolicy(srcDeviceId, dstDeviceId) {
