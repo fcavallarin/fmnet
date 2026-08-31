@@ -66,7 +66,7 @@ async function main() {
     rl.close()
   }
   console.log("Connecting ... \n")
-  await fmnet.relayConnect()
+  await fmnet.connect()
   const cli = new FmnetCli(
     fmnet
   )

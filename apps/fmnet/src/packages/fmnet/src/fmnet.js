@@ -11,7 +11,7 @@ export class FMNet {
     this.options = options;
     this.dcSessions = new Map()
     this.tcpTunnels = new Map()
-    this.eventBus = new EventBus(["message", "policy.update", "device.added", "device.invalidated", "admin.grant", "admin.revoke"])
+    this.eventBus = new EventBus(["message", "policy.update", "device.add", "device.invalidate", "admin.grant", "admin.revoke"])
     this.tcpTunnelStatus = {
       REQUESTED: "requested",
       EGRESS_RUNNING: "egressRunning",
@@ -71,14 +71,14 @@ export class FMNet {
     })
 
     // Device added to the network, only admins will get this event
-    this.septClient.on("device.added", async deviceData => {
+    this.septClient.on("device.add", async deviceData => {
       await this.identityStore.set(deviceData.id, deviceData.metadata.deviceName)
-      this.eventBus.dispatch("device.added", deviceData)
+      this.eventBus.dispatch("device.add", deviceData)
     })
 
-    this.septClient.on("device.invalidated", async deviceData => {
+    this.septClient.on("device.invalidate", async deviceData => {
       await this.identityStore.deleteDevice(deviceData.deviceId)
-      this.eventBus.dispatch("device.invalidated", deviceData)
+      this.eventBus.dispatch("device.invalidate", deviceData)
     })
 
     this.septClient.register(
@@ -103,15 +103,15 @@ export class FMNet {
     )
 
     this.septClient.registerConcurrent(
-      "tcptunnel.ingress", async (actionData) => {
-        const { tunnelId, dcmId, status } = actionData
+      "tcptunnel.ingress", async (eventData) => {
+        const { tunnelId, dcmId, status } = eventData
         await this.handleTcpTunnelIngress(tunnelId, dcmId, status)
       }
     )
 
     this.septClient.register(
-      "tcptunnel.egress", async (actionData, senderDeviceId) => {
-        const { tunnelId, host, port, dcmId, status } = actionData
+      "tcptunnel.egress", async (eventData, senderDeviceId) => {
+        const { tunnelId, host, port, dcmId, status } = eventData
         await this.handleTcpTunnelEgress(tunnelId, host, port, dcmId, status, senderDeviceId)
       }
     )
@@ -425,13 +425,13 @@ export class FMNet {
     return await this.septClient.sync()
   };
 
-  async relayConnect() {
-    return await this.septClient.relayConnect()
+  async connect() {
+    return await this.septClient.connect()
 
   };
 
-  async relayDisconnect() {
-    return await this.septClient.relayDisconnect()
+  async disconnect() {
+    return await this.septClient.disconnect()
   };
 
   getRelayStatus() {
@@ -462,16 +462,16 @@ export class FMNet {
     return await this.septClient.getNetworkId()
   }
 
-  async getStoredActions(filters) { // @TODO rename 'actions'
-    return await this.septClient.getStoredActions(filters)
+  async getStoredEvents(filters) {
+    return await this.septClient.getStoredEvents(filters)
   }
 
-  async grant(srcName, dstName, actions, metadata = {}) {
+  async grant(srcName, dstName, eventTypes, metadata = {}) {
     const srcDevices = await this.identityStore.getByName(srcName)
     const dstDevices = await this.identityStore.getByName(dstName)
     for (const s of srcDevices) {
       for (const d of dstDevices) {
-        return await this.septClient.grant(s, d, actions, {
+        return await this.septClient.grant(s, d, eventTypes, {
           identities: {
             [srcName]: srcDevices,
             [dstName]: dstDevices,
@@ -482,10 +482,10 @@ export class FMNet {
     }
   }
 
-  async revoke(srcName, dstName, actions, metadata) {
+  async revoke(srcName, dstName, eventTypes, metadata) {
     for (const s of await this.identityStore.getByName(srcName)) {
       for (const d of await this.identityStore.getByName(dstName)) {
-        return await this.septClient.revoke(s, d, actions, metadata)
+        return await this.septClient.revoke(s, d, eventTypes, metadata)
       }
     }
   }
@@ -569,7 +569,7 @@ export class FMNet {
 
   async getMessages(filters = {}) {
 
-    const messages = await this.getStoredActions({ type: "message", ...filters })
+    const messages = await this.getStoredEvents({ type: "message", ...filters })
     if (messages.length === 0) {
       return []
     }
@@ -619,7 +619,7 @@ export class FMNet {
       }
     } else {
       for (const g of graph) {
-        if (g.policy.allowedActions.includes("message")) {
+        if (g.policy.allowedEventTypes.includes("message")) {
           const did = g.dstDeviceId === deviceId ? g.srcDeviceId : g.dstDeviceId
           const i = await this.getDeviceIdentity(did)
           contacts[i.name] = { unreadsNumber: 0, unreads: [] }
@@ -740,7 +740,7 @@ export class FMNet {
     for (const [dcmId, dcms] of this.dcSessions) {
       await dcms.dcm.close()
     }
-    await this.relayDisconnect()
+    await this.disconnect()
   }
 
   async closeDataChannel(dcmId) {

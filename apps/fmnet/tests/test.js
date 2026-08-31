@@ -63,7 +63,7 @@ class FMnetTest {
     const umess = `${message}-${randomDigits(6)} (${srcDevKey} -> ${dstDevKey}) ⚡😎 ⚡`
     await this[`app${srcDevKey}`].sendMessage(this[`app${dstDevKey}Name`], umess)
     await this[`app${dstDevKey}`].sync()
-    const storedMessages = await this[`app${dstDevKey}`].getStoredActions({
+    const storedMessages = await this[`app${dstDevKey}`].getStoredEvents({
       payload: umess
     })
     const mess = storedMessages[0]
@@ -135,20 +135,20 @@ class FMnetTest {
 
     const policy1Admin = await this.appDevice1.getPolicy(this.appDevice1DeviceId, this.appAdminDeviceId)
     assert(
-      policy1Admin.allowedActions.includes("message"),
+      policy1Admin.allowedEventTypes.includes("message"),
       `Device1: Device1 policy error to Admin: ${JSON.stringify(policy1Admin)}`
     )
 
     const policyAdmin1 = await this.appAdmin.getPolicy(this.appDevice1DeviceId, this.appAdminDeviceId)
     assert(
-      policyAdmin1.allowedActions.includes("message"),
+      policyAdmin1.allowedEventTypes.includes("message"),
       `Admin: Device1 policy error to Admin: ${JSON.stringify(policy1Admin)}`
     )
 
 
     const policy12 = await this.appDevice1.getPolicy(this.appDevice1DeviceId, this.appDevice2DeviceId)
     assert(
-      policy12.allowedActions.includes("message"),
+      policy12.allowedEventTypes.includes("message"),
       `Device1 policy error to Device2: ${JSON.stringify(policy12)}`
     )
     console.log(`Policy check OK `)
@@ -341,8 +341,8 @@ class FMnetTest {
 
 
   async test_tunnel(testId) {
-    await this.appDevice1.relayConnect()
-    await this.appDevice2.relayConnect()
+    await this.appDevice1.connect()
+    await this.appDevice2.connect()
 
     await this.appAdmin.grantDataChannel(this.appDevice1Name, this.appDevice2Name)
     await this.appAdmin.grantTcpTunnel(this.appDevice1Name, this.appDevice2Name)
@@ -422,8 +422,8 @@ class FMnetTest {
       await this.appDevice1.closeTcpTunnel(tunnelId2)
     }
 
-    await this.appDevice1.relayDisconnect()
-    await this.appDevice2.relayDisconnect()
+    await this.appDevice1.disconnect()
+    await this.appDevice2.disconnect()
   }
 
 
@@ -437,7 +437,7 @@ class FMnetTest {
 
 
   async test_invalidate_device(testId) {
-    await this.appDevice1.relayConnect()
+    await this.appDevice1.connect()
     let c = await this.appDevice1.getContacts()
     assert(c.map(x => x.name).includes(this.appDevice3Name), "Device3 not in Contacts")
     const devices = await this.appDevice1.listDevices()
@@ -450,7 +450,7 @@ class FMnetTest {
     c = await this.appDevice1.getContacts()
     assert(!c.map(x => x.name).includes(this.appDevice3Name), "Device3 still in Contacts")
 
-    await this.appDevice1.relayDisconnect()
+    await this.appDevice1.disconnect()
   }
 }
 

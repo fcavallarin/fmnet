@@ -69,15 +69,15 @@ class SeptTest {
     assert(d1Graph.length == 1, `d1Graph len = ${d1Graph.length}`)
     assert(d1Graph[0].srcDeviceId == this.appDevice1DeviceId, `d1Graph[0].srcDeviceId = ${d1Graph[0].srcDeviceId}`)
     assert(d1Graph[0].dstDeviceId == this.appDevice2DeviceId, `d1Graph[0].dstDeviceId = ${d1Graph[0].dstDeviceId}`)
-    assert(d1Graph[0].policy.allowedActions[0] == "message", `d1Graph[0].policy = ${JSON.stringify(d1Graph[0].policy)}`)
+    assert(d1Graph[0].policy.allowedEventTypes[0] == "message", `d1Graph[0].policy = ${JSON.stringify(d1Graph[0].policy)}`)
 
     const d2Graph = await this.appDevice2.getDeviceGraph();
     assert(d2Graph.length == 1, `d2Graph len = ${d2Graph.length}`)
     assert(d2Graph[0].srcDeviceId == this.appDevice1DeviceId, `d2Graph[0].srcDeviceId = ${d2Graph[0].srcDeviceId}`)
     assert(d2Graph[0].dstDeviceId == this.appDevice2DeviceId, `d2Graph[0].dstDeviceId = ${d2Graph[0].dstDeviceId}`)
-    assert(d2Graph[0].policy.allowedActions[0] == "message", `d2Graph[0].policy = ${JSON.stringify(d2Graph[0].policy)}`)
+    assert(d2Graph[0].policy.allowedEventTypes[0] == "message", `d2Graph[0].policy = ${JSON.stringify(d2Graph[0].policy)}`)
 
-    await this.appDevice2.relayDisconnect()
+    await this.appDevice2.disconnect()
 
   }
 
@@ -89,10 +89,10 @@ class SeptTest {
     this.appDevice1.septClient.on("connection.close", event => {
       connectionOpen = false
     })
-    await this.appDevice1.relayConnect()
+    await this.appDevice1.connect()
     await sleep(500)
     assert(connectionOpen, "WS connection failed")
-    await this.appDevice1.relayDisconnect()
+    await this.appDevice1.disconnect()
     await sleep(500)
     assert(!connectionOpen, "WS connection close failed")
   }
@@ -162,11 +162,11 @@ class SeptTest {
     await this.appDevice1.sync()
     await this.appDevice2.sync()
 
-    for (const act of await this.appDevice1.getStoredActions()) {
+    for (const act of await this.appDevice1.getStoredEvents()) {
       assert(act.payload !== testId, `${act.payload}`)
     }
 
-    for (const act of await this.appDevice2.getStoredActions()) {
+    for (const act of await this.appDevice2.getStoredEvents()) {
       assert(act.payload !== testId, `${act.payload}`)
     }
 
@@ -174,7 +174,7 @@ class SeptTest {
     await this.appDevice2.septClient.store.deviceGraphEdge.setPolicy(
       this.appDevice2DeviceId,
       this.appDevice1DeviceId,
-      { allowedActions: ["message"] }
+      { allowedEventTypes: ["message"] }
     );
 
     await this.appDevice2.sendEvent("message", testId, [this.appDevice1DeviceId])
@@ -183,11 +183,11 @@ class SeptTest {
     await this.appDevice1.sync()
     await this.appDevice2.sync()
 
-    for (const act of await this.appDevice1.getStoredActions()) {
+    for (const act of await this.appDevice1.getStoredEvents()) {
       assert(act.payload !== testId, `After bypass ${act.payload}`)
     }
     let found = false;
-    for (const act of await this.appDevice2.getStoredActions()) {
+    for (const act of await this.appDevice2.getStoredEvents()) {
       if (act.payload === testId) {
         found = true;
         break
@@ -222,13 +222,13 @@ class SeptTest {
 
     const policy1Admin = await this.appDevice1.getPolicy(this.appDevice1DeviceId, this.appAdminDeviceId)
     assert(
-      policy1Admin.allowedActions.includes("message"),
+      policy1Admin.allowedEventTypes.includes("message"),
       `Device1: Device1 policy error to Admin: ${JSON.stringify(policy1Admin)}`
     )
 
     const policyAdmin1 = await this.appAdmin.getPolicy(this.appDevice1DeviceId, this.appAdminDeviceId)
     assert(
-      policyAdmin1.allowedActions.includes("message"),
+      policyAdmin1.allowedEventTypes.includes("message"),
       `Admin: Device1 policy error to Admin: ${JSON.stringify(policy1Admin)}`
     )
 
@@ -246,7 +246,7 @@ class SeptTest {
     console.log(`Message sent device1 -> device1`)
     await this.appDevice1.sync()
     console.log(`Device 1 sync done`)
-    const storedMessages = await this.appDevice1.getStoredActions()
+    const storedMessages = await this.appDevice1.getStoredEvents()
     const mess = storedMessages.find(m => m.payload === testId)
     assert(mess, `Message not found: ${JSON.stringify(storedMessages)}`)
     assert(mess?.isIncoming && mess?.isOutgoing, `Message should be both Incoming and Outgoing: ${mess?.isIncoming} ${mess?.isOutgoing}`)
@@ -254,14 +254,14 @@ class SeptTest {
 
   async test_filter_events(testId) {
     let r
-    r = await this.appAdmin.getStoredActions({
+    r = await this.appAdmin.getStoredEvents({
       type: "message",
       isOutgoing: true,
       device: { role__ne: "admin" },
     })
     assert(r.length > 0, "Failed to filter messages 1")
 
-    r = await this.appAdmin.getStoredActions({
+    r = await this.appAdmin.getStoredEvents({
       type: "message",
       type__isnot: null,
       isOutgoing: true,
@@ -272,7 +272,7 @@ class SeptTest {
     assert(r.length > 0, "Failed to filter messages 2")
     assert(r[0].sequence > 1, "Failed to filter messages 3")
 
-    r = await this.appAdmin.getStoredActions({
+    r = await this.appAdmin.getStoredEvents({
       type: "message",
       isOutgoing: true,
       device: { role__ne: "admin" },
@@ -285,7 +285,7 @@ class SeptTest {
 
     failed = false
     try {
-      await this.appAdmin.getStoredActions({
+      await this.appAdmin.getStoredEvents({
         typeX: "message",
       })
     } catch {
@@ -295,7 +295,7 @@ class SeptTest {
 
     failed = false
     try {
-      await this.appAdmin.getStoredActions({
+      await this.appAdmin.getStoredEvents({
         type__X: "message",
       })
     } catch {
@@ -369,7 +369,7 @@ class SeptTest {
       await this.appDevice2.sendEvent("message", `${testId}-1`, [this.appAdminDeviceId])
     } catch { }
     await this.appAdmin.sync()
-    adminMessages = await this.appAdmin.getStoredActions({
+    adminMessages = await this.appAdmin.getStoredEvents({
       type: "message",
       payload: `${testId}-1`
     })
@@ -384,7 +384,7 @@ class SeptTest {
     await this.appAdmin.sync()
     await this.appDevice2.sendEvent("message", `${testId}-1`, [this.appAdminDeviceId])
     await this.appAdmin.sync()
-    adminMessages = await this.appAdmin.getStoredActions({
+    adminMessages = await this.appAdmin.getStoredEvents({
       type: "message",
       payload: `${testId}-1`
     })

@@ -72,9 +72,9 @@ export class BaseSeptApp {
     // })
 
     this.septClient.register(
-      "message", (actionData) => {
+      "message", (eventData) => {
         console.log(`---RECV---`)
-        console.log(actionData)
+        console.log(eventData)
         console.log(`----------`)
       }
     )
@@ -120,12 +120,12 @@ export class BaseSeptApp {
     return await this.septClient.sync()
   };
 
-  async relayConnect() {
-    return await this.septClient.relayConnect()
+  async connect() {
+    return await this.septClient.connect()
   };
 
-  async relayDisconnect() {
-    return await this.septClient.relayDisconnect()
+  async disconnect() {
+    return await this.septClient.disconnect()
   };
 
 
@@ -146,8 +146,8 @@ export class BaseSeptApp {
     return await this.septClient.getDeviceId()
   }
 
-  async getStoredActions(filters) {
-    return await this.septClient.getStoredActions(filters)
+  async getStoredEvents(filters) {
+    return await this.septClient.getStoredEvents(filters)
   }
 
   async grant(srcDeviceId, dstDeviceId, action, metadata) {

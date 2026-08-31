@@ -218,7 +218,7 @@ export class FmnetCli {
         for (const g of await this.fmnet.getDeviceGraph()) {
           const sn = await this.fmnet.getDeviceIdentity(g.srcDeviceId)
           const dn = await this.fmnet.getDeviceIdentity(g.dstDeviceId)
-          this.success(`${sn.name} → ${dn.name} ${g?.policy?.allowedActions.join(",")}`)
+          this.success(`${sn.name} → ${dn.name} ${g?.policy?.allowedEventTypes.join(",")}`)
         }
         break
       case "status":

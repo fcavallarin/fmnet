@@ -64,16 +64,16 @@ export class SeptClient {
 
     this.pollingTO = null
 
-    this.systemActions = [
+    this.systemEventTypes = [
       "sept.policy.update",
       "sept.admin.grant",
       "sept.admin.revoke",
-      "sept.device.added",  // Device added to the network, only admins will get this event
-      "sept.device.invalidated",
+      "sept.device.add",  // Device added to the network, only admins will get this event
+      "sept.device.invalidate",
     ]
 
     this.uiEvents = new EventBus([
-      ...this.systemActions,
+      ...this.systemEventTypes,
       "connection.open",
       "connection.close",
       "connection.error",
@@ -81,7 +81,7 @@ export class SeptClient {
       // "export.device",
     ])
 
-    this.actions = {}
+    this.registeredEvents = {}
     this.ws = null
     this.wsStatus = "disconnected"
   }
@@ -108,7 +108,7 @@ export class SeptClient {
 
   on(eventName, handler) {
     let evName = eventName
-    if (this.systemActions.includes(`sept.${eventName}`)) {
+    if (this.systemEventTypes.includes(`sept.${eventName}`)) {
       evName = `sept.${eventName}`
     }
     if (!this.uiEvents.getEventNames().includes(evName)) {
@@ -223,7 +223,7 @@ export class SeptClient {
       if (rcptDevice.cryptPublicKey) {
         const policyOk = await this.checkPolicy(deviceId, rcptDevice.id, payload.type)
         if (!policyOk) {
-          throw new Error(`Device ${deviceId} not allowed to perform action '${payload.type}'`)
+          throw new Error(`Device ${deviceId} not allowed to perform '${payload.type}'`)
         }
         recipients.push(
           {
@@ -354,7 +354,7 @@ export class SeptClient {
           const recipients = admins.filter(d => d.id !== localDevice.deviceId).map(d => d.id)
           if (recipients.length > 0) {
             await this.sendEvent(
-              "sept.device.added",
+              "sept.device.add",
               {
                 id: pairedDevice.deviceId,
                 networkId: pairedDevice.networkId,
@@ -456,7 +456,7 @@ export class SeptClient {
       payloadKey,
       eventId || null,
       sequence || null,
-      this.systemActions.includes(payloadType),
+      this.systemEventTypes.includes(payloadType),
       isOutgoing,
       isIncoming,
       timestamp
@@ -498,7 +498,7 @@ export class SeptClient {
 
       const policyOk = await this.checkPolicy(e.senderDeviceId, deviceId, payload.type)
       if (!policyOk) {
-        console.log(`sync(): Device ${e.senderDeviceId} not allowed to perform action '${payload.type}' to ${deviceId}`)
+        console.log(`sync(): Device ${e.senderDeviceId} not allowed to perform '${payload.type}' to ${deviceId}`)
         ackEvents.push(e.eventId)
         continue;
       }
@@ -530,7 +530,7 @@ export class SeptClient {
       }
 
 
-      if (this.systemActions.includes(payload.type)) {
+      if (this.systemEventTypes.includes(payload.type)) {
         if (await this.isAdmin(e.senderDeviceId)) {
           try {
             await eventRouter.route(payload.type, payload.message)
@@ -545,7 +545,7 @@ export class SeptClient {
         }
       }
 
-      if (payload.type in this.actions) {
+      if (payload.type in this.registeredEvents) {
         const p = [
           payload.message,
           e.senderDeviceId,
@@ -555,8 +555,8 @@ export class SeptClient {
         ]
 
         try {
-          const r = this.actions[payload.type].handler(...p)
-          if (this.actions[payload.type].serial) {
+          const r = this.registeredEvents[payload.type].handler(...p)
+          if (this.registeredEvents[payload.type].serial) {
             await r
           } else {
             Promise.resolve(r).catch(e => {
@@ -599,7 +599,7 @@ export class SeptClient {
     await this.handleEvents(call.json.events)
   };
 
-  async relayConnect() { // @TODO rename to connect()
+  async connect() {
     if (this.wsStatus === "connected") {
       return
     }
@@ -635,7 +635,7 @@ export class SeptClient {
         this.uiEvents.dispatch("connection.close", {})
         if (this.wsStatus == "connected") {
           this.wsStatus = "reconnecting"
-          this.sync().then(() => this.relayConnect())
+          this.sync().then(() => this.connect())
         } else {
           this.wsStatus = "closed"
         }
@@ -645,7 +645,7 @@ export class SeptClient {
         this.uiEvents.dispatch("connection.error", {})
         if (this.wsStatus == "connected") {
           this.wsStatus = "reconnectingOnError"
-          this.sync().then(() => this.relayConnect())
+          this.sync().then(() => this.connect())
         } else {
           this.wsStatus = "error"
         }
@@ -654,7 +654,7 @@ export class SeptClient {
     })
   }
 
-  async relayDisconnect() {
+  async disconnect() {
     if (this.ws && this.wsStatus !== "closing") {
       this.wsStatus = "closing"
       await this.ws.close();
@@ -673,7 +673,7 @@ export class SeptClient {
     return network.id;
   }
 
-  async updatePolicy(srcDeviceId, dstDeviceId, allowedActions, metadata) {
+  async updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata) {
     if (!await this.isCurrentDeviceAdmin()) {
       throw new Error("Device must be admin")
     }
@@ -698,7 +698,7 @@ export class SeptClient {
     }
 
     const policy = {
-      allowedActions
+      allowedEventTypes
     }
     await this.store.deviceGraphEdge.setPolicy(srcDeviceId, dstDeviceId, policy)
     const evtPayload = {
@@ -743,15 +743,15 @@ export class SeptClient {
   }
 
 
-  register(action, handler, serial = true) {
-    if (this.systemActions.includes(action)) {
-      throw new Error(`Cannot register action '${action}'`)
+  register(eventType, handler, serial = true) {
+    if (this.systemEventTypes.includes(eventType)) {
+      throw new Error(`Cannot register eventType '${eventType}'`)
     }
-    this.actions[action] = { handler, serial }
+    this.registeredEvents[eventType] = { handler, serial }
   }
 
-  registerConcurrent(action, handler) {
-    this.register(action, handler, false)
+  registerConcurrent(eventType, handler) {
+    this.register(eventType, handler, false)
   }
 
   async getPolicy(srcDeviceId, dstDeviceId) {
@@ -769,48 +769,48 @@ export class SeptClient {
     return deviceData.isAdmin;
   }
 
-  async checkPolicy(srcDeviceId, dstDeviceId, action) {
+  async checkPolicy(srcDeviceId, dstDeviceId, eventType) {
     if (await this.isAdmin(srcDeviceId)) {
       return true;
     }
     const policy = await this.getPolicy(srcDeviceId, dstDeviceId);
-    if (!policy?.allowedActions) {
+    if (!policy?.allowedEventTypes) {
       return false;
     }
-    return policy.allowedActions.includes(action)
+    return policy.allowedEventTypes.includes(eventType)
   }
 
   async sync() {
     return await this.getEvents();
   }
 
-  async getStoredActions(filters = {}) {
+  async getStoredEvents(filters = {}) {
     return await this.store.event.filter(filters);
   }
 
-  async grant(srcDeviceId, dstDeviceId, actions, metadata) {
+  async grant(srcDeviceId, dstDeviceId, eventTypes, metadata) {
     const policy = await this.getPolicy(srcDeviceId, dstDeviceId);
-    const allowedActions = [...(policy?.allowedActions || [])]
-    for (const action of actions) {
-      if (!allowedActions.includes(action)) {
-        allowedActions.push(action);
+    const allowedEventTypes = [...(policy?.allowedEventTypes || [])]
+    for (const eventType of eventTypes) {
+      if (!allowedEventTypes.includes(eventType)) {
+        allowedEventTypes.push(eventType);
       }
     }
-    await this.updatePolicy(srcDeviceId, dstDeviceId, allowedActions, metadata);
+    await this.updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata);
   }
 
-  async revoke(srcDeviceId, dstDeviceId, actions, metadata) {
+  async revoke(srcDeviceId, dstDeviceId, eventTypes, metadata) {
     const policy = await this.getPolicy(srcDeviceId, dstDeviceId);
-    const allowedActions = [...(policy?.allowedActions || [])]
-    for (const action of actions) {
-      if (allowedActions.includes(action)) {
-        allowedActions.splice(
-          allowedActions.indexOf(action),
+    const allowedEventTypes = [...(policy?.allowedEventTypes || [])]
+    for (const eventType of eventTypes) {
+      if (allowedEventTypes.includes(eventType)) {
+        allowedEventTypes.splice(
+          allowedEventTypes.indexOf(eventType),
           1
         );
       }
     }
-    await this.updatePolicy(srcDeviceId, dstDeviceId, allowedActions, metadata);
+    await this.updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata);
   }
 
   async grantAdmin(deviceId, metadata = {}) {
@@ -993,7 +993,7 @@ export class SeptClient {
     }
 
     await this.sendEvent(
-      "sept.device.invalidated",
+      "sept.device.invalidate",
       { deviceId },
       [...new Set(recipients)]
     )
