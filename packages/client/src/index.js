@@ -371,7 +371,7 @@ export class SeptClient {
         }
       }
 
-      await onPairingTimeout?.(pairedDevice.deviceId)
+      await onPairingTimeout?.(deviceData.deviceId)
     }
 
     void pollPairing()

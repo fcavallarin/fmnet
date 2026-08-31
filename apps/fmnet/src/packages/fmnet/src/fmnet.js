@@ -142,7 +142,7 @@ export class FMNet {
         if (!sess) {
           // Zombie session: it exists on the peer but not locally
           logger.debug(`Zombie dcSession (${dcmId}) .. resetting`)
-          this.septClient.sendEvent(septDst, {
+          this.septClient.sendEvent("tcptunnel.ingress", {
             tunnelId,
             status: this.tcpTunnelStatus.CLOSED,
           },
@@ -423,11 +423,6 @@ export class FMNet {
 
   async sync() {
     return await this.septClient.sync()
-  };
-
-  async shareDevices(deviceId, rcpt) {
-    return await this.septClient.shareDevices(deviceId, rcpt)
-
   };
 
   async relayConnect() {
