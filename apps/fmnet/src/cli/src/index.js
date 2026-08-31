@@ -59,7 +59,7 @@ async function main() {
           small: true,
         })
         const pin = await rl.question("Pairing PIN: ")
-        await fmnet.getPairing(pin)
+        await fmnet.pairDevice(pin)
         break
       }
     }

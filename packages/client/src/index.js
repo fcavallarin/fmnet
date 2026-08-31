@@ -106,7 +106,7 @@ export class SeptClient {
     return cl;
   }
 
-  on(eventName, handler) {
+  on = (eventName, handler) => {
     let evName = eventName
     if (this.systemEventTypes.includes(`sept.${eventName}`)) {
       evName = `sept.${eventName}`
@@ -117,13 +117,13 @@ export class SeptClient {
     this.uiEvents.on(evName, handler)
   }
 
-  startPolling(time) {
+  startPolling = (time) => {
     this.pollingTO = setInterval(async () => {
       await this.sync()
     }, time * 1000)
   }
 
-  stopPolling() {
+  stopPolling = () => {
     if (this.pollingTO) {
       clearInterval(this.pollingTO)
       this.pollingTO = null
@@ -143,7 +143,7 @@ export class SeptClient {
     return await this._callRest(path, options)
   }
 
-  async bootstrap() {
+  bootstrap = async () => {
     const networkStore = this.store.network;
     const networkId = await networkStore.create();
     let settings = await this.store.settings.get()
@@ -181,11 +181,11 @@ export class SeptClient {
     }
   };
 
-  isAdminRole(role) {
+  _isAdminRole(role) {
     return role === "admin"
   }
 
-  async getDeviceData() {
+  async _getDeviceData() {
     const settings = await this.store.settings.get()
     const device = await this.store.device.get(settings.deviceId);
     return {
@@ -196,34 +196,34 @@ export class SeptClient {
       cryptPublicKey: device.cryptPublicKey,
       cryptPrivateKey: deserializeBin(settings.deviceCryptPrivateKey),
       role: device.role,
-      isAdmin: this.isAdminRole(device.role)
+      isAdmin: this._isAdminRole(device.role)
     }
   }
 
-  async sendEvent(type, message, dstDeviceIds) {  // @TODO: rename message to payload !!!
+  sendEvent = async (type, payload, dstDeviceIds) => {
     const eventStore = this.store.event
     const deviceStore = this.store.device
-    const deviceData = await this.getDeviceData();
+    const deviceData = await this._getDeviceData();
     const deviceId = deviceData.deviceId
     const senderDeviceId = deviceData.deviceId
     const networkId = deviceData.networkId;
 
-    const payload = {
+    const evPayload = {
       type,
-      message
+      payload
     }
     const payloadKey = randomBytes(32);
     const encryptedPayload = serializeBin(
-      encryptWithPayloadKey(payloadKey, canonicalJson(payload))
+      encryptWithPayloadKey(payloadKey, canonicalJson(evPayload))
     )
     const rcptDevices = await deviceStore.getMulti(dstDeviceIds || [])
 
     const recipients = []
     for (const rcptDevice of rcptDevices) {
       if (rcptDevice.cryptPublicKey) {
-        const policyOk = await this.checkPolicy(deviceId, rcptDevice.id, payload.type)
+        const policyOk = await this.checkPolicy(deviceId, rcptDevice.id, evPayload.type)
         if (!policyOk) {
-          throw new Error(`Device ${deviceId} not allowed to perform '${payload.type}'`)
+          throw new Error(`Device ${deviceId} not allowed to perform '${evPayload.type}'`)
         }
         recipients.push(
           {
@@ -244,7 +244,7 @@ export class SeptClient {
       throw new Error("Empty recipient list")
     }
 
-    const eventId = await this.addEvent(networkId, null, type, senderDeviceId, recipients, payload, payloadKey, null, now())
+    const eventId = await this._addEvent(networkId, null, type, senderDeviceId, recipients, evPayload.payload, payloadKey, null, now())
     const event = await eventStore.get(eventId);
     const relaySignature = await signString(
       deviceData.signPrivateKey,
@@ -273,11 +273,11 @@ export class SeptClient {
     await this.store.event.setSequence(eventId, sequence)
   };
 
-  async addDevice(deviceData, metadata, onPaired, onPairingTimeout, pairingTimeout = 60,) {
+  addDevice = async (deviceData, metadata, onPaired, onPairingTimeout, pairingTimeout = 60) => {
 
     const networkStore = this.store.network
     const networkId = (await networkStore.get()).id;
-    const localDevice = await this.getDeviceData()
+    const localDevice = await this._getDeviceData()
     const pin = randomDigits(4)
     const admins = await this.store.device.getAdmins()
     await this._callRest("devices/create-pairing", {
@@ -380,7 +380,7 @@ export class SeptClient {
   };
 
 
-  async getPairing(pin) {  // @TODO: rename to something like doPairing or pair
+  pairDevice = async (pin) => {
     const settings = await this.store.settings.get()
     let call = await this._callRest(`devices/pairing/${settings.deviceId}/${pin}`)
 
@@ -421,7 +421,7 @@ export class SeptClient {
     return metadata
   }
 
-  async initDevice() {
+  initDevice = async () => {
     const settingsStore = this.store.settings
     const signKeys = await generateSigningKeyPair();
     const cryptKeys = await generateEncryptionKeypair();
@@ -443,7 +443,7 @@ export class SeptClient {
     return deviceData;
   };
 
-  async addEvent(networkId, eventId, payloadType, senderDeviceId, dstDeviceIds, payload, payloadKey, sequence, timestamp) {
+  async _addEvent(networkId, eventId, payloadType, senderDeviceId, dstDeviceIds, payload, payloadKey, sequence, timestamp) {
     const isOutgoing = Boolean(dstDeviceIds)
     const isIncoming = !isOutgoing
 
@@ -452,7 +452,7 @@ export class SeptClient {
       payloadType,
       dstDeviceIds || [],
       senderDeviceId,
-      payload.message,
+      payload,
       payloadKey,
       eventId || null,
       sequence || null,
@@ -463,7 +463,7 @@ export class SeptClient {
     )
   }
 
-  async handleEvents(events) {
+  async _handleEvents(events) {
     const settings = await this.store.settings.get()
     const eventRouter = new EventRouter(this.uiEvents, this.store)
     const networkId = await this.getNetworkId()
@@ -494,11 +494,11 @@ export class SeptClient {
         deserializeBin(e.encryptedPayload)
       )
 
-      const payload = JSON.parse(new TextDecoder().decode(decryptedPayload));
+      const evPayload = JSON.parse(new TextDecoder().decode(decryptedPayload));
 
-      const policyOk = await this.checkPolicy(e.senderDeviceId, deviceId, payload.type)
+      const policyOk = await this.checkPolicy(e.senderDeviceId, deviceId, evPayload.type)
       if (!policyOk) {
-        console.log(`sync(): Device ${e.senderDeviceId} not allowed to perform '${payload.type}' to ${deviceId}`)
+        console.log(`sync(): Device ${e.senderDeviceId} not allowed to perform '${evPayload.type}' to ${deviceId}`)
         ackEvents.push(e.eventId)
         continue;
       }
@@ -511,18 +511,18 @@ export class SeptClient {
         } else {
           // The error here may be caused by en event already received but not acked
           throw new Error("Unexpected error 234")
-          // await this.ackEvents([e.eventId])
+          // await this._ackEvents([e.eventId])
           continue
 
         }
       } else {
-        await this.addEvent(
+        await this._addEvent(
           networkId,
           eventId,
-          payload.type,
+          evPayload.type,
           e.senderDeviceId,
           null,
-          payload,
+          evPayload.payload,
           payloadKey,
           e.sequence,
           e.timestamp
@@ -530,14 +530,14 @@ export class SeptClient {
       }
 
 
-      if (this.systemEventTypes.includes(payload.type)) {
+      if (this.systemEventTypes.includes(evPayload.type)) {
         if (await this.isAdmin(e.senderDeviceId)) {
           try {
-            await eventRouter.route(payload.type, payload.message)
+            await eventRouter.route(evPayload.type, evPayload.payload)
           } catch (e) {
             // Do not ack current event, protocol events cannot be skipped
             // (next sync should fail again if the "root cause" is not fixed)
-            await this.ackEvents([...ackEvents])
+            await this._ackEvents([...ackEvents])
             throw e
           }
         } else {
@@ -545,9 +545,9 @@ export class SeptClient {
         }
       }
 
-      if (payload.type in this.registeredEvents) {
+      if (evPayload.type in this.registeredEvents) {
         const p = [
-          payload.message,
+          evPayload.payload,
           e.senderDeviceId,
           e.timestamp,
           eventId,
@@ -555,18 +555,18 @@ export class SeptClient {
         ]
 
         try {
-          const r = this.registeredEvents[payload.type].handler(...p)
-          if (this.registeredEvents[payload.type].serial) {
+          const r = this.registeredEvents[evPayload.type].handler(...p)
+          if (this.registeredEvents[evPayload.type].serial) {
             await r
           } else {
             Promise.resolve(r).catch(e => {
-              this.ackEvents([...ackEvents, eventId]).then(() => {
+              this._ackEvents([...ackEvents, eventId]).then(() => {
                 throw e
               })
             })
           }
         } catch (e) {
-          await this.ackEvents([...ackEvents, eventId])
+          await this._ackEvents([...ackEvents, eventId])
           throw e
         }
       }
@@ -574,11 +574,11 @@ export class SeptClient {
 
     }
 
-    await this.ackEvents(ackEvents)
+    await this._ackEvents(ackEvents)
 
   }
 
-  async ackEvents(eventIds) {
+  async _ackEvents(eventIds) {
     if (eventIds.length > 0) {
       for (const e of eventIds) {
         if (!e) {
@@ -592,14 +592,14 @@ export class SeptClient {
     }
   }
 
-  async getEvents() {
+  async _getEvents() {
     const call = await this._callRest("events", {
       method: "GET"
     });
-    await this.handleEvents(call.json.events)
+    await this._handleEvents(call.json.events)
   };
 
-  async connect() {
+  connect = async () => {
     if (this.wsStatus === "connected") {
       return
     }
@@ -612,7 +612,7 @@ export class SeptClient {
     this.wsStatus = "tickedRequested"
     const ticketRes = await this._callRest("get-relay-ticket")
     this.wsStatus = "connecting"
-    const queue = new AsyncQueue((i) => this.handleEvents([i]))
+    const queue = new AsyncQueue((i) => this._handleEvents([i]))
     this.ws = new WebSocket(
       `${wsEndpoint}ws?` +
       `networkId=${networkId}&` +
@@ -654,18 +654,18 @@ export class SeptClient {
     })
   }
 
-  async disconnect() {
+  disconnect = async () => {
     if (this.ws && this.wsStatus !== "closing") {
       this.wsStatus = "closing"
       await this.ws.close();
     }
   }
 
-  getWebsocketStatus() {
+  getWebsocketStatus = () => {
     return this.wsStatus
   }
 
-  async getNetworkId() {
+  getNetworkId = async () => {
     const network = await this.store.network.get();
     if (!network) {
       return null;
@@ -733,43 +733,43 @@ export class SeptClient {
     )
   }
 
-  async getDeviceId() {
+  getDeviceId = async () => {
     const settings = await this.store.settings.get()
     return settings.deviceId || null;
   }
 
-  async getDeviceGraph() {
+  getDeviceGraph = async () => {
     return await this.store.deviceGraphEdge.getGraph();
   }
 
 
-  register(eventType, handler, serial = true) {
+  register = (eventType, handler, serial = true) => {
     if (this.systemEventTypes.includes(eventType)) {
       throw new Error(`Cannot register eventType '${eventType}'`)
     }
     this.registeredEvents[eventType] = { handler, serial }
   }
 
-  registerConcurrent(eventType, handler) {
+  registerConcurrent = (eventType, handler) => {
     this.register(eventType, handler, false)
   }
 
-  async getPolicy(srcDeviceId, dstDeviceId) {
+  getPolicy = async (srcDeviceId, dstDeviceId) => {
     const edge = await this.store.deviceGraphEdge.get(srcDeviceId, dstDeviceId);
     return edge?.policy
   }
 
-  async isAdmin(deviceId) {
+  isAdmin = async (deviceId) => {
     const device = await this.store.device.get(deviceId);
-    return device && this.isAdminRole(device.role);
+    return device && this._isAdminRole(device.role);
   }
 
-  async isCurrentDeviceAdmin() {
-    const deviceData = await this.getDeviceData();
+  isCurrentDeviceAdmin = async () => {
+    const deviceData = await this._getDeviceData();
     return deviceData.isAdmin;
   }
 
-  async checkPolicy(srcDeviceId, dstDeviceId, eventType) {
+  checkPolicy = async (srcDeviceId, dstDeviceId, eventType) => {
     if (await this.isAdmin(srcDeviceId)) {
       return true;
     }
@@ -780,15 +780,15 @@ export class SeptClient {
     return policy.allowedEventTypes.includes(eventType)
   }
 
-  async sync() {
-    return await this.getEvents();
+  sync = async () => {
+    return await this._getEvents();
   }
 
-  async getStoredEvents(filters = {}) {
+  getStoredEvents = async (filters = {}) => {
     return await this.store.event.filter(filters);
   }
 
-  async grant(srcDeviceId, dstDeviceId, eventTypes, metadata) {
+  grant = async (srcDeviceId, dstDeviceId, eventTypes, metadata) => {
     const policy = await this.getPolicy(srcDeviceId, dstDeviceId);
     const allowedEventTypes = [...(policy?.allowedEventTypes || [])]
     for (const eventType of eventTypes) {
@@ -799,7 +799,7 @@ export class SeptClient {
     await this.updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata);
   }
 
-  async revoke(srcDeviceId, dstDeviceId, eventTypes, metadata) {
+  revoke = async (srcDeviceId, dstDeviceId, eventTypes, metadata) => {
     const policy = await this.getPolicy(srcDeviceId, dstDeviceId);
     const allowedEventTypes = [...(policy?.allowedEventTypes || [])]
     for (const eventType of eventTypes) {
@@ -813,7 +813,7 @@ export class SeptClient {
     await this.updatePolicy(srcDeviceId, dstDeviceId, allowedEventTypes, metadata);
   }
 
-  async grantAdmin(deviceId, metadata = {}) {
+  grantAdmin = async (deviceId, metadata = {}) => {
     if (!await this.isCurrentDeviceAdmin()) {
       throw new Error("Device must be admin")
     }
@@ -875,7 +875,7 @@ export class SeptClient {
 
   }
 
-  async revokeAdmin(deviceId) {
+  revokeAdmin = async (deviceId) => {
     if (!await this.isCurrentDeviceAdmin()) {
       throw new Error("Device must be admin")
     }
@@ -895,13 +895,6 @@ export class SeptClient {
     });
   }
 
-  async deleteEvents(filters) {
-    const events = await this.store.event.filter({
-      ...filters,
-      isSystem: false
-    })
-    // @TODO
-  }
 
   // The Life Tradeoff:
   // SEPT already owns the local runtime storage.
@@ -973,7 +966,7 @@ export class SeptClient {
     return await this.store.device.getAll()
   }
 
-  async invalidateDevice(deviceId) {
+  invalidateDevice = async (deviceId) => {
     if (!await this.isCurrentDeviceAdmin()) {
       throw new Error("Device must be admin")
     }
@@ -1006,7 +999,7 @@ export class SeptClient {
     await this.store.device.upsert(deviceId, { revokedAt: now() })
   }
 
-  async getAdmins() {
+  getAdmins = async () => {
     const admins = await this.store.device.getAdmins()
     return admins.map(d => ({
       deviceId: d.id,

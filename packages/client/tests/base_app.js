@@ -111,8 +111,8 @@ export class BaseSeptApp {
     return await this.septClient.initDevice();
   };
 
-  async getPairing(pin) {
-    await this.septClient.getPairing(pin)
+  async pairDevice(pin) {
+    await this.septClient.pairDevice(pin)
   };
 
 
@@ -170,7 +170,7 @@ export class BaseSeptApp {
     return await this.septClient.revokeAdmin(deviceId)
   }
 
-  async getDeviceData() {
-    return await this.septClient.getDeviceData()
+  async _getDeviceData() {
+    return await this.septClient._getDeviceData()
   }
 }

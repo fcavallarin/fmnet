@@ -408,8 +408,8 @@ export class FMNet {
   }
 
 
-  async getPairing(pin) {
-    const metadata = await this.septClient.getPairing(pin)
+  async pairDevice(pin) {
+    const metadata = await this.septClient.pairDevice(pin)
     this.identityStore.setFamilyId(
       await this.septClient.getNetworkId()
     )

@@ -82,7 +82,7 @@ class FMnetTest {
     const pin1 = await this.appAdmin.addDevice(device1Data)
     console.log(`Device1 added`)
 
-    await this.appDevice1.getPairing(pin1)
+    await this.appDevice1.pairDevice(pin1)
     console.log(`Device 1 paired with pin ${pin1}`)
 
     this.appDevice2Name = "user2"
@@ -90,7 +90,7 @@ class FMnetTest {
     console.log(`Init device2 done`)
     const pin2 = await this.appAdmin.addDevice(device2Data)
     console.log(`Device2 added`)
-    await this.appDevice2.getPairing(pin2)
+    await this.appDevice2.pairDevice(pin2)
     console.log(`Device 2 paired`)
 
     this.appDevice3Name = "user3"
@@ -98,7 +98,7 @@ class FMnetTest {
     console.log(`Init device3 done`)
     const pin3 = await this.appAdmin.addDevice(device3Data)
     console.log(`Device3 added`)
-    await this.appDevice3.getPairing(pin3)
+    await this.appDevice3.pairDevice(pin3)
     console.log(`Device 3 paired`)
 
     await sleep(2000)
@@ -320,7 +320,7 @@ class FMnetTest {
     console.log(`Init device4 done`)
     const pin4 = await this.appAdmin.addDevice(device4Data)
     console.log(`Device4 added`)
-    await this.appDevice4.getPairing(pin4)
+    await this.appDevice4.pairDevice(pin4)
     console.log(`Device 4 paired`)
     await sleep(1500)
     this.appDevice4DeviceId = await this.appDevice4.getDeviceId()

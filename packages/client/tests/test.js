@@ -38,7 +38,7 @@ class SeptTest {
       console.log(`Init device${i} done`)
       const pin = await this.appAdmin.addDevice(deviceData, {}, dPaired)
       console.log(`Device${i} added`)
-      await this[`appDevice${i}`].getPairing(pin)
+      await this[`appDevice${i}`].pairDevice(pin)
       await this[`appDevice${i}`].sync()
       await dP
       console.log(`Device ${i} paired`)
@@ -352,7 +352,7 @@ class SeptTest {
       "Missing Device1 from Device4"
     )
 
-    let d1Data = await this.appDevice1.getDeviceData()
+    let d1Data = await this.appDevice1._getDeviceData()
     assert(d1Data.isAdmin, "Device1 should be admin")
 
     let d1DataOfD2 = await this.appDevice2.septClient.store.device.get(this.appDevice1DeviceId)
@@ -393,7 +393,7 @@ class SeptTest {
     await this.appAdmin.revokeAdmin(this.appDevice1DeviceId)
 
     await this._sync_client_devices()
-    d1Data = await this.appDevice1.getDeviceData()
+    d1Data = await this.appDevice1._getDeviceData()
     assert(!d1Data.isAdmin, "Device1 should be NOT admin")
     let failed = false
     try {
