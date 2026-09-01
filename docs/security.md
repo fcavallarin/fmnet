@@ -61,6 +61,11 @@ A relay necessarily observes or stores transport metadata including some combina
 
 SEPT is not a traffic-analysis-resistant or metadata-hiding system.
 
+### Event-type confidentiality
+
+The current `sendEvent()` implementation encrypts `{type,payload}` and does **not** include the application event type as a top-level field in the relay POST body. The reference relay can route and persist the event without learning the plaintext event type.
+
+This does not make SEPT metadata-hiding: event sizes, sender/recipient relationships, timestamps, delivery timing and other transport metadata remain observable and may still correlate with application behavior.
 
 ## Event authenticity
 
@@ -68,11 +73,14 @@ The sender signs canonical serialized event material with Ed25519.
 
 The current implementation maintains two signatures:
 
-- a relay-facing signature including the recipient list, verified by the relay;
-- a recipient-facing signature that does not include the recipient list, verified after receipt.
+- a relay-facing signature including `eventId` and the full recipient list, verified by the relay;
+- a recipient-facing signature including `eventId` but using an empty recipient list, verified after receipt.
 
-A recipient verifies the sender signature before decrypting/dispatching the event.
+A recipient verifies the sender signature before decrypting/dispatching the event. This cryptographically binds the received `eventId`, sender identity, encrypted payload and timestamp to the sender signature.
 
+The sender currently derives `eventId` from canonical wire material containing the full recipient list before signing it. An individual recipient cannot independently recompute that derivation because the relay delivers only that recipient's wrapped payload key, not the full recipient list. The reference server likewise verifies the relay-facing signature but does not currently recompute the ID.
+
+As a result, a malicious relay cannot substitute a different `eventId` without breaking the recipient-facing signature, while deterministic event-ID derivation remains a sender-side convention rather than an independently enforced invariant.
 
 ## Sequence/order trust
 
@@ -177,7 +185,9 @@ Applications should review:
 
 The relay maintains per-recipient pending rows and ACK deletion. Clients also persist event IDs and reject/handle unexpected duplicate states.
 
-Because `eventId` is not yet cryptographically bound for recipients and duplicate handling is still under active development, replay/deduplication semantics should be covered by explicit protocol tests before production-security claims are made.
+`eventId` is now cryptographically bound to the sender signature verified by recipients, which prevents a relay from silently substituting the identifier used for ACK/deduplication.
+
+Replay and duplicate handling is nevertheless still under active development. Explicit protocol tests should cover duplicate delivery, an event received-but-not-yet-ACKed, self-addressed events, retry behavior and server-side pending-row cleanup before production-security claims are made.
 
 ## Side channels and non-goals
 
@@ -195,8 +205,9 @@ It is also not intended to provide anonymity against the relay.
 
 Before a stable/security-sensitive release, consider making these items explicit release blockers or tracked issues:
 
-- remove plaintext relay-facing `type` if event-type confidentiality is intended;
-- bind/verify `eventId` cryptographically;
+- add regression coverage that the relay-facing event body does not expose plaintext `type`;
+- add tamper tests proving that changing only `eventId` fails relay and recipient signature verification;
+- decide whether deterministic `eventId` derivation should be independently recomputed/enforced by the server or remain a sender convention;
 - document and test replay/duplicate behavior;
 - add pairing rate limits / attempt controls;
 - review bootstrap abuse/preemption protections;

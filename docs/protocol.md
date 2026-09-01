@@ -24,12 +24,15 @@ The common event serialization helper is conceptually:
 ```js
 canonicalJson({
   networkId,
+  eventId,
   recipients,
   senderDeviceId,
   body,
   ts,
 })
 ```
+
+For event-ID derivation, the current sender serializes the same structure with an empty `eventId` field, derives the `evt_*` identifier from that canonical wire material, and then includes the resulting identifier in the signed serialization.
 
 Binary values transported in JSON are base64url encoded.
 
@@ -85,16 +88,26 @@ For each recipient:
 
 This allows one encrypted payload to be addressed to multiple recipients while each recipient receives its own wrapped payload key.
 
-### 5. Sign event material
+### 5. Derive and sign the event ID and event material
 
-The sender creates two Ed25519 signatures in the current implementation:
+After encrypting the payload and wrapping the payload key for all recipients, the sender derives `eventId` from canonical serialized wire material containing:
 
-- an end-recipient signature over serialized event material without the recipient list;
-- a relay-facing signature over serialized event material including recipients.
+- network ID;
+- the full recipient list, including each wrapped payload key;
+- sender device ID;
+- encrypted payload;
+- timestamp.
 
-The relay-facing signature lets the relay reject a request whose recipient list/encrypted payload was not signed by the authenticated sender.
+The `eventId` slot itself is empty during this derivation, avoiding a circular dependency.
 
-The recipient signature lets a recipient verify sender authenticity and ciphertext integrity independently of relay-side recipient routing.
+The sender then creates two Ed25519 signatures that both include the resulting `eventId`:
+
+- an end-recipient signature over serialized event material with an empty recipient list;
+- a relay-facing signature over serialized event material including the full recipient list.
+
+The relay-facing signature lets the relay reject a request whose event ID, recipient list, encrypted payload or timestamp was not signed by the authenticated sender.
+
+The recipient signature lets a recipient verify sender authenticity and cryptographically bind the received `eventId` to the ciphertext and timestamp independently of relay-side recipient routing.
 
 ### 6. Store locally and submit
 
@@ -105,7 +118,6 @@ The current request body includes fields conceptually equivalent to:
 ```js
 {
   eventId,
-  type,
   senderDeviceId,
   encryptedPayload,
   recipients: [
@@ -117,7 +129,7 @@ The current request body includes fields conceptually equivalent to:
 }
 ```
 
-**Current implementation caveat:** `type` is already inside the encrypted payload but is also present as a top-level request field. The relay server does not currently use that field, but a relay can observe it. If event-type confidentiality is intended, the redundant plaintext field should be removed. See [Security](security.md).
+The application `type` is not sent as a top-level relay field; it is available only after decrypting `{type,payload}` on a recipient device. The relay still observes routing and transport metadata such as sender/recipient IDs, timestamps, ciphertext sizes and the event identifier. See [Security](security.md).
 
 ## Relay processing
 
@@ -172,9 +184,11 @@ Sequence is relay-managed transport ordering; it is not currently an end-to-end 
 
 ## Event IDs
 
-The current sender derives an `evt_*` ID from canonical serialized local event material before relay submission. Recipients use the relay-provided `eventId` for persistence/deduplication/ACK.
+The current sender derives an `evt_*` ID from canonical serialized wire material after payload encryption and per-recipient payload-key wrapping. The derivation uses the event serialization with an empty `eventId` slot, then hashes that representation through the current `makeIdFromStr("evt", ...)` helper.
 
-At the current implementation stage, `eventId` is **not included in the end-to-end signature verified by recipients**. A malicious relay cannot change the encrypted payload without breaking the sender signature, but it could alter the identifier used for delivery bookkeeping. This should be reviewed before calling event IDs cryptographically bound identifiers.
+The resulting `eventId` is included in both sender signatures. A relay therefore cannot replace the identifier on an accepted/delivered event without causing signature verification to fail. Recipients use the authenticated `eventId` for persistence, deduplication and ACK bookkeeping.
+
+The reference recipient does **not** independently recompute the deterministic ID because it receives only its recipient-specific wrapped payload key rather than the sender's full recipient list. The reference server also verifies the sender's relay signature but does not currently recompute the `eventId` derivation. Therefore the ID is cryptographically authenticated as sender-chosen event identity, while deterministic derivation is currently an implementation convention rather than an independently enforced protocol invariant.
 
 ## System event namespace
 
