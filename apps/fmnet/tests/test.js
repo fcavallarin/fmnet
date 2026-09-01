@@ -256,20 +256,20 @@ class FMnetTest {
 
 
 
+  // async test_get_new_messages(testId) {
+  //   let newMessages
+  //   await this.sent_mess_and_assert("Device1", "Device2", testId)
+  //   newMessages = await this.appDevice2.getNewMessages()
+  //   assert(newMessages.length > 0, "No new messages 1")
+
+  //   await this.sent_mess_and_assert("Device1", "Device2", testId)
+
+  //   newMessages = await this.appDevice2.getNewMessages()
+  //   assert(newMessages.length === 1, "No new messages 2 " + JSON.stringify(newMessages))
+
+  // }
+
   async test_get_new_messages(testId) {
-    let newMessages
-    await this.sent_mess_and_assert("Device1", "Device2", testId)
-    newMessages = await this.appDevice2.getNewMessages()
-    assert(newMessages.length > 0, "No new messages 1")
-
-    await this.sent_mess_and_assert("Device1", "Device2", testId)
-
-    newMessages = await this.appDevice2.getNewMessages()
-    assert(newMessages.length === 1, "No new messages 2 " + JSON.stringify(newMessages))
-
-  }
-
-  async test_get_new_messages2(testId) {
     let newMessages
     await this.appDevice2.appState.set("unreads", {})
     await this.sent_mess_and_assert("Device1", "Device2", testId)

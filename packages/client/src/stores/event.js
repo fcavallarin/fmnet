@@ -5,7 +5,7 @@ import {
   decryptSymmetric
 } from '@sept/crypto';
 
-import { deserializeBin, makeId, serializeBin, makeIdFromStr, serializeEvent } from '@sept/core';
+import { deserializeBin, makeId, serializeBin, serializeEvent } from '@sept/core';
 
 
 export class RecipientStore extends BaseStore {
@@ -120,9 +120,10 @@ export class EventStore extends BaseStore {
     await this.db.write(`UPDATE event set sequence = ? where id = ?`, [sequence, eventId])
   }
 
-  async add(networkId, type, recipients, senderDeviceId, payload, payloadKey, existingId, sequence, isSystem, isOutgoing, isIncoming, ts) {
-    const serialized = serializeEvent(networkId, recipients, senderDeviceId, payload, ts);
-    const id = existingId || makeIdFromStr("evt", serialized);
+  async add(networkId, type, recipients, senderDeviceId, payload, payloadKey, id, sequence, isSystem, isOutgoing, isIncoming, ts) {
+    if(!id){
+      throw new Error("Missing event id")
+    }
     const { fields, values, placeholders } = this.getQryParts({
       id, type, senderDeviceId, payload, payloadKey, sequence, isSystem, isOutgoing, isIncoming, timestamp: ts
     })
@@ -142,7 +143,7 @@ export class EventStore extends BaseStore {
         (${qp.placeholders})
       `, qp.values)
     }
-    return id;
+    // return id;
   }
 
   async update(eventId, updFields) {

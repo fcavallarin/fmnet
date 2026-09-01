@@ -20,7 +20,7 @@ export async function createEvent(request, env, params, ctx) {
   if (device.id !== senderDeviceId) {
     throw httpError(404, 'unauthorized');
   }
-  const serialized = serializeEvent(networkId, recipients, senderDeviceId, encryptedPayload, timestamp);
+  const serialized = serializeEvent(networkId, eventId, recipients, senderDeviceId, encryptedPayload, timestamp);
   const verified = await verifyString(
     deserializeBin(device.signPublicKey),
     deserializeBin(relaySignature),

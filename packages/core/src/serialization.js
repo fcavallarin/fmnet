@@ -81,8 +81,8 @@ export function utf8Decode(bytes) {
   return new TextDecoder().decode(bytes);
 }
 
-export function serializeEvent(networkId, recipients, senderDeviceId, body, ts) {
+export function serializeEvent(networkId, eventId, recipients, senderDeviceId, body, ts) {
   return canonicalJson({
-    networkId, recipients, senderDeviceId, body, ts
+    networkId, eventId, recipients, senderDeviceId, body, ts
   })
 }

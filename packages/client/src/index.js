@@ -26,7 +26,8 @@ import {
   serializeEvent,
   EventBus,
   AsyncQueue,
-  now
+  now,
+  makeIdFromStr
 } from '@sept/core';
 
 import {
@@ -243,20 +244,20 @@ export class SeptClient {
     if (recipients.length === 0) {
       throw new Error("Empty recipient list")
     }
-
-    const eventId = await this._addEvent(networkId, null, type, senderDeviceId, recipients, evPayload.payload, payloadKey, null, now())
+    const ts = now()
+    const eventId = makeIdFromStr("evt", serializeEvent(networkId, "", recipients, senderDeviceId, encryptedPayload, ts))
+    await this._addEvent(networkId, eventId, type, senderDeviceId, recipients, evPayload.payload, payloadKey, null, ts)
     const event = await eventStore.get(eventId);
     const relaySignature = await signString(
       deviceData.signPrivateKey,
-      serializeEvent(networkId, recipients, senderDeviceId, encryptedPayload, event.timestamp)
+      serializeEvent(networkId, eventId, recipients, senderDeviceId, encryptedPayload, event.timestamp)
     );
     const signature = await signString(
       deviceData.signPrivateKey,
-      serializeEvent(networkId, [], senderDeviceId, encryptedPayload, event.timestamp)
+      serializeEvent(networkId, eventId, [], senderDeviceId, encryptedPayload, event.timestamp)
     );
     const postBody = {
       eventId,
-      type,
       senderDeviceId,
       encryptedPayload,
       recipients,
@@ -454,7 +455,7 @@ export class SeptClient {
       senderDeviceId,
       payload,
       payloadKey,
-      eventId || null,
+      eventId,
       sequence || null,
       this.systemEventTypes.includes(payloadType),
       isOutgoing,
@@ -479,7 +480,7 @@ export class SeptClient {
       const verified = await verifyString(
         senderDevice.signPublicKey,
         deserializeBin(e.signature),
-        serializeEvent(networkId, [], e.senderDeviceId, e.encryptedPayload, e.timestamp)
+        serializeEvent(networkId, eventId, [], e.senderDeviceId, e.encryptedPayload, e.timestamp)
       )
       if (!verified) {
         throw new Error("Signature verification failed");
