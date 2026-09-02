@@ -459,15 +459,15 @@ class SeptTest {
 
 
 async function main() {
-  const fmnetTest = new SeptTest()
-  await fmnetTest.init()
+  const septTest = new SeptTest()
+  await septTest.init()
   const tests = Object.getOwnPropertyNames(SeptTest.prototype)
     .filter(t => t.startsWith("test_"))
   //.sort((a,b) => Number(a.split("_")[1]) - Number(b.split("_")[1]))
 
   for (const t of tests) {
     console.log(`Running ${t}`)
-    await fmnetTest[t](t)
+    await septTest[t](t)
     console.log(`${t} ... OK`)
     console.log("---------------")
   }

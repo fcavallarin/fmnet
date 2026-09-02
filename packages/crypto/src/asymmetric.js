@@ -12,7 +12,7 @@ function deriveWrapKey(senderPrivateKey, recipientPublicKey, nonce) {
     sha256,
     sharedSecret,
     nonce,   // salt
-    new TextEncoder().encode("fmnet.payload-key.v1"),
+    new TextEncoder().encode("sept.payload-key.v1"),
     32
   );
 }

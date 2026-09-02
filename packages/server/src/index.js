@@ -5,7 +5,7 @@ import { createEvent, listEvents, ackEvents } from './routes/event.js';
 import { relayConnect, relayGetTicket } from './routes/relay.js';
 import { DORelay } from "./do-relay.js";
 import { EventBus } from '@sept/core'
-import { getAuth, httpError, readJson } from './lib/http.js';
+import { getAuth, httpError, readJson, cleanupExpiredNonces } from './lib/http.js';
 const jsonResponse = json
 export { DORelay, jsonResponse, getAuth, httpError, readJson };
 
@@ -88,11 +88,13 @@ export function createSeptServer(plugins) {
       try {
         return await dispatch(request, env, ctx);
       } catch (err) {
-        throw err
         const status = err.status || 500;
         const code = err.code || (status === 500 ? 'internal_error' : 'error');
         return json({ error: code, message: err.message }, status, corsHeaders());
       }
+    },
+    scheduled: async (event, env, ctx) => {
+      ctx.waitUntil(cleanupExpiredNonces(env))
     }
   }
 }

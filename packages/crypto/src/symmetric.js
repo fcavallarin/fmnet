@@ -2,9 +2,9 @@ import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { randomBytes } from "@noble/hashes/utils.js";
 
 
-export function encryptSymmetric(privateKey, plaintext) {
-  if (!(privateKey instanceof Uint8Array) || privateKey.length !== 32) {
-    throw new Error("privateKey must be 32 bytes!");
+export function encryptSymmetric(key, plaintext) {
+  if (!(key instanceof Uint8Array) || key.length !== 32) {
+    throw new Error("key must be 32 bytes!");
   }
 
   const nonce = randomBytes(24);
@@ -13,7 +13,7 @@ export function encryptSymmetric(privateKey, plaintext) {
     ? plaintext
     : new TextEncoder().encode(String(plaintext));
 
-  const cipher = xchacha20poly1305(privateKey, nonce);
+  const cipher = xchacha20poly1305(key, nonce);
   const encrypted = cipher.encrypt(input);
 
   return {
@@ -23,8 +23,8 @@ export function encryptSymmetric(privateKey, plaintext) {
 }
 
 
-export function decryptSymmetric(privateKey, nonce, encrypted) {
-  const cipher = xchacha20poly1305(privateKey, nonce);
+export function decryptSymmetric(key, nonce, encrypted) {
+  const cipher = xchacha20poly1305(key, nonce);
   const decrypted = cipher.decrypt(encrypted);
   return decrypted;
 }

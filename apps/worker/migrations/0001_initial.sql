@@ -75,16 +75,13 @@ CREATE TABLE IF NOT EXISTS device_pairing (
   UNIQUE(device_id, pin)
 );
 
-
--- CREATE TABLE IF NOT EXISTS role_key (
---   id TEXT PRIMARY KEY,
---   network_id TEXT NOT NULL,
---   public_key TEXT NOT NULL,
---   revoked_at INTEGER,
---   created_at INTEGER NOT NULL,
-
---   FOREIGN KEY (network_id) REFERENCES network(id)
--- );
+CREATE TABLE IF NOT EXISTS seen_nonce (
+  device_id TEXT NOT NULL,
+  nonce TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  PRIMARY KEY (device_id, nonce)
+);
 
 CREATE INDEX IF NOT EXISTS idx_pending_device_undelivered
 ON pending_event(device_id, delivered_at, created_at);

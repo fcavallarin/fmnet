@@ -20,6 +20,11 @@
 			"bucket_name": "sept"
 		}
 	],
+	"triggers": {
+		"crons": [
+			"*/10 * * * *"
+		]
+	},
 	"durable_objects": {
 		"bindings": [
 			{
@@ -40,7 +45,7 @@
 		{
 			"binding": "DB",
 			"database_name": "sept",
-			"database_id": "fadd57ba-6fb9-41cc-979d-57971332bbce"
+			"database_id": "e50e077c-58f1-4771-a5a4-b5062e0d6c33"
 		}
 	]
 	/**
