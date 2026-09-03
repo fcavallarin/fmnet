@@ -74,6 +74,10 @@ class SeptTest {
     console.log(`Device${i} added second time`)
     await this[`appDevice${i}`].pairDevice(pin2)
     await this[`appDevice${i}`].sync()
+    assert(
+      deviceData2.deviceId !== deviceData.deviceId,
+      "A new pairing attempt must use a new deviceId"
+    )
     await dP
     console.log(`Device ${i} paired`)
 

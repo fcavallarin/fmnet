@@ -332,7 +332,7 @@ export class SeptClient {
           return
         }
 
-        if(r.json.device.encryptedPayload === null){
+        if(r.json.device === null){
           continue
         }
 

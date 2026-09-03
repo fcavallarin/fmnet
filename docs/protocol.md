@@ -233,6 +233,9 @@ The admin completion payload is encrypted so the relay does not need to see admi
 
 The new device presents `(deviceId, pin)` to the relay. The relay marks the pairing redeemed, registers the device for transport, and returns the encrypted joining-device payload.
 
+An incorrect PIN deletes the pending pairing. A successful redemption is single-use: subsequent redemption attempts for the same device ID are rejected. 
+The redeemed record remains available only for the initiating admin to complete the pairing flow.
+
 The new device decrypts it and installs the network plus current admin public keys as its initial trust state.
 
 ### Initiating admin completes

@@ -131,9 +131,12 @@ After pairing, signed local admin state becomes the trust anchor for normal prot
 
 ### Pairing PIN properties
 
-Pairing requires both a short-lived device ID and a numeric PIN. The device ID is derived from freshly generated device key material and is not practically guessable.
+Pairing requires both a a freshly generated device ID and a numeric PIN. The device ID is derived from freshly generated device key material and is not practically guessable.
 
-A pending pairing can be retrieved only once. The first retrieval attempt consumes the pairing record regardless of whether the supplied PIN is correct. A failed pairing causes the joining device to restart enrollment with fresh key material and therefore a new device ID.
+A pending pairing can be redeemed only once. An incorrect PIN destroys the pending pairing record. A correct PIN atomically marks the pairing as redeemed,
+preventing further redemption attempts while keeping the record available for the initiating admin to retrieve its completion payload.
+
+If pairing fails, the joining device restarts enrollment with fresh key material and therefore a new device ID.
 
 An attacker who learns a pending device ID consequently gets only a single PIN guess against that specific pairing session. After an incorrect guess, targeting a subsequent pairing requires discovering the newly generated device ID again.
 
@@ -214,7 +217,7 @@ Before a stable/security-sensitive release, consider making these items explicit
 - add tamper tests proving that changing only `eventId` fails relay and recipient signature verification;
 - decide whether deterministic `eventId` derivation should be independently recomputed/enforced by the server or remain a sender convention;
 - document and test replay/duplicate behavior;
-- add pairing rate limits / attempt controls;
+- consider optional pairing rate limits for availability/abuse protection;
 - review bootstrap abuse/preemption protections;
 - make relay ordering assumptions explicit;
 - add transactional local event + recipient persistence;
