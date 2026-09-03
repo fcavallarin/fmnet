@@ -77,28 +77,35 @@ export async function createPairing(request, env, params) {
 
 export async function getPairing(request, env, params) {
   const db = new D1Adapter(() => env.DB)
-  const pairingData = await db.readOne(
-    `SELECT *
+  const ts = now()
+
+  await db.write(
+    `DELETE
      FROM device_pairing
      WHERE device_id = ?
-     AND pin = ?
-     AND redeemed_at IS NULL`
-    , [
-      params.id,
-      params.pin
-    ]
-  );
+       AND pin <> ?
+       AND redeemed_at IS NULL`,
+    [params.id, params.pin]
+  )
 
-  try {
-    await db.write(`UPDATE device_pairing set redeemed_at = ? WHERE id = ?`, [now(), pairingData.id])
-  } catch { }
+  const pairingData = await db.readOne(
+    `UPDATE device_pairing
+     SET redeemed_at = ?
+     WHERE device_id = ?
+       AND pin = ?
+       AND redeemed_at IS NULL
+       AND created_at > ?
+     RETURNING *`,
+    [
+      ts,
+      params.id,
+      params.pin,
+      ts - 60
+    ]
+  )
 
   if (!pairingData) {
     throw httpError(400, "Pairing failed")
-  }
-
-  if (isExpired(pairingData.createdAt, 60)) {
-    throw httpError(400, "Pairing expired")
   }
 
   await db.write(
@@ -108,7 +115,7 @@ export async function getPairing(request, env, params) {
       pairingData.deviceId,
       pairingData.networkId,
       pairingData.signPublicKey,
-      now()
+      ts
     ]
   )
 
@@ -118,27 +125,48 @@ export async function getPairing(request, env, params) {
       senderCryptPublicKey: pairingData.senderCryptPublicKey,
       encryptedPayload: pairingData.encryptedPayload
     }
-  });
+  })
 }
 
-export async function getPairedDevices(request, env, params) {
+export async function getPairedDevice(request, env, params) {
   const auth = await getAuth(env, request);
   if (!auth.isAdmin) {
     throw httpError(404, "Unauthorized")
   }
   const db = new D1Adapter(() => env.DB)
-  const pairingData = await db.read(
+  // const pairingData = await db.read(
+  //   `SELECT *
+  //    FROM device_pairing
+  //    WHERE network_id = ?
+  //    AND redeemed_at IS NOT NULL
+  //    AND initiator_device_id = ?`
+  //   , [auth.networkId, auth.deviceId]
+  // )
+
+  const pairingData = await db.readOne(
     `SELECT *
      FROM device_pairing
      WHERE network_id = ?
-     AND redeemed_at IS NOT NULL
+     AND device_id = ?
      AND initiator_device_id = ?`
-    , [auth.networkId, auth.deviceId]
+    , [auth.networkId, params.deviceId, auth.deviceId]
   )
 
-  const devices = pairingData.map(d => ({
-    encryptedPayload: d.encryptedAdminPayload
-  }));
+  // Pairing failed => no device data
+  if(pairingData === null){
+    return json({ ok: false, device: null });
+  }
+
+
+  if(pairingData.redeemedAt === null){
+    return json({ ok: true, device: null });
+  }
+
+  return json({ ok: true, device: pairingData.encryptedAdminPayload });
+
+  // const devices = pairingData.map(d => ({
+  //   encryptedPayload: d.encryptedAdminPayload
+  // }));
 
   return json({ ok: true, devices });
 }

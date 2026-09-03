@@ -1,6 +1,6 @@
 import { json, route } from './lib/http.js';
 import { bootstrap } from './routes/bootstrap.js';
-import { addDevice, createPairing, getPairing, getPairedDevices, deletePairedDevice, setAdmin, invalidate } from './routes/devices.js';
+import { addDevice, createPairing, getPairing, getPairedDevice, deletePairedDevice, setAdmin, invalidate } from './routes/devices.js';
 import { createEvent, listEvents, ackEvents } from './routes/event.js';
 import { relayConnect, relayGetTicket } from './routes/relay.js';
 import { DORelay } from "./do-relay.js";
@@ -27,7 +27,7 @@ const ROUTES = [
   { method: 'POST', path: '/bootstrap', handler: bootstrap },
   // { method: 'POST', path: '/devices', handler: addDevice },
   // { method: 'GET', path: '/devices', handler: listDevices },
-  { method: 'GET', path: '/paired-devices', handler: getPairedDevices },
+  { method: 'GET', path: '/paired-device/:deviceId', handler: getPairedDevice },
   { method: 'DELETE', path: '/paired-devices/:deviceId', handler: deletePairedDevice },
   { method: 'POST', path: '/event', handler: createEvent },
   { method: 'GET', path: '/events', handler: listEvents },
@@ -88,6 +88,7 @@ export function createSeptServer(plugins) {
       try {
         return await dispatch(request, env, ctx);
       } catch (err) {
+        throw err
         const status = err.status || 500;
         const code = err.code || (status === 500 ? 'internal_error' : 'error');
         return json({ error: code, message: err.message }, status, corsHeaders());

@@ -274,7 +274,7 @@ export class SeptClient {
     await this.store.event.setSequence(eventId, sequence)
   };
 
-  addDevice = async (deviceData, metadata, onPaired, onPairingTimeout, pairingTimeout = 60) => {
+  addDevice = async (deviceData, metadata, onPaired, onPairingError, pairingTimeout = 60) => {
 
     const networkStore = this.store.network
     const networkId = (await networkStore.get()).id;
@@ -324,55 +324,63 @@ export class SeptClient {
       for (let pairingTime = 0; pairingTime < pairingTimeout; pairingTime++) {
         await new Promise(resolve => setTimeout(resolve, 1000))
 
-        const r = await this._callRest("paired-devices")
+        const r = await this._callRest(`paired-device/${deviceData.deviceId}`)
 
-        for (const d of r.json.devices) {
-          const pairedDevice = JSON.parse(
-            new TextDecoder().decode(
-              decryptAsymmetric(
-                localDevice.cryptPrivateKey,
-                localDevice.cryptPublicKey,
-                deserializeBin(d.encryptedPayload),
-              )
-            )
-          )
-
-          if (pairedDevice.deviceId !== deviceData.deviceId) {
-            continue
-          }
-
-          await this.store.device.upsert(pairedDevice.deviceId, {
-            networkId: pairedDevice.networkId,
-            signPublicKey: deserializeBin(pairedDevice.signPublicKey),
-            cryptPublicKey: deserializeBin(pairedDevice.cryptPublicKey),
-          })
-
-          await this._callRest(
-            `paired-devices/${deviceData.deviceId}`,
-            { method: "DELETE" }
-          )
-          const admins = await this.store.device.getAdmins()
-          const recipients = admins.filter(d => d.id !== localDevice.deviceId).map(d => d.id)
-          if (recipients.length > 0) {
-            await this.sendEvent(
-              "sept.device.add",
-              {
-                id: pairedDevice.deviceId,
-                networkId: pairedDevice.networkId,
-                signPublicKey: pairedDevice.signPublicKey,
-                cryptPublicKey: pairedDevice.cryptPublicKey,
-                metadata: pairedDevice.metadata
-              },
-              recipients
-            )
-          }
-
-          await onPaired?.(pairedDevice.deviceId, pairedDevice.metadata)
+        // Paring failed
+        if (r.json.ok === false) {
+          await onPairingError?.(deviceData.deviceId, "failed")
           return
         }
+
+        if(r.json.device.encryptedPayload === null){
+          continue
+        }
+
+        // for (const d of r.json.devices) {
+        const pairedDevice = JSON.parse(
+          new TextDecoder().decode(
+            decryptAsymmetric(
+              localDevice.cryptPrivateKey,
+              localDevice.cryptPublicKey,
+              deserializeBin(r.json.device),
+            )
+          )
+        )
+
+
+
+        await this.store.device.upsert(pairedDevice.deviceId, {
+          networkId: pairedDevice.networkId,
+          signPublicKey: deserializeBin(pairedDevice.signPublicKey),
+          cryptPublicKey: deserializeBin(pairedDevice.cryptPublicKey),
+        })
+
+        await this._callRest(
+          `paired-devices/${deviceData.deviceId}`,
+          { method: "DELETE" }
+        )
+        const admins = await this.store.device.getAdmins()
+        const recipients = admins.filter(d => d.id !== localDevice.deviceId).map(d => d.id)
+        if (recipients.length > 0) {
+          await this.sendEvent(
+            "sept.device.add",
+            {
+              id: pairedDevice.deviceId,
+              networkId: pairedDevice.networkId,
+              signPublicKey: pairedDevice.signPublicKey,
+              cryptPublicKey: pairedDevice.cryptPublicKey,
+              metadata: pairedDevice.metadata
+            },
+            recipients
+          )
+        }
+
+        await onPaired?.(pairedDevice.deviceId, pairedDevice.metadata)
+        return
+        // }
       }
 
-      await onPairingTimeout?.(deviceData.deviceId)
+      await onPairingError?.(deviceData.deviceId, "timeout")
     }
 
     void pollPairing()
@@ -423,13 +431,15 @@ export class SeptClient {
   }
 
   initDevice = async () => {
+    await resetDb(this.dbAdapter)
+    this.restClient = null
     const settingsStore = this.store.settings
     const signKeys = await generateSigningKeyPair();
     const cryptKeys = await generateEncryptionKeypair();
-    await settingsStore.set("deviceSignPrivateKey", serializeBin(signKeys.privateKey));
+    await settingsStore.set("deviceSignPrivateKey", serializeBin(signKeys.privateKey), true);
     await settingsStore.set("deviceSignPublicKey", serializeBin(signKeys.publicKey));
     await settingsStore.set("deviceCryptPrivateKey", serializeBin(cryptKeys.privateKey), true);
-    await settingsStore.set("deviceCryptPublicKey", serializeBin(cryptKeys.publicKey), true);
+    await settingsStore.set("deviceCryptPublicKey", serializeBin(cryptKeys.publicKey));
     const settings = await settingsStore.get()
 
     const deviceId = makeId("dev", deserializeBin(settings.deviceSignPublicKey));

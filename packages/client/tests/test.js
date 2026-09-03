@@ -31,7 +31,7 @@ class SeptTest {
     await this.appAdmin.bootstrap()
     console.log(`Bootstrap done`)
 
-    for (let i = 1; i <= NUM_DEVICES; i++) {
+    for (let i = 1; i <= NUM_DEVICES - 1; i++) {
       let dPaired
       const dP = new Promise(resolve => dPaired = resolve)
       const deviceData = await this[`appDevice${i}`].initDevice()
@@ -43,6 +43,39 @@ class SeptTest {
       await dP
       console.log(`Device ${i} paired`)
     }
+
+    const i = NUM_DEVICES
+    let dPaired
+    const dP = new Promise(resolve => dPaired = resolve)
+    const deviceData = await this[`appDevice${i}`].initDevice()
+    console.log(`Init device${i} done`)
+    const pin = await this.appAdmin.addDevice(deviceData, {}, dPaired)
+    console.log(`Device${i} added`)
+    let failed = false
+    const wrongPin = String(
+      (Number(pin) + 1) % (10 ** pin.length)
+    ).padStart(pin.length, "0")
+    try {
+      await this[`appDevice${i}`].pairDevice(wrongPin)
+    } catch {
+      failed = true
+    }
+    assert(failed, "getPairing should fail with the wrong pin ..")
+    failed = false
+    try {
+      await this[`appDevice${i}`].pairDevice(pin)
+    } catch {
+      failed = true
+    }
+    assert(failed, "getPairing should fail with an invalidated pairing session ..")
+    const deviceData2 = await this[`appDevice${i}`].initDevice()
+    console.log(`Init device${i} second time done`)
+    const pin2 = await this.appAdmin.addDevice(deviceData2, {}, dPaired)
+    console.log(`Device${i} added second time`)
+    await this[`appDevice${i}`].pairDevice(pin2)
+    await this[`appDevice${i}`].sync()
+    await dP
+    console.log(`Device ${i} paired`)
 
 
     const aDevices = await this.appAdmin.septClient.getDevices();

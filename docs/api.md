@@ -77,7 +77,7 @@ Returns a simplified list of locally known admin devices:
 
 ## Pairing
 
-### `addDevice(deviceData, metadata, onPaired, onPairingTimeout, pairingTimeout = 60)`
+### `addDevice(deviceData, metadata, onPaired, onPairingError, pairingTimeout = 60)`
 
 Admin-side pairing initiation.
 
@@ -96,7 +96,7 @@ Callbacks:
 
 ```js
 onPaired(deviceId, metadata)
-onPairingTimeout(deviceId)
+onPairingError(deviceId, reason)
 ```
 
 ### `pairDevice(pin)`

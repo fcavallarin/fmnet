@@ -89,7 +89,6 @@ export async function getAuth(env, request, body) {
     }
   };
 
-
   if (!device || ! await SeptRequest.verify(req, body, deserializeBin(device.signPublicKey), { nonceSeen })) {
     throw httpError(400, 'invalid_signature');
   }

@@ -17,7 +17,7 @@ export async function createEvent(request, env, params, ctx) {
   const {
     recipients, senderDeviceId, encryptedPayload, timestamp, eventId, signature, relaySignature
   } = body;
-  if (device.id !== senderDeviceId) {
+  if (device?.id !== senderDeviceId) {
     throw httpError(404, 'unauthorized');
   }
   const serialized = serializeEvent(networkId, eventId, recipients, senderDeviceId, encryptedPayload, timestamp);

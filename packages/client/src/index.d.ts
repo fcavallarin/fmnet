@@ -61,8 +61,9 @@ export type PairedHandler<TMetadata = Record<string, unknown>> = (
   metadata: TMetadata,
 ) => MaybePromise<void>;
 
-export type PairingTimeoutHandler = (
+export type PairingErrorHandler = (
   deviceId: DeviceId,
+  reason: "timeout" | "failed"
 ) => MaybePromise<void>;
 
 export type SeptEventHandler<TPayload = unknown> = (
@@ -242,7 +243,7 @@ export class SeptClient {
     deviceData: PairingDeviceData,
     metadata?: AddDeviceMetadata<TDeviceMetadata, TAdminMetadata>,
     onPaired?: PairedHandler<TAdminMetadata>,
-    onPairingTimeout?: PairingTimeoutHandler,
+    onPairingError?: PairingErrorHandler,
     pairingTimeout?: number,
   ) => Promise<PairingPin>;
 

@@ -98,11 +98,9 @@ export class BaseSeptApp {
   };
 
 
-  async addDevice(deviceData, metadata, onPaired, onPairingTimeout) {
-    // const deviceData = readJsonFile(`./data/cl-${clientName}.json`)
-    // console.log(deviceData)
+  async addDevice(deviceData, metadata, onPaired, onPairingError) {
     return await this.septClient.addDevice(
-      deviceData, metadata, onPaired, onPairingTimeout
+      deviceData, metadata, onPaired, onPairingError
     )
   };
 

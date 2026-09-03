@@ -9,10 +9,6 @@ async function registerPushToken(request, env, params) {
 
   const body = await readJson(request);
   const auth = await getAuth(env, request, body);
-
-  // if (!auth.isNetworkAdmin(body.networkId)) {
-  //   throw httpError(404, "Unauthorized")
-  // }
   const db = new D1Adapter(() => env.DB)
   await db.write(
     `INSERT INTO device_mobile_push_token
@@ -23,7 +19,6 @@ async function registerPushToken(request, env, params) {
     [auth.deviceId, body.token, now()]
   )
 
-  console.log(env, body)
   return jsonResponse({ ok: true })
 
 }

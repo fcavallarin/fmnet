@@ -131,9 +131,14 @@ After pairing, signed local admin state becomes the trust anchor for normal prot
 
 ### Pairing PIN properties
 
-The current client uses a short numeric PIN and the server enforces a short expiration window. Treat the PIN as a usability mechanism for a narrow enrollment window, not as a high-entropy cryptographic secret.
+Pairing requires both a short-lived device ID and a numeric PIN. The device ID is derived from freshly generated device key material and is not practically guessable.
 
-Applications should avoid exposing pairing endpoints to unnecessary brute-force opportunities and should consider rate limiting/attempt limits before production deployment.
+A pending pairing can be retrieved only once. The first retrieval attempt consumes the pairing record regardless of whether the supplied PIN is correct. A failed pairing causes the joining device to restart enrollment with fresh key material and therefore a new device ID.
+
+An attacker who learns a pending device ID consequently gets only a single PIN guess against that specific pairing session. After an incorrect guess, targeting a subsequent pairing requires discovering the newly generated device ID again.
+
+With a short expiration window, this prevents conventional online PIN brute forcing even with a short numeric PIN. An attacker able to repeatedly observe newly generated pairing identifiers could still disrupt enrollment by racing legitimate pairing attempts; this is an availability attack rather than an authentication bypass.
+
 
 ## Relay request authentication
 
