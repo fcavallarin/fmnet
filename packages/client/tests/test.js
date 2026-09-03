@@ -489,9 +489,7 @@ class SeptTest {
         "Revoked device still in device_graph"
       )
     }
-
   }
-
 }
 
 

@@ -1,5 +1,5 @@
 import { httpError, json, readJson } from '../lib/http.js';
-import { D1Adapter, now, isExpired } from '@sept/core';
+import { D1Adapter, now } from '@sept/core';
 import { getAuth } from '../lib/http.js';
 
 
@@ -164,11 +164,6 @@ export async function getPairedDevice(request, env, params) {
 
   return json({ ok: true, device: pairingData.encryptedAdminPayload });
 
-  // const devices = pairingData.map(d => ({
-  //   encryptedPayload: d.encryptedAdminPayload
-  // }));
-
-  return json({ ok: true, devices });
 }
 
 export async function deletePairedDevice(request, env, params) {

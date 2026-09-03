@@ -1,17 +1,26 @@
 import { httpError, json, readJson } from '../lib/http.js';
 import { D1Adapter, now } from '@sept/core';
 
-export async function bootstrap(request, env) {
+export async function bootstrap(request, env, params, ctx) {
 
   const body = await readJson(request);
   const networkId = body.networkId
   const db = new D1Adapter(() => env.DB)
   const t = now();
 
-  await db.write(
+  const maxNetworks = ctx.options.maxNetworks
+
+  const result = await db.write(
     `INSERT INTO network (id, created_at)
-       VALUES (?, ?)`,
-    [networkId, t])
+   SELECT ?, ?
+   WHERE (SELECT COUNT(*) FROM network) < ?`,
+    [networkId, t, maxNetworks]
+  )
+
+  if (result.meta.changes !== 1) {
+    throw httpError(403, "Network limit reached")
+  }
+
   await db.write(
     `INSERT INTO device (id, network_id, sign_public_key, created_at, is_admin)
        VALUES (?, ?, ?, ?, 1)`,

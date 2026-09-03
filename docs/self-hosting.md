@@ -195,18 +195,23 @@ This is an **FMNet/application deployment concern**, not a requirement for a gen
 Conceptually:
 
 ```js
-export default createSeptServer([
-  {
-    routes: [
-      { method: "POST", path: "/my-route", handler },
-    ],
-    events: {
-      "event.received": async ({ env, eventData }) => {
-        // application-specific integration
+export default createSeptServer(
+  [
+    {
+      routes: [
+        { method: "POST", path: "/my-route", handler },
+      ],
+      events: {
+        "event.received": async ({ env, eventData }) => {
+          // application-specific integration
+        },
       },
     },
-  },
-])
+  ],
+  {
+    maxNetworks: 10
+  }
+)
 ```
 
 ## Data retained by the relay

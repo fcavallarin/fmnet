@@ -431,8 +431,7 @@ export class SeptClient {
   }
 
   initDevice = async () => {
-    await resetDb(this.dbAdapter)
-    this.restClient = null
+    await this.resetDevice()
     const settingsStore = this.store.settings
     const signKeys = await generateSigningKeyPair();
     const cryptKeys = await generateEncryptionKeypair();
@@ -971,6 +970,7 @@ export class SeptClient {
 
   resetDevice = async () => {
     await resetDb(this.dbAdapter)
+    this.restClient = null
   }
 
   getDevices = async () => {

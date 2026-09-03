@@ -25,10 +25,8 @@ const eventBus = new EventBus([
 
 const ROUTES = [
   { method: 'POST', path: '/bootstrap', handler: bootstrap },
-  // { method: 'POST', path: '/devices', handler: addDevice },
-  // { method: 'GET', path: '/devices', handler: listDevices },
   { method: 'GET', path: '/paired-device/:deviceId', handler: getPairedDevice },
-  { method: 'DELETE', path: '/paired-devices/:deviceId', handler: deletePairedDevice },
+  { method: 'DELETE', path: '/paired-devices/:deviceId', handler: deletePairedDevice }, // @TODO rename to paired-device
   { method: 'POST', path: '/event', handler: createEvent },
   { method: 'GET', path: '/events', handler: listEvents },
   { method: 'PATCH', path: '/events', handler: ackEvents },
@@ -51,7 +49,7 @@ function corsHeaders() {
   };
 }
 
-async function dispatch(request, env, ctx) {
+async function dispatch(request, env, ctx, options) {
 
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders() });
@@ -63,7 +61,7 @@ async function dispatch(request, env, ctx) {
     const params = route(request.method, url.pathname, r);
     if (params) {
       // console.log(r.handler)
-      const response = await r.handler(request, env, params, { workerCtx: ctx, eventBus });
+      const response = await r.handler(request, env, params, { workerCtx: ctx, eventBus, options });
       const headers = new Headers(response.headers);
       for (const [k, v] of Object.entries(corsHeaders())) headers.set(k, v);
       return new Response(response.body, { status: response.status, webSocket: response.webSocket, headers });
@@ -73,7 +71,16 @@ async function dispatch(request, env, ctx) {
   return json({ error: 'not_found' }, 404, corsHeaders());
 }
 
-export function createSeptServer(plugins) {
+export function createSeptServer(plugins, options = {}) {
+  const maxNetworks = options.maxNetworks ?? 1
+
+  if (
+    !Number.isInteger(maxNetworks) ||
+    maxNetworks < 1
+  ) {
+    throw new Error("maxNetworks must be a positive integer")
+  }
+
   for (const p of plugins) {
     if (p.routes) {
       ROUTES.push(...p.routes);
@@ -86,9 +93,9 @@ export function createSeptServer(plugins) {
   return {
     fetch: async (request, env, ctx) => {
       try {
-        return await dispatch(request, env, ctx);
+        return await dispatch(request, env, ctx, { ...options, maxNetworks });
       } catch (err) {
-        // throw err
+        throw err
         const status = err.status || 500;
         const code = err.code || (status === 500 ? 'internal_error' : 'error');
         return json({ error: code, message: err.message }, status, corsHeaders());

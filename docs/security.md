@@ -131,7 +131,7 @@ After pairing, signed local admin state becomes the trust anchor for normal prot
 
 ### Pairing PIN properties
 
-Pairing requires both a a freshly generated device ID and a numeric PIN. The device ID is derived from freshly generated device key material and is not practically guessable.
+Pairing requires both a freshly generated device ID and a numeric PIN. The device ID is derived from freshly generated device key material and is not practically guessable.
 
 A pending pairing can be redeemed only once. An incorrect PIN destroys the pending pairing record. A correct PIN atomically marks the pairing as redeemed,
 preventing further redemption attempts while keeping the record available for the initiating admin to retrieve its completion payload.
@@ -154,6 +154,20 @@ The server also checks relay-side admin/network constraints for privileged trans
 Network bootstrap occurs before an established device can authenticate against server state. The current bootstrap endpoint accepts the newly generated network ID, root device ID and root signing public key and creates the initial records.
 
 The security assumption here is that generated identifiers are unguessable enough to prevent practical preemption/collision and that the endpoint is protected operationally against abuse/resource exhaustion. A production-hardening pass should explicitly review bootstrap abuse controls.
+
+### Network bootstrap and resource exhaustion
+
+Creating a new SEPT network currently does not require authentication: the bootstrap endpoint exists specifically to create the initial network and its first administrative device.
+
+Without additional controls, a publicly reachable relay could therefore be abused to create arbitrary numbers of networks and consume server-side resources. This does not compromise existing networks or device authentication, but it can be used as a resource-exhaustion or availability attack against the relay.
+
+The reference server supports a configurable maximum number of networks. Self-hosted deployments intended for a single SEPT network should normally set this limit to `1` and bootstrap their network immediately after deployment.
+
+Operators of shared or public relays should choose an appropriate network limit and monitor resource usage.
+
+Future versions may additionally protect public bootstrap with a proof-of-work challenge. This would preserve permissionless network creation while imposing a configurable computational cost, allowing the relay to bound the practical network-creation rate without introducing user accounts or a centralized authorization service.
+
+
 
 ## Availability and malicious relay
 
@@ -215,11 +229,10 @@ Before a stable/security-sensitive release, consider making these items explicit
 
 - add regression coverage that the relay-facing event body does not expose plaintext `type`;
 - add tamper tests proving that changing only `eventId` fails relay and recipient signature verification;
+- consider proof-of-work or equivalent abuse controls for permissionless network bootstrap on shared public relays;
 - decide whether deterministic `eventId` derivation should be independently recomputed/enforced by the server or remain a sender convention;
 - document and test replay/duplicate behavior;
-- consider optional pairing rate limits for availability/abuse protection;
 - review bootstrap abuse/preemption protections;
-- make relay ordering assumptions explicit;
 - add transactional local event + recipient persistence;
 - define schema migrations for long-lived mobile installations;
 - define compromised-device/key-rotation recovery behavior;

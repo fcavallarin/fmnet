@@ -24,14 +24,14 @@ async function registerPushToken(request, env, params) {
 }
 
 async function sendPushNotification(env, deviceId) {
-console.log(deviceId)
+  console.log(deviceId)
   const db = new D1Adapter(() => env.DB)
   const token = await db.readOne(
     `SELECT push_token from device_mobile_push_token where device_id=?`,
     [deviceId]
   )
-  
-  if(!token || !token.pushToken){
+
+  if (!token || !token.pushToken) {
     return
   }
   console.log(token)
@@ -56,19 +56,24 @@ console.log(deviceId)
       }),
     },
   );
-  
+
 }
 
-export default createSeptServer([
-  {
-    routes: [
-      { method: 'POST', path: '/register-push-token', handler: registerPushToken },
-    ],
-    events: {
-      "event.received": async ({env, eventData}) => {
-        await sendPushNotification(env, eventData.deviceId)
+export default createSeptServer(
+  [
+    {
+      routes: [
+        { method: 'POST', path: '/register-push-token', handler: registerPushToken },
+      ],
+      events: {
+        "event.received": async ({ env, eventData }) => {
+          await sendPushNotification(env, eventData.deviceId)
+        }
       }
     }
+  ],
+  {
+    maxNetworks: 10
   }
-])
+)
 
