@@ -195,24 +195,39 @@ This is an **FMNet/application deployment concern**, not a requirement for a gen
 Conceptually:
 
 ```js
-export default createSeptServer(
-  [
-    {
-      routes: [
-        { method: "POST", path: "/my-route", handler },
-      ],
-      events: {
-        "event.received": async ({ env, eventData }) => {
-          // application-specific integration
-        },
+export default createSeptServer([
+  {
+    routes: [
+      { method: "POST", path: "/my-route", handler },
+    ],
+    events: {
+      "event.received": async ({ env, eventData }) => {
+        // application-specific integration
       },
     },
-  ],
+  },
+], options)
+```
+
+### Network bootstrap limit
+
+`createSeptServer()` accepts a `maxNetworks` option controlling how many SEPT networks may be bootstrapped on that server:
+
+```js
+export default createSeptServer(
+  plugins,
   {
-    maxNetworks: 10
+    maxNetworks: 1
   }
 )
 ```
+
+The default is `1`, which is appropriate for a typical single-network self-hosted deployment.
+
+Once the configured number of networks exists, further `POST /bootstrap` requests are rejected. Shared or public relay operators can explicitly configure a higher value based on the intended deployment and available resources.
+
+Because bootstrap is intentionally unauthenticated, `maxNetworks` also acts as a basic resource-exhaustion safeguard. Public permissionless deployments may still want additional admission controls such as proof-of-work in the future.
+
 
 ## Data retained by the relay
 

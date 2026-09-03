@@ -10,7 +10,7 @@ The server is intentionally not the application authorization authority. It auth
 import { createSeptServer } from "@sept/server"
 ```
 
-`createSeptServer(plugins)` returns a Worker-compatible object with `fetch()` and allows deployment code to add custom routes and subscribe to server events.
+`createSeptServer(plugins, options)` returns a Worker-compatible object with `fetch()` and allows deployment code to add custom routes and subscribe to server events.
 
 The package also exports `DORelay` for Wrangler Durable Object binding.
 
@@ -34,18 +34,23 @@ GET    /ws
 ## Plugin example
 
 ```js
-export default createSeptServer([
-  {
-    routes: [
-      { method: "POST", path: "/my-route", handler },
-    ],
-    events: {
-      "event.received": async ({ env, eventData }) => {
-        // application integration
+export default createSeptServer(
+  [
+    {
+      routes: [
+        { method: "POST", path: "/my-route", handler },
+      ],
+      events: {
+        "event.received": async ({ env, eventData }) => {
+          // application integration
+        },
       },
     },
-  },
-])
+  ],
+  {
+    maxNetworks: 1,
+  }
+)
 ```
 
 The reference Cloudflare deployment lives in `apps/worker`.

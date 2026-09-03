@@ -73,7 +73,7 @@ export default createSeptServer(
     }
   ],
   {
-    maxNetworks: 10
+    maxNetworks: 400
   }
 )
 
