@@ -332,7 +332,7 @@ export class SeptClient {
           return
         }
 
-        if(r.json.device === null){
+        if (r.json.device === null) {
           continue
         }
 
@@ -617,23 +617,27 @@ export class SeptClient {
     const settings = await this.store.settings.get()
     const networkId = await this.getNetworkId()
     const purl = new URL(this.restEndpoint);
-    purl.protocol = purl.protocol === "https" ? "wss" : "ws"
+    purl.protocol = purl.protocol === "https:" ? "wss:" : "ws:"
     const wsEndpoint = purl.toString();
     this.wsStatus = "tickedRequested"
     const ticketRes = await this._callRest("get-relay-ticket")
     this.wsStatus = "connecting"
     const queue = new AsyncQueue((i) => this._handleEvents([i]))
-    this.ws = new WebSocket(
-      `${wsEndpoint}ws?` +
+    const wsUrl = `${wsEndpoint}ws?` +
       `networkId=${networkId}&` +
       `deviceId=${settings.deviceId}&` +
       `ticket=${ticketRes.json.ticket}`
-    );
+    this.ws = new WebSocket(wsUrl)
+
     return new Promise((resolve, reject) => {
       this.ws.addEventListener("open", () => {
         this.uiEvents.dispatch("connection.open", {})
         this.wsStatus = "connected"
-        this.sync().then(resolve)
+        this.sync().then(() => {
+          resolve()
+        }, err => {
+          reject()
+        })
       });
 
       this.ws.addEventListener("message", (event) => {
@@ -659,7 +663,10 @@ export class SeptClient {
         } else {
           this.wsStatus = "error"
         }
-        reject(err)
+        const error = new Error(
+          err?.message ?? "WebSocket connection error"
+        )
+        reject(error)
       });
     })
   }
