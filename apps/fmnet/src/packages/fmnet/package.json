@@ -6,5 +6,8 @@
   "main": "./src/fmnet.js",
   "exports": {
     ".": "./src/fmnet.js"
+  },
+  "dependencies": {
+    "@sept/client": "*"
   }
 }
