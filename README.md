@@ -5,14 +5,12 @@
 **SEPT** is a privacy-first protocol and JavaScript SDK for sending typed, encrypted events between trusted devices through a relay that is not part of the application authorization model.
 
 **FMNet** is an application built on SEPT. It adds private messaging, application-defined remote actions, peer-to-peer WebRTC data channels, and TCP tunnelling over WebRTC.
-
 | Project | What it is |
 | --- | --- |
 | **SEPT** | Device identity, pairing, encrypted events, local authorization policies, persistence, relay synchronization and connection lifecycle. |
 | **FMNet** | A real application and integration test for SEPT: chat, remote actions, WebRTC connections and TCP tunnels. |
 
 Start here:
-
 - [SEPT quick start](docs/sept-quickstart.md)
 - [Architecture](docs/architecture.md)
 - [Protocol overview](docs/protocol.md)
@@ -24,7 +22,6 @@ Start here:
 > **Project status:** SEPT and FMNet are under active development. The protocol and implementation have not received an independent security audit. See [Security](docs/security.md) before using the project in a high-risk environment.
 
 ---
-
 ## See FMNet in action
 
 ![FMNet CLI demo](docs/demo/cli/fmnet-demo-quick.gif)
@@ -41,7 +38,6 @@ ssh -p 2222 127.0.0.1
 SEPT is the event and authorization layer underneath those operations; WebRTC/TCP tunnelling is an FMNet feature built on top.
 
 ---
-
 ## Architecture at a glance
 
 ```text
@@ -72,7 +68,20 @@ Private signing and encryption keys stay on devices. Authorization decisions for
 The relay necessarily observes transport metadata such as device/network identifiers, timing and event sizes. See [Security](docs/security.md) for the exact current confidentiality boundary and implementation caveats.
 
 ---
+## Installation modes
 
+The monorepo exposes separate installation paths depending on what you want to run or develop:
+
+| Command | Purpose |
+| --- | --- |
+| `npm install` | Install the complete development workspace, including server/Worker tooling. |
+| `npm run install:client` | Install the SEPT JavaScript client workspaces only. |
+| `npm run install:fmnet:cli` | Install the workspaces required by the FMNet Node.js CLI. |
+| `npm run scaffold:server -- <name>` | Generate a standalone SEPT Cloudflare deployment under `deployments/<name>`. |
+
+See [SEPT quick start](docs/sept-quickstart.md) for direct client usage and [Self-hosting](docs/self-hosting.md) for server deployment.
+
+---
 ## Quick start: run FMNet
 
 The easiest way to exercise the complete stack today is the FMNet CLI. The development configuration can use the public development relay, so initial testing does not require deploying Cloudflare resources.
@@ -80,7 +89,7 @@ The easiest way to exercise the complete stack today is the FMNet CLI. The devel
 ### Install
 
 ```bash
-./install.sh cli
+npm run install:fmnet:cli
 ```
 
 ### Run
@@ -148,7 +157,6 @@ fmnet> help
 For direct SDK usage, see [SEPT quick start](docs/sept-quickstart.md).
 
 ---
-
 ## TCP tunnels
 
 TCP tunnelling is an **FMNet feature**, not part of the SEPT wire protocol.
@@ -185,7 +193,6 @@ Device connection / DataChannelManager
 ```
 
 ---
-
 ## Repository map
 
 ```text
@@ -194,16 +201,21 @@ packages/
 ├── core/     @sept/core    — canonical JSON, serialization, IDs, queues, event bus, SQL adapters
 ├── crypto/   @sept/crypto  — signing, hashing, symmetric/asymmetric encryption primitives
 └── server/   @sept/server  — relay HTTP routes, request authentication and Durable Object relay
+    └── templates/cloudflare/ — generic self-hosted SEPT deployment template
 
 apps/
-├── worker/   — Cloudflare Worker composition/deployment of @sept/server
+├── worker/   — reference/FMNet Cloudflare deployment composed from @sept/server
 └── fmnet/    — FMNet application, CLI and mobile client
+
+deployments/
+└── <name>/   — generated self-hosted SEPT server deployments
 ```
 
 The monorepo is intentional: FMNet acts as a real consumer of SEPT and exercises the protocol across Node.js, React Native/Expo and Cloudflare Workers.
 
----
+The generic self-hosted relay is generated from `packages/server/templates/cloudflare`; `apps/worker` remains the reference application deployment and may include FMNet-specific integrations such as push notifications.
 
+---
 ## Why plain JavaScript?
 
 SEPT is written in **plain JavaScript** deliberately. Portability is a project requirement, and the same code is intended to run across:
@@ -216,22 +228,30 @@ SEPT is written in **plain JavaScript** deliberately. Portability is a project r
 Avoiding a mandatory compile step also keeps the protocol implementation easy to inspect and embed. Type declarations can describe the public API without changing the runtime implementation.
 
 ---
-
 ## Public relay and self-hosting
 
 The public development relay is intended for development and testing while the project is evolving.
 
-For control over availability, retention and transport metadata, deploy your own relay. The reference deployment uses:
+For control over availability, retention and transport metadata, generate your own relay deployment from the Cloudflare template:
+
+```bash
+npm run scaffold:server -- my-sept
+cd deployments/my-sept
+npm run create
+```
+
+The generated deployment uses:
 
 - Cloudflare Workers;
 - D1;
 - Durable Objects;
-- R2 (binding present in the reference worker; usage may evolve with attachments/event storage).
+- R2.
 
-See [Self-hosting](docs/self-hosting.md) for the current deployment steps and configuration notes.
+`npm run create` creates and configures the D1 database, applies remote migrations and deploys the Worker. The R2 bucket is currently created explicitly before that step.
+
+See [Self-hosting](docs/self-hosting.md) for the complete deployment and operations guide.
 
 ---
-
 ## Current status
 
 The implementation is actively dogfooded and has been exercised with:
@@ -248,7 +268,6 @@ The implementation is actively dogfooded and has been exercised with:
 Current work is focused on real-world testing, bug fixing, documentation, API stabilization and broader compatibility testing.
 
 ---
-
 ## Security notice
 
 SEPT and FMNet have **not received an independent security audit**.
@@ -258,7 +277,6 @@ Do not treat the current implementation as a finished security product. Review t
 Read [docs/security.md](docs/security.md) for the current guarantees, non-goals and known implementation caveats.
 
 ---
-
 ## Contributing
 
 The project is still evolving quickly. Bug reports, architecture feedback, interoperability experiments, platform compatibility reports and real-world test results are welcome.

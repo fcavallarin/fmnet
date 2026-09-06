@@ -32,6 +32,11 @@ out = runCommand(
 console.log(out)
 out = runCommand(
   "npx",
+  ["wrangler", "r2", "bucket", "create", name],
+)
+console.log(out)
+out = runCommand(
+  "npx",
   ["wrangler", "deploy"],
 )
 console.log(out)

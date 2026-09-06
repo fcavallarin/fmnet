@@ -1,85 +1,87 @@
 # Self-hosting the SEPT relay
 
-The reference relay runs on Cloudflare and is composed from `@sept/server` by `apps/worker`.
+SEPT includes a generic Cloudflare deployment template for self-hosting `@sept/server`. The scaffolded deployment is intentionally separate from `apps/worker`, which is the reference/FMNet deployment and may contain application-specific integrations such as push notifications.
 
-This guide reflects the current repository layout. Cloudflare resource IDs in the checked-in `wrangler.jsonc` belong to the development deployment and must be replaced for an independent deployment.
+The generated server is created under `deployments/<name>` and remains part of the npm workspace, so local `@sept/*` packages are resolved directly from the monorepo.
 
 ## Requirements
 
 - Node.js/npm
 - a Cloudflare account
-- Wrangler authenticated to that account
+- Wrangler access to that account
 
-Install workspace dependencies from the repository root:
+The generated deployment includes Wrangler as a development dependency. `npm run create` checks Wrangler authentication and starts `wrangler login` when required.
+
+## Quick start
+
+From the repository root:
 
 ```bash
-npm install
+npm run scaffold:server -- my-sept
+cd deployments/my-sept
 ```
 
-Then work from:
+The scaffold command:
+
+1. copies the generic Cloudflare template;
+2. configures the Worker, package and resource names from `my-sept`;
+3. creates the `deployments/my-sept` workspace;
+4. installs that workspace and its local `@sept/server` dependency.
+
+The generated deployment contains:
+
+```text
+deployments/my-sept/
+├── migrations/
+│   └── 0001_initial.sql
+├── scripts/
+│   ├── create.js
+│   └── utils.js
+├── src/
+│   └── index.js
+├── package.json
+└── wrangler.jsonc
+```
+
+### Create and deploy the server
+
+Run:
 
 ```bash
-cd apps/worker
+npm run create
+```
+
+The current `create` script performs the remaining first-deployment steps:
+
+1. verifies Wrangler authentication;
+2. creates the D1 database using the deployment name;
+3. adds the `DB` binding and D1 `database_id` to `wrangler.jsonc` via Wrangler's `--update-config` support;
+4. applies the remote D1 migrations;
+5. deploys the Worker.
+
+There is no need to copy the D1 database ID manually.
+
+Wrangler prints the deployed Worker URL, typically of the form:
+
+```text
+https://<worker>.<account-subdomain>.workers.dev
 ```
 
 ## Cloudflare resources
 
-The current Worker configuration expects:
+The generic scaffold currently expects:
 
 | Binding | Resource | Purpose |
 | --- | --- | --- |
-| `DB` | D1 | networks, devices, pairings, encrypted events, pending delivery, push tokens |
+| `DB` | D1 | networks, devices, pairings, encrypted events and pending delivery |
 | `RELAY` | Durable Object | live WebSocket delivery per SEPT network |
-| `MAILBOX` | R2 | configured reference bucket; storage usage is evolving |
+| `MAILBOX` | R2 | configured server bucket; storage usage is evolving |
 
 The Worker enables the `nodejs_compat` compatibility flag and exports `DORelay` from `@sept/server`.
 
-## 1. Create the D1 database
+### Durable Object configuration
 
-Create your database, for example:
-
-```bash
-npx wrangler d1 create sept
-```
-
-Wrangler prints a database ID. Update `apps/worker/wrangler.jsonc`:
-
-```jsonc
-"d1_databases": [
-  {
-    "binding": "DB",
-    "database_name": "sept",
-    "database_id": "<YOUR_DATABASE_ID>"
-  }
-]
-```
-
-Do not reuse the repository's checked-in development `database_id` for your deployment.
-
-## 2. Create the R2 bucket
-
-The current configuration declares:
-
-```jsonc
-{
-  "binding": "MAILBOX",
-  "bucket_name": "sept"
-}
-```
-
-Create it:
-
-```bash
-npx wrangler r2 bucket create sept
-```
-
-If you choose another bucket name, update `wrangler.jsonc` accordingly.
-
-At the current stage, core event routing is D1/Durable-Object based; treat R2 usage as part of the evolving reference deployment rather than a fixed protocol requirement.
-
-## 3. Durable Object configuration
-
-`wrangler.jsonc` binds:
+The generated `wrangler.jsonc` binds:
 
 ```jsonc
 "durable_objects": {
@@ -92,60 +94,45 @@ At the current stage, core event routing is D1/Durable-Object based; treat R2 us
 }
 ```
 
-and contains the initial SQLite Durable Object migration. Normally Wrangler applies the DO class migration as part of deployment; you do not create a separate named DO instance manually. Instances are derived by the server from the SEPT network ID.
+and contains the initial SQLite Durable Object migration. Wrangler applies the DO class migration as part of deployment; you do not create a separate named Durable Object instance manually. Instances are derived by the server from the SEPT network ID.
 
-## 4. Apply D1 migrations
+## Subsequent deployments
 
-The repository currently contains:
-
-```text
-migrations/0001_initial.sql
-migrations/0002_push_token.sql
-```
-
-For local development:
-
-```bash
-npx wrangler d1 migrations apply DB --local
-```
-
-For the remote D1 database:
-
-```bash
-npx wrangler d1 migrations apply DB --remote
-```
-
-Prefer Wrangler's migration command over the legacy `scripts/db_migrate.sh`; that helper currently references an older database name and only the initial migration.
-
-## 5. Run locally
-
-After applying local migrations:
-
-```bash
-npm run dev
-```
-
-or from the monorepo root:
-
-```bash
-npm run dev:worker
-```
-
-The default `SeptClient` endpoint is `http://localhost:8787`, matching a normal local Wrangler development flow.
-
-## 6. Deploy
+After the resources have been created, deploy code changes with:
 
 ```bash
 npm run deploy
 ```
 
-Wrangler will print the deployed Worker URL, typically of the form:
+If a new D1 migration is added to the generated deployment, apply remote migrations with:
 
-```text
-https://<worker>.<account-subdomain>.workers.dev
+```bash
+npm run migrate
 ```
 
-## 7. Point clients at your relay
+Then deploy as usual.
+
+## Local development
+
+Apply migrations to the local Wrangler D1 database:
+
+```bash
+npm run migrate:local
+```
+
+Then start the Worker locally:
+
+```bash
+npm run dev
+```
+
+The default local Wrangler origin is normally:
+
+```text
+http://localhost:8787
+```
+
+## Point clients at your relay
 
 Configure `SeptClient.create()` with the deployed origin:
 
@@ -159,6 +146,41 @@ const sept = await SeptClient.create({
 ```
 
 `connect()` derives `wss://` from the same endpoint and connects to `/ws` after obtaining a relay ticket.
+
+## Generic server composition
+
+The generated server starts with a minimal SEPT composition:
+
+```js
+import { createSeptServer } from "@sept/server"
+
+export { DORelay } from "@sept/server"
+
+export default createSeptServer([], {
+  maxNetworks: 1
+})
+```
+
+This keeps the self-hosted relay independent from FMNet-specific Worker plugins.
+
+### Network bootstrap limit
+
+`createSeptServer()` accepts a `maxNetworks` option controlling how many SEPT networks may be bootstrapped on that server:
+
+```js
+export default createSeptServer(
+  plugins,
+  {
+    maxNetworks: 1
+  }
+)
+```
+
+The generated template uses `1`, which is appropriate for a typical single-network self-hosted deployment.
+
+Once the configured number of networks exists, further `POST /bootstrap` requests are rejected. Shared or public relay operators can explicitly configure a higher value based on the intended deployment and available resources.
+
+Because bootstrap is intentionally unauthenticated, `maxNetworks` also acts as a basic resource-exhaustion safeguard. Public permissionless deployments may still want additional admission controls in the future.
 
 ## Current relay routes
 
@@ -185,13 +207,6 @@ Except for initial bootstrap/pairing redemption phases as required by the protoc
 
 `createSeptServer()` accepts plugins that can add HTTP routes and subscribe to server events.
 
-The reference FMNet Worker currently demonstrates:
-
-- `POST /register-push-token`
-- an `event.received` hook that can trigger an Expo push notification for the recipient device.
-
-This is an **FMNet/application deployment concern**, not a requirement for a generic SEPT relay. A standalone SEPT deployment can remove or replace these plugins while keeping the core server.
-
 Conceptually:
 
 ```js
@@ -209,29 +224,22 @@ export default createSeptServer([
 ], options)
 ```
 
-### Network bootstrap limit
+The reference `apps/worker` deployment demonstrates FMNet-specific behavior including:
 
-`createSeptServer()` accepts a `maxNetworks` option controlling how many SEPT networks may be bootstrapped on that server:
+- `POST /register-push-token`;
+- an `event.received` hook that can trigger an Expo push notification for the recipient device.
 
-```js
-export default createSeptServer(
-  plugins,
-  {
-    maxNetworks: 1
-  }
-)
+Those features are application deployment concerns, not requirements for a generic SEPT relay. The scaffolded server starts without those plugins.
+
+## D1 migrations and retained data
+
+The generic scaffold currently starts with:
+
+```text
+migrations/0001_initial.sql
 ```
 
-The default is `1`, which is appropriate for a typical single-network self-hosted deployment.
-
-Once the configured number of networks exists, further `POST /bootstrap` requests are rejected. Shared or public relay operators can explicitly configure a higher value based on the intended deployment and available resources.
-
-Because bootstrap is intentionally unauthenticated, `maxNetworks` also acts as a basic resource-exhaustion safeguard. Public permissionless deployments may still want additional admission controls such as proof-of-work in the future.
-
-
-## Data retained by the relay
-
-The D1 schema currently includes:
+Its D1 schema includes the core SEPT relay tables:
 
 - `network`
 - `device`
@@ -240,7 +248,9 @@ The D1 schema currently includes:
 - `pending_event`
 - `device_pairing`
 - `counter`
-- `device_mobile_push_token` (reference FMNet worker migration)
+- `seen_nonce`
+
+The FMNet reference Worker may add application-specific migrations such as mobile push-token storage; those are deliberately not part of the generic server scaffold.
 
 Encrypted event rows are shared across recipients; each recipient has its own pending row containing the wrapped payload key. ACK removes pending delivery state, and the current server deletes an event once it has no remaining pending recipients.
 
@@ -253,9 +263,9 @@ Review at least:
 - D1 and R2 retention/backups;
 - Cloudflare account security;
 - Worker logs and observability;
-- rate limiting for bootstrap/pairing routes;
+- rate limiting and admission control for bootstrap/pairing routes;
 - metadata visibility at the relay;
-- push-notification privacy if enabling the FMNet plugin;
+- push-notification privacy if adding the FMNet plugin;
 - migration/rollback procedures.
 
 See [Security](security.md) for protocol-level assumptions and known implementation caveats.

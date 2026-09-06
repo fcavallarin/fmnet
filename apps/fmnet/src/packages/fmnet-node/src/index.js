@@ -1,6 +1,18 @@
 import wrtc from "@roamhq/wrtc";
-
 import net from "node:net";
+import Database from "better-sqlite3";
+
+export function betterSqliteDataStore(filename) {
+  return {
+    type: "better-sqlite",
+    open: () => {
+      const db = new Database(filename);
+      db.pragma("journal_mode = WAL");
+      return db;
+    },
+    close: db => db.close(),
+  };
+}
 
 export class TCPAdapter {
   async connect(host, port, timeout = 10) {

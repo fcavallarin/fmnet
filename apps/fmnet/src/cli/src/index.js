@@ -1,16 +1,12 @@
-// import { terminal as term } from "terminal-kit";
+
 import { FMNet } from "@fmnet/core";
-
-import { webRTCAdapter, TCPAdapter } from "@fmnet/node";
-import Database from 'better-sqlite3';
+import { webRTCAdapter, TCPAdapter, betterSqliteDataStore } from "@fmnet/node";
 import { FmnetCli } from './fmnet-cli.js'
-
 import readline from "node:readline/promises"
 import { stdin, stdout } from "node:process"
 import fs from 'node:fs';
 import path from 'node:path';
 import qrcode from 'qrcode-terminal';
-
 
 
 async function main() {
@@ -21,15 +17,7 @@ async function main() {
     // logLevel: "debug",
     restEndpoint: process.env.FMNET_REST_ENDPOINT || "https://sept.filippo-572.workers.dev",
     secretKeyProvider: async () => new Uint8Array(32),
-    dataStore: {
-      type: "better-sqlite",
-      open: () => {
-        const db = new Database(`./data/${dbName}.db`);
-        db.pragma('journal_mode = WAL');
-        return db;
-      },
-      close: (store) => store.close(),
-    }
+    dataStore: betterSqliteDataStore(`./data/${dbName}.db`)
   })
   const networkId = await fmnet.getNetworkId()
 

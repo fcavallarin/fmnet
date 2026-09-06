@@ -4,20 +4,21 @@ This guide shows the shape of direct `@sept/client` usage. The FMNet CLI remains
 
 ## Install from the monorepo
 
-From the repository root:
+From the repository root, install only the workspaces required by the SEPT JavaScript client:
 
 ```bash
-npm install
+npm run install:client
 ```
 
-The relevant workspace packages are:
+The client-only installation includes:
 
 ```text
 @sept/client
 @sept/core
 @sept/crypto
-@sept/server
 ```
+
+Use plain `npm install` instead when developing the complete monorepo, including the Cloudflare server/Worker and FMNet applications.
 
 `SeptClient` requires a SQLite-compatible datastore adapter configuration and a SEPT relay endpoint.
 
