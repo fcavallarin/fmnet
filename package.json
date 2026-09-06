@@ -2,16 +2,18 @@
   "name": "sept",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "workspaces": [
     "apps/fmnet/src/packages/*",
     "apps/fmnet/src/cli",
     "apps/fmnet/src/mobile",
     "apps/worker",
-    "packages/*"
+    "packages/*",
+    "deployments/*"
   ],
   "scripts": {
-    "dev:worker": "npm run dev -w @sept/worker",
-    "dev:cli": "npm run dev -w @sept/cli",
-    "test": "npm run test --workspaces --if-present"
+    "install:client": "npm install -w @sept/client -w @sept/core -w @sept/crypto",
+    "install:fmnet:cli": "npm install -w fmnet -w @fmnet/node",
+    "scaffold:server": "node scripts/scaffold-server.js"
   }
 }
