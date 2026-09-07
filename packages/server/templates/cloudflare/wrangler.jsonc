@@ -14,12 +14,6 @@
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
-	"r2_buckets": [
-		{
-			"binding": "MAILBOX",
-			"bucket_name": "{{ name }}"
-		}
-	],
 	"triggers": {
 		"crons": [
 			"*/10 * * * *"

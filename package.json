@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "install:client": "npm install -w @sept/client -w @sept/core -w @sept/crypto",
-    "install:fmnet:cli": "npm install -w fmnet-cli",
+    "install:fmnet:cli": "mkdir apps/fmnet/src/cli/data && npm install -w fmnet-cli",
     "scaffold:server": "node scripts/scaffold-server.js"
   }
 }

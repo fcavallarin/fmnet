@@ -10,7 +10,7 @@ The generated server is created under `deployments/<name>` and remains part of t
 - a Cloudflare account
 - Wrangler access to that account
 
-The generated deployment includes Wrangler as a development dependency. `npm run create` checks Wrangler authentication and starts `wrangler login` when required.
+The generated deployment includes Wrangler as a development dependency.
 
 ## Quick start
 
@@ -34,9 +34,6 @@ The generated deployment contains:
 deployments/my-sept/
 ├── migrations/
 │   └── 0001_initial.sql
-├── scripts/
-│   ├── create.js
-│   └── utils.js
 ├── src/
 │   └── index.js
 ├── package.json
@@ -48,18 +45,12 @@ deployments/my-sept/
 Run:
 
 ```bash
-npm run create
+wrangler d1 create --binding DB --update-config my-sept
+wrangler r2 bucket create --binding STORAGE --update-config my-sept
+wrangler d1 migrations apply my-sept --remote
+wrangler deploy
 ```
 
-The current `create` script performs the remaining first-deployment steps:
-
-1. verifies Wrangler authentication;
-2. creates the D1 database using the deployment name;
-3. adds the `DB` binding and D1 `database_id` to `wrangler.jsonc` via Wrangler's `--update-config` support;
-4. applies the remote D1 migrations;
-5. deploys the Worker.
-
-There is no need to copy the D1 database ID manually.
 
 Wrangler prints the deployed Worker URL, typically of the form:
 
@@ -75,7 +66,7 @@ The generic scaffold currently expects:
 | --- | --- | --- |
 | `DB` | D1 | networks, devices, pairings, encrypted events and pending delivery |
 | `RELAY` | Durable Object | live WebSocket delivery per SEPT network |
-| `MAILBOX` | R2 | configured server bucket; storage usage is evolving |
+| `STORAGE` | R2 | configured server bucket; storage usage is evolving |
 
 The Worker enables the `nodejs_compat` compatibility flag and exports `DORelay` from `@sept/server`.
 

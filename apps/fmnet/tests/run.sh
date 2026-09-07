@@ -6,6 +6,8 @@ if [ "$1" = "all" ]; then
     cd -
 fi
 
+mkdir data 2> /dev/null
+
 rm -r ./data/*.db 2> /dev/null
 rm -r ./data/*.json 2> /dev/null
 

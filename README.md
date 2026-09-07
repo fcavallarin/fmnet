@@ -237,17 +237,11 @@ For control over availability, retention and transport metadata, generate your o
 ```bash
 npm run scaffold:server -- my-sept
 cd deployments/my-sept
-npm run create
+wrangler d1 create --binding DB --update-config my-sept
+wrangler r2 bucket create --binding STORAGE --update-config my-sept
+wrangler d1 migrations apply my-sept --remote
+wrangler deploy
 ```
-
-The generated deployment uses:
-
-- Cloudflare Workers;
-- D1;
-- Durable Objects;
-- R2.
-
-`npm run create` creates and configures the D1 database, applies remote migrations and deploys the Worker. The R2 bucket is currently created explicitly before that step.
 
 See [Self-hosting](docs/self-hosting.md) for the complete deployment and operations guide.
 

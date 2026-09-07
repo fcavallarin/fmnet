@@ -15,7 +15,7 @@ The current worker also demonstrates FMNet mobile push integration through a cus
 
 - `DB` — Cloudflare D1
 - `RELAY` — `DORelay` Durable Object
-- `MAILBOX` — R2 bucket configured by the reference deployment
+- `STORAGE` — R2 bucket configured by the reference deployment
 
 ## Local development
 

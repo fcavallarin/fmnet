@@ -34,8 +34,8 @@ async function sendPushNotification(env, deviceId) {
   if (!token || !token.pushToken) {
     return
   }
-  console.log(token)
-  await fetch(
+
+  const response = await fetch(
     'https://exp.host/--/api/v2/push/send',
     {
       method: 'POST',
@@ -56,6 +56,10 @@ async function sendPushNotification(env, deviceId) {
       }),
     },
   );
+  // const rbody = await response.text();
+  // await db.write(`insert into mobile_push_token_log (device_id, response, created_at) values(?,?,?)`,
+  //   [deviceId, JSON.stringify(rbody), now()]
+  // )
 
 }
 

@@ -17,7 +17,6 @@ const template = path.resolve(
 )
 
 const destination = path.resolve(here, "..", "deployments", name)
-console.log(destination)
 if (fs.existsSync(destination)) {
   console.error(`Target directory already exists: ${destination}`)
   process.exit(1)
@@ -35,10 +34,6 @@ const packageJson = path.resolve(destination, "package.json")
 fc = fs.readFileSync(packageJson, "utf-8")
 fs.writeFileSync(packageJson, fc.replaceAll("{{ name }}", name), "utf-8")
 
-const createJs = path.resolve(destination, "scripts", "create.js")
-fc = fs.readFileSync(createJs, "utf-8")
-fs.writeFileSync(createJs, fc.replaceAll("{{ name }}", name), "utf-8")
-
 
 const out = execFileSync(
   "npm",
@@ -49,6 +44,15 @@ const out = execFileSync(
   }
 )
 
-console.log(`SEPT server created in ${destination}`)
+console.log(`
+  SEPT server created in ${destination}
+
+  Deploy it:
+    cd ${destination}
+    wrangler d1 create --binding DB --update-config ${name}
+    wrangler r2 bucket create --binding STORAGE --update-config ${name}
+    wrangler d1 migrations apply ${name} --remote
+    wrangler deploy
+`)
 console.log()
 
