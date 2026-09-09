@@ -255,7 +255,7 @@ export class SeptClient {
 
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
-  getWebsocketStatus: () => WebSocketStatus;
+  getConnectionStatus: () => WebSocketStatus;
 
   getNetworkId: () => Promise<NetworkId | null>;
   getDeviceId: () => Promise<DeviceId | null>;

@@ -678,7 +678,7 @@ export class SeptClient {
     }
   }
 
-  getWebsocketStatus = () => {
+  getConnectionStatus = () => {
     return this.wsStatus
   }
 

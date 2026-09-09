@@ -209,7 +209,7 @@ The method is bound as a public arrow function and can be passed as a callback w
 
 Closes the current WebSocket connection.
 
-### `getWebsocketStatus()`
+### `getConnectionStatus()`
 
 Returns the current internal connection status string.
 

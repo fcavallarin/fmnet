@@ -435,7 +435,7 @@ export class FMNet {
   };
 
   getRelayStatus() {
-    return this.septClient.getWebsocketStatus()
+    return this.septClient.getConnectionStatus()
   }
 
   async getDeviceGraph() {
