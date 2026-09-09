@@ -117,13 +117,13 @@ The pairing PIN is short-lived. The joining device has no previously trusted adm
 SEPT applications define their own event types:
 
 ```js
-sept.register("message.send", async (
+sept.register("message.send", async ({
   payload,
   senderDeviceId,
   timestamp,
   eventId,
   sequence,
-) => {
+}) => {
   console.log(senderDeviceId, payload.text)
 })
 ```

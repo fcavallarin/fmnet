@@ -82,19 +82,19 @@ export class FMNet {
     })
 
     this.septClient.register(
-      "message", async (data, sender, timestamp, eventId) => {
-        const senderName = await this.identityStore.getByDevice(sender)
+      "message", async ({ payload, senderDeviceId, timestamp, eventId }) => {
+        const senderName = await this.identityStore.getByDevice(senderDeviceId)
         await this.appState.set("unreads", cur => {
           const next = cur ? { ...cur } : {}
-          if (next[sender]) {
-            next[sender].push(eventId)
+          if (next[senderDeviceId]) {
+            next[senderDeviceId].push(eventId)
           } else {
-            next[sender] = [eventId]
+            next[senderDeviceId] = [eventId]
           }
           return next
         })
         this.eventBus.dispatch("message", {
-          message: data,
+          message: payload,
           sender: senderName,
           timestamp,
           id: eventId
@@ -103,15 +103,15 @@ export class FMNet {
     )
 
     this.septClient.registerConcurrent(
-      "tcptunnel.ingress", async (eventData) => {
-        const { tunnelId, dcmId, status } = eventData
+      "tcptunnel.ingress", async ({ payload }) => {
+        const { tunnelId, dcmId, status } = payload
         await this.handleTcpTunnelIngress(tunnelId, dcmId, status)
       }
     )
 
     this.septClient.register(
-      "tcptunnel.egress", async (eventData, senderDeviceId) => {
-        const { tunnelId, host, port, dcmId, status } = eventData
+      "tcptunnel.egress", async ({ payload, senderDeviceId }) => {
+        const { tunnelId, host, port, dcmId, status } = payload
         await this.handleTcpTunnelEgress(tunnelId, host, port, dcmId, status, senderDeviceId)
       }
     )

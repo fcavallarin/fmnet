@@ -66,12 +66,16 @@ export type PairingErrorHandler = (
   reason: "timeout" | "failed"
 ) => MaybePromise<void>;
 
-export type SeptEventHandler<TPayload = unknown> = (
+export interface SeptEventHandlerData {
   payload: TPayload,
   senderDeviceId: DeviceId,
   timestamp: number,
   eventId: EventId,
   sequence: number,
+}
+ 
+export type SeptEventHandler<TPayload = unknown> = (
+  SeptEventHandlerData
 ) => MaybePromise<void>;
 
 export type SystemEventName =

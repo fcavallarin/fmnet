@@ -72,9 +72,9 @@ export class BaseSeptApp {
     // })
 
     this.septClient.register(
-      "message", (eventData) => {
+      "message", ({ payload }) => {
         console.log(`---RECV---`)
-        console.log(eventData)
+        console.log(payload)
         console.log(`----------`)
       }
     )

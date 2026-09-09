@@ -112,13 +112,13 @@ Returns pairing metadata intended for the joining device.
 Registers an application event handler.
 
 ```js
-sept.register("message.send", async (
+sept.register("message.send", async ({
   payload,
   senderDeviceId,
   timestamp,
   eventId,
   sequence,
-) => {
+}) => {
   // ...
 })
 ```

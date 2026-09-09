@@ -99,15 +99,15 @@ export class FmnetCli {
   registerCustomActions(configPath) {
     const septClient = this.fmnet.septClient
     const config = readJsonFile(configPath)
-    septClient.register("customaction.response", (data, senderDeviceId) => {
-      this.info(`Action response: ${data}`)
+    septClient.register("customaction.response", ({ payload, senderDeviceId }) => {
+      this.info(`Action response: ${payload}`)
     })
     for (const action of config.actions) {
-      septClient.register(`customaction.${action.name}`, async (data, senderDeviceId) => {
+      septClient.register(`customaction.${action.name}`, async ({ payload, senderDeviceId }) => {
         const deviceName = await this.fmnet.getDeviceIdentity(senderDeviceId)
         try {
           this.info(`Action '${action.name}' requested by ${deviceName.name}`)
-          const { stdout } = execFile(action.command, data.args)
+          const { stdout } = execFile(action.command, payload.args)
           septClient.send("customaction.response", "ok", [senderDeviceId])
         } catch (e) {
           septClient.send("customaction.response", `error: ${e.code}`, [senderDeviceId])
@@ -211,7 +211,7 @@ export class FmnetCli {
         break
       case "admins":
         const admins = await this.fmnet.getAdmins()
-        for(const a of admins){
+        for (const a of admins) {
           this.success(a)
         }
       case "permissions":

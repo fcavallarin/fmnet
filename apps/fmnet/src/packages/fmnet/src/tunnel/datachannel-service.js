@@ -23,16 +23,16 @@ export class DataChannelService {
       ],
     };
 
-    sept.register("datachannel", ev => {
-      switch (ev.stage) {
+    sept.register("datachannel", ({ payload }) => {
+      switch (payload.stage) {
         case "offer":
-          return this.onOffer(ev)
+          return this.onOffer(payload)
         case "answer":
-          return this.onAnswer(ev)
+          return this.onAnswer(payload)
         case "ice":
-          return this.onIce(ev)
+          return this.onIce(payload)
       }
-      throw new Error(`Unknown datachannel stage ${ev.stage}`)
+      throw new Error(`Unknown datachannel stage ${payload.stage}`)
     });
 
   }

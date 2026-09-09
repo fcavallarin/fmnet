@@ -556,16 +556,16 @@ export class SeptClient {
       }
 
       if (evPayload.type in this.registeredEvents) {
-        const p = [
-          evPayload.payload,
-          e.senderDeviceId,
-          e.timestamp,
+        const p = {
+          payload: evPayload.payload,
+          senderDeviceId: e.senderDeviceId,
+          timestamp: e.timestamp,
           eventId,
-          e.sequence
-        ]
+          sequence: e.sequence
+        }
 
         try {
-          const r = this.registeredEvents[evPayload.type].handler(...p)
+          const r = this.registeredEvents[evPayload.type].handler(p)
           if (this.registeredEvents[evPayload.type].serial) {
             await r
           } else {
