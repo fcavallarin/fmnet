@@ -168,14 +168,14 @@ See [Authorization](authorization.md) for the model and admin behavior.
 ## Send an event
 
 ```js
-await sept.sendEvent(
+await sept.send(
   "message.send",
   { text: "hello" },
   [recipientDeviceId],
 )
 ```
 
-`sendEvent()`:
+`send()`:
 
 1. resolves recipient public keys from local state;
 2. checks the sender-to-recipient policy;

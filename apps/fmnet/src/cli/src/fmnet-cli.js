@@ -108,9 +108,9 @@ export class FmnetCli {
         try {
           this.info(`Action '${action.name}' requested by ${deviceName.name}`)
           const { stdout } = execFile(action.command, data.args)
-          septClient.sendEvent("customaction.response", "ok", [senderDeviceId])
+          septClient.send("customaction.response", "ok", [senderDeviceId])
         } catch (e) {
-          septClient.sendEvent("customaction.response", `error: ${e.code}`, [senderDeviceId])
+          septClient.send("customaction.response", `error: ${e.code}`, [senderDeviceId])
         }
       })
     }
@@ -225,7 +225,7 @@ export class FmnetCli {
         this.success(`Status:\n Relay: ${this.fmnet.getRelayStatus()}`)
         break
       case "run-action":
-        await this.fmnet.sendEvent(args[0], `customaction.${args[1]}`, { args: [] })
+        await this.fmnet.send(args[0], `customaction.${args[1]}`, { args: [] })
         this.success(`Action requested`)
         break
       case "clear":

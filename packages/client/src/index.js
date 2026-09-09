@@ -201,7 +201,7 @@ export class SeptClient {
     }
   }
 
-  sendEvent = async (type, payload, dstDeviceIds) => {
+  send = async (type, payload, dstDeviceIds) => {
     const eventStore = this.store.event
     const deviceStore = this.store.device
     const deviceData = await this._getDeviceData();
@@ -362,7 +362,7 @@ export class SeptClient {
         const admins = await this.store.device.getAdmins()
         const recipients = admins.filter(d => d.id !== localDevice.deviceId).map(d => d.id)
         if (recipients.length > 0) {
-          await this.sendEvent(
+          await this.send(
             "sept.device.add",
             {
               id: pairedDevice.deviceId,
@@ -743,7 +743,7 @@ export class SeptClient {
     const admins = await this.store.device.getAdmins()
     const deviceId = await this.getDeviceId()
     const admRecipients = admins.filter(d => d.id !== deviceId).map(d => d.id)
-    await this.sendEvent(
+    await this.send(
       "sept.policy.update",
       evtPayload,
       [srcDeviceId, dstDeviceId, ...admRecipients]
@@ -844,7 +844,7 @@ export class SeptClient {
 
     await this.store.device.upsert(deviceId, { role: "admin" })
 
-    await this.sendEvent(
+    await this.send(
       "sept.admin.grant",
       {
         networkId,
@@ -884,7 +884,7 @@ export class SeptClient {
       })
     }
 
-    await this.sendEvent(
+    await this.send(
       "sept.policy.update",
       evtPayload,
       [deviceId]
@@ -901,7 +901,7 @@ export class SeptClient {
     const recipients = await this.store.device.getAll()
 
     await this.store.device.upsert(deviceId, { role: "user" })
-    await this.sendEvent(
+    await this.send(
       "sept.admin.revoke",
       { networkId, deviceId },
       recipients.map(r => r.id).filter(id => id !== curDeviceId)
@@ -1003,7 +1003,7 @@ export class SeptClient {
       }
     }
 
-    await this.sendEvent(
+    await this.send(
       "sept.device.invalidate",
       { deviceId },
       [...new Set(recipients)]

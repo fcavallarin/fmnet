@@ -132,7 +132,7 @@ SEPT performs policy checks on both sides of the normal application flow.
 
 ### Sender side
 
-Before encrypting/submitting an event for a recipient, `sendEvent()` checks the local policy. This provides fast failure and prevents the local application from intentionally sending an event it believes is unauthorized.
+Before encrypting/submitting an event for a recipient, `send()` checks the local policy. This provides fast failure and prevents the local application from intentionally sending an event it believes is unauthorized.
 
 ### Recipient side
 

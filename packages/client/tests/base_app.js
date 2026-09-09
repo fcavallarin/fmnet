@@ -92,8 +92,8 @@ export class BaseSeptApp {
 
   };
 
-  async sendEvent(type, message, dstDeviceIds) {
-    return await this.septClient.sendEvent(type, message, dstDeviceIds)
+  async send(type, message, dstDeviceIds) {
+    return await this.septClient.send(type, message, dstDeviceIds)
 
   };
 

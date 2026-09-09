@@ -131,12 +131,12 @@ Equivalent to `register(eventType, handler, false)`.
 
 Use only when the handler is safe to execute without blocking later event processing.
 
-### `sendEvent(type, payload, dstDeviceIds)`
+### `send(type, payload, dstDeviceIds)`
 
 Checks policy, encrypts/signs/persists the event and submits it to the relay.
 
 ```js
-await sept.sendEvent(
+await sept.send(
   "message.send",
   { text: "hello" },
   [deviceA, deviceB],

@@ -129,7 +129,7 @@ export class FMNet {
           dcm: null
         })
 
-        this.septClient.sendEvent("tcptunnel.ingress", { tunnelId, status: this.tcpTunnelStatus.EGRESS_ACK }, [senderDeviceId])
+        this.septClient.send("tcptunnel.ingress", { tunnelId, status: this.tcpTunnelStatus.EGRESS_ACK }, [senderDeviceId])
         break
       case this.tcpTunnelStatus.PEER_DCM_READY:
         logger.debug(`}}} 5 EGRESS got asck DC connection from ingress (update this.tcpTunnels, start egress tcp tunnel and send sept evt to ingress)`)
@@ -142,7 +142,7 @@ export class FMNet {
         if (!sess) {
           // Zombie session: it exists on the peer but not locally
           logger.debug(`Zombie dcSession (${dcmId}) .. resetting`)
-          this.septClient.sendEvent("tcptunnel.ingress", {
+          this.septClient.send("tcptunnel.ingress", {
             tunnelId,
             status: this.tcpTunnelStatus.CLOSED,
           },
@@ -154,7 +154,7 @@ export class FMNet {
         const egress = new TcpTunnelEgress(this.tcpAdapter, tcptun.dcm)
         tcptun.handler = egress
         egress.start()
-        this.septClient.sendEvent("tcptunnel.ingress", { tunnelId, status: this.tcpTunnelStatus.EGRESS_RUNNING }, [senderDeviceId])
+        this.septClient.send("tcptunnel.ingress", { tunnelId, status: this.tcpTunnelStatus.EGRESS_RUNNING }, [senderDeviceId])
         break
       case this.tcpTunnelStatus.CLOSED:
         tcptun = this.tcpTunnels.get(tunnelId)
@@ -181,7 +181,7 @@ export class FMNet {
             throw new Error(`Tunnel not found ${tunnelId}`)
           }
           tcptun.dcm = sess.dcm
-          this.septClient.sendEvent("tcptunnel.egress", {
+          this.septClient.send("tcptunnel.egress", {
             tunnelId,
             dcmId,
             // dcmReady: true,
@@ -225,7 +225,7 @@ export class FMNet {
           const sess = this.dcSessions.get(dcm.deviceConnectionId)
           sess.pendingTunnels.push(tunnelId)
           tcptun.dcm = dcm
-          this.septClient.sendEvent("tcptunnel.egress", {
+          this.septClient.send("tcptunnel.egress", {
             tunnelId,
             dcmId: dcm.deviceConnectionId,
             status: this.tcpTunnelStatus.PEER_DCM_READY,
@@ -255,7 +255,7 @@ export class FMNet {
           case "tcptun":
             logger.debug(`}}} 4 EGRESS request DC connection (add to this.dcConnections (${dcm.deviceConnectionId}) and send sept evt to ingress)`)
             this.dcSessions.set(dcm.deviceConnectionId, { dcm })
-            this.septClient.sendEvent("tcptunnel.ingress", {
+            this.septClient.send("tcptunnel.ingress", {
               dcmId: dcm.deviceConnectionId,
               status: this.tcpTunnelStatus.PEER_DCM_READY
             }, [dcm.peerDeviceId])
@@ -303,7 +303,7 @@ export class FMNet {
         port,
         localPort: lp
       })
-      this.septClient.sendEvent("tcptunnel.egress", {
+      this.septClient.send("tcptunnel.egress", {
         tunnelId,
         status: this.tcpTunnelStatus.REQUESTED,
         host,
@@ -319,7 +319,7 @@ export class FMNet {
       throw new Error(`Tunnel not found`)
     }
     const septDst = t.handler.role === "ingress" ? "tcptunnel.egress" : "tcptunnel.ingress"
-    this.septClient.sendEvent(septDst, {
+    this.septClient.send(septDst, {
       tunnelId,
       status: this.tcpTunnelStatus.CLOSED,
     }, [t.dcm.peerDeviceId])
@@ -519,12 +519,12 @@ export class FMNet {
     if (!dstDevices || dstDevices.length === 0) {
       throw new Error(`No devices associated to ${dstName}`)
     }
-    await this.septClient.sendEvent("message", message, dstDevices)
+    await this.septClient.send("message", message, dstDevices)
   }
 
-  async sendEvent(dstName, eventName, data) {
+  async send(dstName, eventName, data) {
     const dstDevices = await this.identityStore.getByName(dstName)
-    await this.septClient.sendEvent(eventName, data, dstDevices)
+    await this.septClient.send(eventName, data, dstDevices)
   }
 
   // async getNewMessages() {

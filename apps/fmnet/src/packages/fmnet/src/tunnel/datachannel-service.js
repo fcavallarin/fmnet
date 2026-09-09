@@ -230,7 +230,7 @@ export class DataChannelService {
   }
 
   async sendSignal(toDeviceId, stage, payload) {
-    await this.sept.sendEvent(
+    await this.sept.send(
       "datachannel",
       {
         ...payload,

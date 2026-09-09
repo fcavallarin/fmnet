@@ -230,7 +230,7 @@ export class SeptClient {
 
   bootstrap: () => Promise<NetworkId>;
 
-  sendEvent: <TPayload = unknown>(
+  send: <TPayload = unknown>(
     type: EventType,
     payload: TPayload,
     dstDeviceIds: DeviceId[],

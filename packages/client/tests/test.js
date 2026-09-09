@@ -135,12 +135,12 @@ class SeptTest {
   }
 
   async test_send_messages(testId) {
-    await this.appAdmin.sendEvent("message", "test1", [this.appDevice1DeviceId])
+    await this.appAdmin.send("message", "test1", [this.appDevice1DeviceId])
     console.log(`Message sent admin -> device1`)
     await this.appDevice1.sync()
     console.log(`Device 1 sync done`)
 
-    await this.appDevice1.sendEvent("message", "test2", [this.appDevice2DeviceId])
+    await this.appDevice1.send("message", "test2", [this.appDevice2DeviceId])
     console.log(`Message sent device1 -> device2`)
     await this.appDevice2.sync()
     console.log(`Device 2 sync done`)
@@ -189,7 +189,7 @@ class SeptTest {
     let empty_rcpt_list = false
     try {
       console.log("> Ignore message below:")
-      await this.appDevice2.sendEvent("message", testId, [this.appDevice1DeviceId])
+      await this.appDevice2.send("message", testId, [this.appDevice1DeviceId])
     } catch {
       empty_rcpt_list = true
     }
@@ -214,7 +214,7 @@ class SeptTest {
       { allowedEventTypes: ["message"] }
     );
 
-    await this.appDevice2.sendEvent("message", testId, [this.appDevice1DeviceId])
+    await this.appDevice2.send("message", testId, [this.appDevice1DeviceId])
 
     console.log("> Ignore message below:")
     await this.appDevice1.sync()
@@ -279,7 +279,7 @@ class SeptTest {
       ["message"]
     );
     await this.appDevice1.sync()
-    await this.appDevice1.sendEvent("message", testId, [this.appDevice1DeviceId])
+    await this.appDevice1.send("message", testId, [this.appDevice1DeviceId])
     console.log(`Message sent device1 -> device1`)
     await this.appDevice1.sync()
     console.log(`Device 1 sync done`)
@@ -403,7 +403,7 @@ class SeptTest {
     await this.appDevice2.sync()
     try {
       console.log("> Ignore message below:")
-      await this.appDevice2.sendEvent("message", `${testId}-1`, [this.appAdminDeviceId])
+      await this.appDevice2.send("message", `${testId}-1`, [this.appAdminDeviceId])
     } catch { }
     await this.appAdmin.sync()
     adminMessages = await this.appAdmin.getStoredEvents({
@@ -419,7 +419,7 @@ class SeptTest {
     )
     await this.appDevice2.sync()
     await this.appAdmin.sync()
-    await this.appDevice2.sendEvent("message", `${testId}-1`, [this.appAdminDeviceId])
+    await this.appDevice2.send("message", `${testId}-1`, [this.appAdminDeviceId])
     await this.appAdmin.sync()
     adminMessages = await this.appAdmin.getStoredEvents({
       type: "message",
@@ -476,7 +476,7 @@ class SeptTest {
     assert(devices1.length === devices.length - 1, "Device not invalidated")
     let exception = false
     try {
-      await this.appDevice2.sendEvent("message", testId, [this.appDevice1DeviceId])
+      await this.appDevice2.send("message", testId, [this.appDevice1DeviceId])
     } catch {
       exception = true
     }

@@ -63,7 +63,7 @@ SEPT is not a traffic-analysis-resistant or metadata-hiding system.
 
 ### Event-type confidentiality
 
-The current `sendEvent()` implementation encrypts `{type,payload}` and does **not** include the application event type as a top-level field in the relay POST body. The reference relay can route and persist the event without learning the plaintext event type.
+The current `send()` implementation encrypts `{type,payload}` and does **not** include the application event type as a top-level field in the relay POST body. The reference relay can route and persist the event without learning the plaintext event type.
 
 This does not make SEPT metadata-hiding: event sizes, sender/recipient relationships, timestamps, delivery timing and other transport metadata remain observable and may still correlate with application behavior.
 
