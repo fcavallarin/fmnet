@@ -202,7 +202,7 @@ sept.device.add
 sept.device.invalidate
 ```
 
-These are handled internally rather than through application `register()` handlers.
+These are handled internally rather than through application `register()` handlers. After updating local state, the client emits the corresponding system notification through `on()`.
 
 A received system event is applied only when the sender is locally recognized as an admin. Protocol events are treated as non-skippable: if processing fails, the client avoids ACKing the failing event so the next synchronization can retry it.
 

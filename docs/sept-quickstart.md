@@ -28,18 +28,18 @@ A client is constructed with `SeptClient.create()`:
 
 ```js
 import { SeptClient } from "@sept/client"
+import Database from "better-sqlite3"
 
 const sept = await SeptClient.create({
   restEndpoint: "http://localhost:8787",
   dataStore: {
     type: "better-sqlite",
-    open: openDatabase,
-    close: closeDatabase,
-    clearDb: false,
+    open: () => new Database("app.db"),
+    close: db => db.close(),
   },
-  // Optional: application/platform-specific provider used by SettingsStore
+  // Application/platform-specific provider used by SettingsStore
   // for values that should be stored as secrets.
-  secretKeyProvider,
+  secretKeyProvider: async () => new Uint8Array(secret32Bytes),
 })
 ```
 
@@ -149,7 +149,7 @@ await adminSept.grant(
   senderDeviceId,
   recipientDeviceId,
   ["message.send"],
-  { reason: "chat permission" },
+  { reason: "chat permission" }, // Optional metadata
 )
 ```
 
@@ -187,17 +187,69 @@ await sept.send(
 
 ## Receive events
 
-### WebSocket connection
+SEPT distinguishes between application events and client events:
+
+- **Application events** are defined by your application and handled through
+  `register()` or `registerConcurrent()`.
+- **Client events** are defined and emitted locally by the SEPT client. They
+  report SEPT system changes or connection activity and are handled through
+  `on()`.
+
+### SEPT system events
+
+System events are emitted after the client successfully processes a
+SEPT-owned protocol event and updates its local state:
+
+```js
+sept.on("policy.update", ({ policies, metadata }) => {
+  console.log("policies updated", policies)
+})
+
+sept.on("admin.grant", ({ deviceId, metadata }) => {
+  console.log("admin granted", deviceId)
+})
+
+sept.on("admin.revoke", ({ deviceId, metadata }) => {
+  console.log("admin revoked", deviceId)
+})
+
+sept.on("device.add", device => {
+  console.log("device added", device)
+})
+
+sept.on("device.invalidate", ({ deviceId }) => {
+  console.log("device invalidated", deviceId)
+})
+```
+
+The `sept.` prefix is optional for known system event names. For example,
+`admin.grant` and `sept.admin.grant` subscribe to the same client event.
+
+These notifications are different from application events: their names and
+payloads are owned by SEPT, and they cannot be registered with `register()`.
+
+### Connection events
+
+Connection events describe the local WebSocket lifecycle and activity. They are
+transport notifications, not application or protocol events:
 
 ```js
 sept.on("connection.open", () => console.log("connected"))
 sept.on("connection.close", () => console.log("disconnected"))
 sept.on("connection.error", () => console.log("connection error"))
+```
 
+The client also emits `connection.message` when the WebSocket receives a raw
+message, before it enters the normal receive pipeline. Most applications do not
+need to subscribe to it.
+
+### WebSocket connection
+
+```js
 await sept.connect()
 ```
 
-The client obtains a relay ticket, opens a WebSocket, synchronizes pending events, and processes pushed events through the same receive pipeline.
+The client opens a WebSocket, synchronizes pending events, and processes pushed events through the same receive pipeline.
 
 Disconnect explicitly when required:
 

@@ -171,7 +171,8 @@ sept.device.add
 sept.device.invalidate
 ```
 
-Applications cannot register handlers for these as ordinary application events. They are routed through internal protocol handlers.
+Applications cannot register handlers for these as ordinary application events.
+They are routed through internal protocol handlers. Once the local state update has completed applications can observe the corresponding client notification through `on()`.
 
 ## Device invalidation
 

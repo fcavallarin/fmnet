@@ -241,13 +241,30 @@ Starts periodic `sync()` every `time` seconds.
 
 Stops the polling interval.
 
-## Client/UI events
+## Client events
 
 ### `on(eventName, handler)`
 
-Subscribes to SEPT client lifecycle/system notifications.
+Subscribes to events emitted locally by the SEPT client. Client events are
+different from application events registered with `register()`: their names and
+payloads are defined by SEPT.
 
-Current connection events:
+### System events
+
+System events are emitted after the client successfully processes a reserved
+SEPT protocol event and updates its local state:
+
+```text
+policy.update
+admin.grant
+admin.revoke
+device.add
+device.invalidate
+```
+
+### Connection events
+
+Connection events report local WebSocket lifecycle and activity:
 
 ```text
 connection.open
@@ -256,7 +273,8 @@ connection.error
 connection.message
 ```
 
-System event names can also be subscribed to. The implementation accepts the short form for known `sept.*` events when it can resolve it unambiguously.
+connection.message exposes the raw WebSocket message before it enters the
+normal receive pipeline. Most applications should not need to subscribe to it.
 
 ## Application KV storage
 
@@ -295,7 +313,7 @@ await sept.callRest("register-push-token", {
 
 Prefer protocol-level methods when they exist; `callRest()` intentionally exposes custom server integration.
 
-## Reserved system events
+## Reserved protocol event types
 
 Current internal protocol event types:
 
@@ -308,3 +326,6 @@ sept.device.invalidate
 ```
 
 They are not ordinary application event registrations.
+
+After processing one of these events internally, the client emits the
+corresponding system notification through `on()`.
