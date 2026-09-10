@@ -62,7 +62,7 @@ Append `__<operator>` to a field name. With no suffix, `eq` is used.
 | `__is` | SQL `IS`, normally used with `null` | `{ deliveredAt__is: null }` |
 | `__isnot` | SQL `IS NOT`, normally used with `null` | `{ sequence__isnot: null }` |
 
-Unknown fields and operators throw an error.
+Unknown operator suffixes and unknown fields within supported event or relation filters throw an error.
 
 ## Relation filters
 
