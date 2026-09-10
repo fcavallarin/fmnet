@@ -196,7 +196,7 @@ Except for initial bootstrap/pairing redemption phases as required by the protoc
 
 ## Worker plugins
 
-`createSeptServer()` accepts plugins that can add HTTP routes and subscribe to server events.
+`createSeptServer()` accepts plugins that can add HTTP routes and install server hooks.
 
 Conceptually:
 
@@ -206,7 +206,7 @@ export default createSeptServer([
     routes: [
       { method: "POST", path: "/my-route", handler },
     ],
-    events: {
+    hooks: {
       "event.received": async ({ env, eventData }) => {
         // application-specific integration
       },

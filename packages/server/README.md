@@ -10,7 +10,7 @@ The server is intentionally not the application authorization authority. It auth
 import { createSeptServer } from "@sept/server"
 ```
 
-`createSeptServer(plugins, options)` returns a Worker-compatible object with `fetch()` and allows deployment code to add custom routes and subscribe to server events.
+`createSeptServer(plugins, options)` returns a Worker-compatible object with `fetch()` and allows deployment code to add custom routes and install server hooks.
 
 The package also exports `DORelay` for Wrangler Durable Object binding.
 
@@ -40,7 +40,7 @@ export default createSeptServer(
       routes: [
         { method: "POST", path: "/my-route", handler },
       ],
-      events: {
+      hooks: {
         "event.received": async ({ env, eventData }) => {
           // application integration
         },

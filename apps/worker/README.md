@@ -9,7 +9,7 @@ import { createSeptServer } from "@sept/server"
 export { DORelay } from "@sept/server"
 ```
 
-The current worker also demonstrates FMNet mobile push integration through a custom route and the `event.received` server event.
+The current worker also demonstrates FMNet mobile push integration through a custom route and the `event.received` server hook.
 
 ## Bindings
 
