@@ -254,27 +254,29 @@ payloads are defined by SEPT.
 System events are emitted after the client successfully processes a reserved
 SEPT protocol event and updates its local state:
 
-```text
-policy.update
-admin.grant
-admin.revoke
-device.add
-device.invalidate
-```
+| Event | Payload |
+| --- | --- |
+| `policy.update` | `{ policies, metadata }` |
+| `admin.grant` | `{ deviceId, metadata }` |
+| `admin.revoke` | `{ deviceId, metadata }` |
+| `device.add` | `{ id, networkId, signPublicKey, cryptPublicKey, metadata }` |
+| `device.invalidate` | `{ deviceId }` |
+
+These notifications correspond to reserved wire event types documented under
+[System event namespace](protocol.md#system-event-namespace).
 
 ### Connection events
 
 Connection events report local WebSocket lifecycle and activity:
 
-```text
-connection.open
-connection.close
-connection.error
-connection.message
-```
+| Event | Payload and meaning |
+| --- | --- |
+| `connection.open` | `{}`; the WebSocket opened |
+| `connection.close` | `{}`; the WebSocket closed |
+| `connection.error` | `{}`; the WebSocket reported an error |
+| `connection.message` | The raw WebSocket message, emitted before normal processing |
 
-connection.message exposes the raw WebSocket message before it enters the
-normal receive pipeline. Most applications should not need to subscribe to it.
+Most applications should not need to subscribe to `connection.message`.
 
 ## Application KV storage
 
@@ -312,20 +314,3 @@ await sept.callRest("register-push-token", {
 ```
 
 Prefer protocol-level methods when they exist; `callRest()` intentionally exposes custom server integration.
-
-## Reserved protocol event types
-
-Current internal protocol event types:
-
-```text
-sept.policy.update
-sept.admin.grant
-sept.admin.revoke
-sept.device.add
-sept.device.invalidate
-```
-
-They are not ordinary application event registrations.
-
-After processing one of these events internally, the client emits the
-corresponding system notification through `on()`.

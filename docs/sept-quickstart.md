@@ -192,63 +192,21 @@ await sept.send(
 6. stores the outgoing event locally;
 7. posts the encrypted event to the relay.
 
-## Receive events
+## Observe client events
 
-SEPT distinguishes between application events and client events:
-
-- **Application events** are defined by your application and handled through
-  `register()` or `registerConcurrent()`.
-- **Client events** are defined and emitted locally by the SEPT client. They
-  report SEPT system changes or connection activity and are handled through
-  `on()`.
-
-### SEPT system events
-
-System events are emitted after the client successfully processes a
-SEPT-owned protocol event and updates its local state:
+In addition to application events, the SDK emits local client events for SEPT
+system changes and connection activity. Subscribe to them with `on()`:
 
 ```js
-sept.on("policy.update", ({ policies, metadata }) => {
-  console.log("policies updated", policies)
-})
-
-sept.on("admin.grant", ({ deviceId, metadata }) => {
+sept.on("admin.grant", ({ deviceId }) => {
   console.log("admin granted", deviceId)
 })
-
-sept.on("admin.revoke", ({ deviceId, metadata }) => {
-  console.log("admin revoked", deviceId)
-})
-
-sept.on("device.add", device => {
-  console.log("device added", device)
-})
-
-sept.on("device.invalidate", ({ deviceId }) => {
-  console.log("device invalidated", deviceId)
-})
 ```
 
-The `sept.` prefix is optional for known system event names. For example,
-`admin.grant` and `sept.admin.grant` subscribe to the same client event.
+See [Client events](api.md#client-events) for the complete event list, payloads
+and connection notifications.
 
-These notifications are different from application events: their names and
-payloads are owned by SEPT, and they cannot be registered with `register()`.
-
-### Connection events
-
-Connection events describe the local WebSocket lifecycle and activity. They are
-transport notifications, not application or protocol events:
-
-```js
-sept.on("connection.open", () => console.log("connected"))
-sept.on("connection.close", () => console.log("disconnected"))
-sept.on("connection.error", () => console.log("connection error"))
-```
-
-The client also emits `connection.message` when the WebSocket receives a raw
-message, before it enters the normal receive pipeline. Most applications do not
-need to subscribe to it.
+## Connect and synchronize
 
 ### WebSocket connection
 
