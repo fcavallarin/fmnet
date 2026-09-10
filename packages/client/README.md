@@ -40,3 +40,4 @@ See the repository documentation:
 - [`docs/protocol.md`](../../docs/protocol.md)
 - [`docs/authorization.md`](../../docs/authorization.md)
 - [`docs/security.md`](../../docs/security.md)
+ -[`event-filtering.md`](../../docs/event-filtering.md)

@@ -151,6 +151,8 @@ Queries locally stored events using the current store filtering DSL.
 
 This is an SDK/query convenience. The filter surface is not a SEPT wire-protocol concept and may evolve independently.
 
+See [Filtering stored events](event-filtering.md) for supported fields, operators, relation filters and current limitations.
+
 ## Authorization
 
 ### `getPolicy(srcDeviceId, dstDeviceId)`

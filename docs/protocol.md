@@ -144,7 +144,7 @@ When receiving an event, the relay:
 5. stores the encrypted event;
 6. creates one pending row per recipient with that recipient's wrapped payload key;
 7. pushes the recipient-specific event through the network Durable Object if the recipient is connected;
-8. emits a server-side `event.received` plugin hook.
+8. invokes the server-side `event.received` plugin hook.
 
 The relay does not need the plaintext application payload to route the event.
 

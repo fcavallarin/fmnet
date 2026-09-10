@@ -255,6 +255,8 @@ const events = await sept.getStoredEvents()
 
 `getStoredEvents(filters)` exposes the current local event-store filtering API. It is an SDK convenience rather than a SEPT wire-protocol feature.
 
+See [Filtering stored events](event-filtering.md) for query examples and supported filters.
+
 ## Application storage
 
 Applications using SEPT can reuse its persistent runtime store for small namespaced state:
