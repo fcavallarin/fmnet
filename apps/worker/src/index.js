@@ -69,7 +69,7 @@ export default createSeptServer(
       routes: [
         { method: 'POST', path: '/register-push-token', handler: registerPushToken },
       ],
-      events: {
+      hooks: {
         "event.received": async ({ env, eventData }) => {
           await sendPushNotification(env, eventData.deviceId)
         }

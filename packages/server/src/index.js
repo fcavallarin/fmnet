@@ -85,8 +85,8 @@ export function createSeptServer(plugins, options = {}) {
     if (p.routes) {
       ROUTES.push(...p.routes);
     }
-    for (const ev in p.events || {}) {
-      eventBus.on(ev, p.events[ev])
+    for (const ev in p.hooks || {}) {
+      eventBus.on(ev, p.hooks[ev])
     }
   }
 
