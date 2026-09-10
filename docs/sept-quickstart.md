@@ -131,7 +131,7 @@ sept.register("message.send", async ({
 Handlers are serial by default. If an application event may run independently of later events:
 
 ```js
-sept.registerConcurrent("telemetry.sample", async payload => {
+sept.registerConcurrent("telemetry.sample", async ({ payload }) => {
   await processSample(payload)
 })
 ```
