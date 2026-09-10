@@ -22,6 +22,12 @@ Use plain `npm install` instead when developing the complete monorepo, including
 
 `SeptClient` requires a SQLite-compatible datastore adapter configuration and a SEPT relay endpoint.
 
+For this Node.js example, also install the SQLite driver:
+
+```bash
+npm install better-sqlite3
+```
+
 ## Create a client
 
 A client is constructed with `SeptClient.create()`:
@@ -37,9 +43,10 @@ const sept = await SeptClient.create({
     open: () => new Database("app.db"),
     close: db => db.close(),
   },
-  // Application/platform-specific provider used by SettingsStore
-  // for values that should be stored as secrets.
-  secretKeyProvider: async () => new Uint8Array(secret32Bytes),
+
+  // Application-specific provider used to encrypt secrets
+  // Must return the same securely stored 32-byte key across restarts.
+  secretKeyProvider: async () => loadSecretKey(),
 })
 ```
 
