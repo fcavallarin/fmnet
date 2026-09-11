@@ -44,6 +44,7 @@ export interface PairingDeviceData {
   deviceId: DeviceId;
   signPublicKey: string;
   cryptPublicKey: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AddDeviceMetadata<

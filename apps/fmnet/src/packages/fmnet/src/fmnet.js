@@ -366,18 +366,20 @@ export class FMNet {
       adminDevices[a] = await this.identityStore.getByName(a)
     }
 
+    const deviceName = deviceData.metadata.name
+
     const pin = await this.septClient.addDevice(
       deviceData,
       {
         deviceMetadata: {
-          identities: { ...adminDevices, [deviceData.name]: [deviceData.deviceId] }
+          identities: { ...adminDevices, [deviceName]: [deviceData.deviceId] }
         },
         adminMetadata: {
-          deviceName: deviceData.name
+          deviceName: deviceName
         }
       }
     )
-    await this.identityStore.set(deviceData.deviceId, deviceData.name)
+    await this.identityStore.set(deviceData.deviceId, deviceName)
     return pin
   };
 
@@ -390,7 +392,7 @@ export class FMNet {
 
   async initDevice(name) {
     const deviceData = await this.septClient.initDevice();
-    deviceData.name = name;
+    deviceData.metadata = { name }
     return deviceData;
   };
 

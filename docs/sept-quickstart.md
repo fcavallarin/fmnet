@@ -85,6 +85,7 @@ The returned value can be transported to an admin through your UI, QR code or an
   deviceId,
   signPublicKey,
   cryptPublicKey,
+  metadata: { name: "Laptop" }
 }
 ```
 
@@ -96,8 +97,8 @@ On an existing admin device:
 const pin = await adminSept.addDevice(
   deviceData,
   {
-    deviceMetadata: { name: "Laptop" },
-    adminMetadata: { name: "Laptop" },
+    deviceMetadata: deviceData.metadata,
+    adminMetadata: deviceData.metadata,
   },
   async (deviceId, metadata) => {
     console.log("paired", deviceId, metadata)
@@ -118,6 +119,8 @@ const metadata = await joiningSept.pairDevice(pin)
 ```
 
 The pairing PIN is short-lived. The joining device has no previously trusted admin key at this point, so pairing is the trust-bootstrap phase; read [Security](security.md#pairing-trust-bootstrap) before building a high-risk enrollment flow.
+
+Once the device has been successfully paired, the adminMetadata object provided during pairing is passed as the second argument to the success callback.
 
 ## Register an application event
 
