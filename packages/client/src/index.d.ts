@@ -75,9 +75,12 @@ export interface SeptEventHandlerData<TPayload = unknown> {
   sequence: number;
 }
 
-export type SeptEventHandler<TPayload = unknown> = (
+export type SeptEventHandler<
+  TPayload = unknown,
+  TResult = unknown,
+> = (
   event: SeptEventHandlerData<TPayload>,
-) => MaybePromise<void>;
+) => MaybePromise<TResult>;
 
 export type SystemEventName =
   | "policy.update"
@@ -160,6 +163,9 @@ export interface StoredEvent<TPayload = unknown> {
   isOutgoing: StoredBoolean;
   isIncoming: StoredBoolean;
   hasAttachment: StoredBoolean;
+  processedAt: number | null;
+  handlerResult: unknown | null;
+  handlerFailed: StoredBoolean;
   createdAt: string;
 
   /**
@@ -266,15 +272,15 @@ export class SeptClient {
   getDeviceId: () => Promise<DeviceId | null>;
   getDeviceGraph: () => Promise<DeviceGraphEdge[]>;
 
-  register: <TPayload = unknown>(
+  register: <TPayload = unknown, TResult = unknown>(
     eventType: EventType,
-    handler: SeptEventHandler<TPayload>,
+    handler: SeptEventHandler<TPayload, TResult>,
     serial?: boolean,
   ) => void;
 
-  registerConcurrent: <TPayload = unknown>(
+  registerConcurrent: <TPayload = unknown, TResult = unknown>(
     eventType: EventType,
-    handler: SeptEventHandler<TPayload>,
+    handler: SeptEventHandler<TPayload, TResult>,
   ) => void;
 
   getPolicy: (

@@ -22,7 +22,10 @@ export class EventStore extends BaseStore {
     const serializers = {
       payloadKey: { in: serializeBin, out: deserializeBin },
       payload: { in: JSON.stringify, out: JSON.parse },
-      handlerResult: { in: JSON.stringify, out: JSON.parse },
+      handlerResult: {
+        in: value => value === undefined ? null : JSON.stringify(value),
+        out: value => value === null ? null : JSON.parse(value),
+      },
     }
     return super.create(dbAdapter, "event", serializers)
   }
@@ -123,14 +126,14 @@ export class EventStore extends BaseStore {
   }
 
   async add(networkId, type, recipients, senderDeviceId, payload, payloadKey, id, sequence, isSystem, isOutgoing, isIncoming, ts) {
-    if(!id){
+    if (!id) {
       throw new Error("Missing event id")
     }
     const { fields, values, placeholders } = this.getQryParts({
       id, type, senderDeviceId, payload, payloadKey, sequence, isSystem, isOutgoing, isIncoming, timestamp: ts
     })
     // @TODO: Transaction here!!
-    this.db.write(
+    await this.db.write(
       `INSERT INTO event (${fields.join(",")}) VALUES (${placeholders})`,
       values
     );
@@ -139,7 +142,7 @@ export class EventStore extends BaseStore {
       const qp = this.relatedStores.recipient.getQryParts({
         eventId: id, deviceId: rcpt.deviceId, encryptedPayloadKey: rcpt.encryptedPayloadKey
       })
-      this.db.write(`
+      await this.db.write(`
         INSERT INTO event_recipient (${qp.fields.join(",")})
         values
         (${qp.placeholders})

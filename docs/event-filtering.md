@@ -34,6 +34,9 @@ The documented event fields are:
 | `isOutgoing` | Whether the local device sent the event |
 | `isIncoming` | Whether the local device received the event |
 | `hasAttachment` | Whether the event has an attachment |
+| `processedAt` | Handler completion timestamp, or `null` while pending |
+| `handlerResult` | Handler return value, or the stored error string |
+| `handlerFailed` | Whether handler processing failed |
 | `createdAt` | Local persistence timestamp |
 
 Boolean values can be passed as JavaScript booleans:
@@ -42,6 +45,14 @@ Boolean values can be passed as JavaScript booleans:
 const incoming = await sept.getStoredEvents({
   isIncoming: true,
   isSystem: false,
+})
+```
+
+For example, failed application handlers can be queried with:
+
+```js
+const failed = await sept.getStoredEvents({
+  handlerFailed: true,
 })
 ```
 
@@ -141,6 +152,7 @@ Incoming events do not normally have local recipient rows. Applying a
 `recipient` or `device` relation filter therefore generally selects outgoing
 events only.
 
-Payload and cryptographic-storage fields are intentionally not part of the
-documented filtering surface. Query application payloads after retrieving and
-deserializing the stored events.
+Payload, handler-result contents and cryptographic-storage fields are
+intentionally not part of the documented filtering surface. Query application
+payloads and handler results after retrieving and deserializing the stored
+events.

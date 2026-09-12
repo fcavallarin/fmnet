@@ -138,8 +138,13 @@ sept.register("message.send", async ({
   sequence,
 }) => {
   console.log(senderDeviceId, payload.text)
+  return { displayed: true }
 })
 ```
+
+Once the handler completes, SEPT stores its return value in `handlerResult`
+and sets `processedAt`. If the handler throws or rejects, the stored event has
+`handlerFailed` set to true and `handlerResult` contains the error string.
 
 Handlers are serial by default. If an application event may run independently of later events:
 
@@ -148,6 +153,10 @@ sept.registerConcurrent("telemetry.sample", async ({ payload }) => {
   await processSample(payload)
 })
 ```
+
+Concurrent handlers run in the background. Their completion state is still
+recorded on the stored event, but their failures are not propagated by
+`sync()`.
 
 System event types such as `sept.policy.update` are owned by SEPT and cannot be registered as application handlers.
 

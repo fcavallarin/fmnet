@@ -123,6 +123,11 @@ sept.register("message.send", async ({
 })
 ```
 
+The handler may return a value. After the handler settles, SEPT stores the
+result together with the event and marks it as processed. If the handler
+throws or rejects, SEPT stores the error string and marks the handler as
+failed.
+
 SEPT-reserved system event types cannot be registered through this API.
 
 ### `registerConcurrent(eventType, handler)`
@@ -130,6 +135,8 @@ SEPT-reserved system event types cannot be registered through this API.
 Equivalent to `register(eventType, handler, false)`.
 
 Use only when the handler is safe to execute without blocking later event processing.
+Concurrent handlers run in the background, so their failures are recorded on
+the stored event but are not propagated by `sync()`.
 
 ### `send(type, payload, dstDeviceIds)`
 
@@ -152,6 +159,12 @@ Queries locally stored events using the current store filtering DSL.
 This is an SDK/query convenience. The filter surface is not a SEPT wire-protocol concept and may evolve independently.
 
 See [Filtering stored events](event-filtering.md) for supported fields, operators, relation filters and current limitations.
+
+Stored events include handler-processing state:
+
+- `processedAt`: when handler processing completed, or `null` while pending;
+- `handlerResult`: the handler return value, or the stored error string;
+- `handlerFailed`: whether handler processing failed.
 
 ## Authorization
 

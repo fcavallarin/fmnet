@@ -569,10 +569,12 @@ export class SeptClient {
 
     await this._ackEvents(ackEvents)
 
-    const unprocessed = await this.store.event.filter({
-      processedAt__is: null,
-      isIncoming: true,
-    })
+    const unprocessed = (
+      await this.store.event.filter({
+        processedAt__is: null,
+        isIncoming: true,
+      })
+    ).reverse()
 
     for (const event of unprocessed) {
       if (this.systemEventTypes.includes(event.type)) {
@@ -590,6 +592,7 @@ export class SeptClient {
 
           await this.store.event.update(event.id, {
             processedAt: now(),
+            handlerFailed: false,
           });
         } catch (error) {
           await this.store.event.update(event.id, {
@@ -625,6 +628,7 @@ export class SeptClient {
           await this.store.event.update(event.id, {
             processedAt: now(),
             handlerResult: result,
+            handlerFailed: false,
           })
         } catch (error) {
           await this.store.event.update(event.id, {
