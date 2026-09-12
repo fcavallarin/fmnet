@@ -592,6 +592,7 @@ export class SeptClient {
 
           await this.store.event.update(event.id, {
             processedAt: now(),
+            handlerResult: null,
             handlerFailed: false,
           });
         } catch (error) {
