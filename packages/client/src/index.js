@@ -347,8 +347,6 @@ export class SeptClient {
           )
         )
 
-
-
         await this.store.device.upsert(pairedDevice.deviceId, {
           networkId: pairedDevice.networkId,
           signPublicKey: deserializeBin(pairedDevice.signPublicKey),
@@ -478,114 +476,178 @@ export class SeptClient {
     const eventRouter = new EventRouter(this.uiEvents, this.store)
     const networkId = await this.getNetworkId()
     const deviceId = await this.getDeviceId()
-    const ackEvents = [];
-    for (const e of events) {
-      const { eventId } = e
-      const senderDevice = await this.store.device.get(e.senderDeviceId)
+    const ackEvents = []
+
+    for (const event of events) {
+      const { eventId } = event
+
+      const senderDevice = await this.store.device.get(
+        event.senderDeviceId
+      )
+
       if (!senderDevice) {
-        throw new Error("unauthorized2 " + e.senderDeviceId);
+        throw new Error(`Unauthorized device: ${event.senderDeviceId}`)
       }
 
       const verified = await verifyString(
         senderDevice.signPublicKey,
-        deserializeBin(e.signature),
-        serializeEvent(networkId, eventId, [], e.senderDeviceId, e.encryptedPayload, e.timestamp)
+        deserializeBin(event.signature),
+        serializeEvent(
+          networkId,
+          eventId,
+          [],
+          event.senderDeviceId,
+          event.encryptedPayload,
+          event.timestamp
+        )
       )
+
       if (!verified) {
-        throw new Error("Signature verification failed");
+        throw new Error("Signature verification failed")
       }
+
       const payloadKey = decryptPayloadKey(
         deserializeBin(settings.deviceCryptPrivateKey),
         senderDevice.cryptPublicKey,
-        deserializeBin(e.encryptedPayloadKey)
+        deserializeBin(event.encryptedPayloadKey)
       )
+
       const decryptedPayload = decryptWithPayloadKey(
         payloadKey,
-        deserializeBin(e.encryptedPayload)
+        deserializeBin(event.encryptedPayload)
       )
 
-      const evPayload = JSON.parse(new TextDecoder().decode(decryptedPayload));
+      const eventPayload = JSON.parse(
+        new TextDecoder().decode(decryptedPayload)
+      )
 
-      const policyOk = await this.checkPolicy(e.senderDeviceId, deviceId, evPayload.type)
+      const policyOk = await this.checkPolicy(
+        event.senderDeviceId,
+        deviceId,
+        eventPayload.type
+      )
+
       if (!policyOk) {
-        console.log(`sync(): Device ${e.senderDeviceId} not allowed to perform '${evPayload.type}' to ${deviceId}`)
-        ackEvents.push(e.eventId)
-        continue;
-      }
-
-      const existing = await this.store.event.get(e.eventId)
-      if (existing) {
-        if (existing.isOutgoing) {
-          // Evnets sent to myself have isOutgoing = true and isIncoming=true
-          await this.store.event.update(e.eventId, { isIncoming: true })
-        } else {
-          // The error here may be caused by en event already received but not acked
-          throw new Error("Unexpected error 234")
-          // await this._ackEvents([e.eventId])
-          continue
-
-        }
-      } else {
-        await this._addEvent(
-          networkId,
-          eventId,
-          evPayload.type,
-          e.senderDeviceId,
-          null,
-          evPayload.payload,
-          payloadKey,
-          e.sequence,
-          e.timestamp
+        console.log(
+          `sync(): Device ${event.senderDeviceId} not allowed ` +
+          `to perform '${eventPayload.type}' to ${deviceId}`
         )
+
+        ackEvents.push(eventId)
+        continue
       }
 
+      const existing = await this.store.event.get(eventId)
 
-      if (this.systemEventTypes.includes(evPayload.type)) {
-        if (await this.isAdmin(e.senderDeviceId)) {
-          try {
-            await eventRouter.route(evPayload.type, evPayload.payload)
-          } catch (e) {
-            // Do not ack current event, protocol events cannot be skipped
-            // (next sync should fail again if the "root cause" is not fixed)
-            await this._ackEvents([...ackEvents])
-            throw e
-          }
-        } else {
-          // ignore silently
+      if (existing) {
+        if (existing.isOutgoing && !existing.isIncoming) {
+          // Event sent to this same device.
+          await this.store.event.update(eventId, {
+            isIncoming: true,
+          })
         }
+
+        // A duplicate is expected when the previous ACK was lost.
+        ackEvents.push(eventId)
+        continue
       }
 
-      if (evPayload.type in this.registeredEvents) {
-        const p = {
-          payload: evPayload.payload,
-          senderDeviceId: e.senderDeviceId,
-          timestamp: e.timestamp,
-          eventId,
-          sequence: e.sequence
-        }
+      await this._addEvent(
+        networkId,
+        eventId,
+        eventPayload.type,
+        event.senderDeviceId,
+        null,
+        eventPayload.payload,
+        payloadKey,
+        event.sequence,
+        event.timestamp
+      )
 
-        try {
-          const r = this.registeredEvents[evPayload.type].handler(p)
-          if (this.registeredEvents[evPayload.type].serial) {
-            await r
-          } else {
-            Promise.resolve(r).catch(e => {
-              this._ackEvents([...ackEvents, eventId]).then(() => {
-                throw e
-              })
-            })
-          }
-        } catch (e) {
-          await this._ackEvents([...ackEvents, eventId])
-          throw e
-        }
-      }
       ackEvents.push(eventId)
-
     }
 
     await this._ackEvents(ackEvents)
 
+    const unprocessed = await this.store.event.filter({
+      processedAt__is: null,
+      isIncoming: true,
+    })
+
+    for (const event of unprocessed) {
+      if (this.systemEventTypes.includes(event.type)) {
+        if (!await this.isAdmin(event.senderDeviceId)) {
+          await this.store.event.update(event.id, {
+            processedAt: now(),
+            handlerResult: "Ignored: sender is not an admin",
+          })
+
+          continue
+        }
+
+        try {
+          await eventRouter.route(event.type, event.payload)
+
+          await this.store.event.update(event.id, {
+            processedAt: now(),
+          });
+        } catch (error) {
+          await this.store.event.update(event.id, {
+            handlerResult: String(error),
+            handlerFailed: true,
+          })
+
+          // processedAt remains null, so it will be retried.
+          throw error
+        }
+
+        continue
+      }
+
+      if (!Object.hasOwn(this.registeredEvents, event.type)) {
+        continue
+      }
+
+      const registration = this.registeredEvents[event.type]
+
+      const handlerPayload = {
+        payload: event.payload,
+        senderDeviceId: event.senderDeviceId,
+        timestamp: event.timestamp,
+        eventId: event.id,
+        sequence: event.sequence,
+      }
+
+      const runHandler = async () => {
+        try {
+          const result = await registration.handler(handlerPayload)
+
+          await this.store.event.update(event.id, {
+            processedAt: now(),
+            handlerResult: result,
+          })
+        } catch (error) {
+          await this.store.event.update(event.id, {
+            processedAt: now(),
+            handlerResult: String(error),
+            handlerFailed: true,
+          })
+
+          throw error
+        }
+      };
+
+      if (registration.serial) {
+        await runHandler()
+      } else {
+        void runHandler().catch((error) => {
+          console.error(
+            `Unhandled event handler error for ${event.id}:`,
+            error
+          )
+        })
+      }
+    }
   }
 
   async _ackEvents(eventIds) {

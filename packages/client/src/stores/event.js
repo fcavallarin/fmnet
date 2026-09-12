@@ -22,6 +22,7 @@ export class EventStore extends BaseStore {
     const serializers = {
       payloadKey: { in: serializeBin, out: deserializeBin },
       payload: { in: JSON.stringify, out: JSON.parse },
+      handlerResult: { in: JSON.stringify, out: JSON.parse },
     }
     return super.create(dbAdapter, "event", serializers)
   }
@@ -81,6 +82,7 @@ export class EventStore extends BaseStore {
         event e inner join event_recipient er on e.id = er.event_id
         inner join device d on d.id = er.device_id
         where d.id = ?
+        order by sequence desc
       `, [id])
     return events.map(d => this.deserialize(d));
   }
