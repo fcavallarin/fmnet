@@ -11,7 +11,14 @@ export class FMNet {
     this.options = options;
     this.dcSessions = new Map()
     this.tcpTunnels = new Map()
-    this.eventBus = new EventBus(["message", "policy.update", "device.add", "device.invalidate", "admin.grant", "admin.revoke"])
+    this.eventBus = new EventBus([
+      "message",
+      "policy.update",
+      "device.add",
+      "device.invalidate",
+      "admin.grant",
+      "admin.revoke"
+    ])
     this.tcpTunnelStatus = {
       REQUESTED: "requested",
       EGRESS_RUNNING: "egressRunning",

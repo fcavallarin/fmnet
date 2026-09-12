@@ -184,8 +184,8 @@ GET    /events
 PATCH  /events
 POST   /devices/create-pairing
 GET    /devices/pairing/:id/:pin
-GET    /paired-devices
-DELETE /paired-devices/:deviceId
+GET    /paired-device/:deviceId
+DELETE /paired-device/:deviceId
 PATCH  /devices/set-admin
 POST   /devices/invalidate
 GET    /get-relay-ticket
@@ -221,6 +221,87 @@ The reference `apps/worker` deployment demonstrates FMNet-specific behavior incl
 - an `event.received` hook that can trigger an Expo push notification for the recipient device.
 
 Those features are application deployment concerns, not requirements for a generic SEPT relay. The scaffolded server starts without those plugins.
+
+### Custom route handlers
+
+A plugin route handler uses the following signature:
+
+```js
+async function handler(request, env, params, context) {
+  // ...
+  return jsonResponse({ ok: true })
+}
+```
+
+The arguments are:
+
+- `request`: the standard Worker `Request`.
+- `env`: the Cloudflare Worker environment, containing configured bindings and variables such as `DB`, `RELAY` and application-specific bindings.
+- `params`: an object containing decoded path parameters. For example, a route declared as `/devices/:deviceId` receives `{ deviceId }`.
+- `context`: the SEPT server context containing:
+  - `workerCtx`: the Cloudflare `ExecutionContext`;
+  - `eventBus`: the server hook event bus;
+  - `options`: the options passed to `createSeptServer()`.
+
+A handler must return a standard `Response`.
+
+The server package exports helpers commonly needed by custom handlers:
+
+```js
+import {
+  getAuth,
+  httpError,
+  jsonResponse,
+  readJson,
+} from "@sept/server"
+
+async function handler(request, env, params) {
+  const body = await readJson(request)
+  const auth = await getAuth(env, request, body)
+
+  return jsonResponse({
+    deviceId: auth.deviceId,
+    networkId: auth.networkId,
+    params,
+  })
+}
+```
+
+`getAuth()` verifies the signed SEPT request and returns the authenticated device information. When the request has a JSON body, the parsed body must be passed to `getAuth()` as shown above.
+
+### Server hooks
+
+The following server hook is currently available:
+
+#### `event.received`
+
+Called once for each recipient after an event has been stored and forwarded to the recipient's relay connection.
+
+```js
+"event.received": async ({ env, eventData }) => {
+  // application-specific integration
+}
+```
+
+`env` is the Cloudflare Worker environment described above.
+
+`eventData` contains the recipient-specific encrypted event representation:
+
+```js
+{
+  eventId,
+  networkId,
+  senderDeviceId,
+  deviceId,
+  encryptedPayload,
+  encryptedPayloadKey,
+  sequence,
+  signature,
+  timestamp,
+}
+```
+
+`deviceId` is the recipient device ID. The payload and its per-recipient key remain encrypted; server hooks do not receive the decrypted application event type or payload.
 
 ## D1 migrations and retained data
 

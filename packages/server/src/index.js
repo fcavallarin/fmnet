@@ -26,7 +26,7 @@ const eventBus = new EventBus([
 const ROUTES = [
   { method: 'POST', path: '/bootstrap', handler: bootstrap },
   { method: 'GET', path: '/paired-device/:deviceId', handler: getPairedDevice },
-  { method: 'DELETE', path: '/paired-devices/:deviceId', handler: deletePairedDevice }, // @TODO rename to paired-device
+  { method: 'DELETE', path: '/paired-device/:deviceId', handler: deletePairedDevice },
   { method: 'POST', path: '/event', handler: createEvent },
   { method: 'GET', path: '/events', handler: listEvents },
   { method: 'PATCH', path: '/events', handler: ackEvents },
@@ -95,7 +95,7 @@ export function createSeptServer(plugins, options = {}) {
       try {
         return await dispatch(request, env, ctx, { ...options, maxNetworks });
       } catch (err) {
-        throw err
+        // throw err
         const status = err.status || 500;
         const code = err.code || (status === 500 ? 'internal_error' : 'error');
         return json({ error: code, message: err.message }, status, corsHeaders());

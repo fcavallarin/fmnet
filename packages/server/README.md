@@ -14,45 +14,6 @@ import { createSeptServer } from "@sept/server"
 
 The package also exports `DORelay` for Wrangler Durable Object binding.
 
-## Core routes
-
-```text
-POST   /bootstrap
-POST   /event
-GET    /events
-PATCH  /events
-POST   /devices/create-pairing
-GET    /devices/pairing/:id/:pin
-GET    /paired-devices
-DELETE /paired-devices/:deviceId
-PATCH  /devices/set-admin
-POST   /devices/invalidate
-GET    /get-relay-ticket
-GET    /ws
-```
-
-## Plugin example
-
-```js
-export default createSeptServer(
-  [
-    {
-      routes: [
-        { method: "POST", path: "/my-route", handler },
-      ],
-      hooks: {
-        "event.received": async ({ env, eventData }) => {
-          // application integration
-        },
-      },
-    },
-  ],
-  {
-    maxNetworks: 1,
-  }
-)
-```
-
 The reference Cloudflare deployment lives in `apps/worker`.
 
 See:

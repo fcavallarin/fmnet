@@ -356,7 +356,7 @@ export class SeptClient {
         })
 
         await this._callRest(
-          `paired-devices/${deviceData.deviceId}`,
+          `paired-device/${deviceData.deviceId}`,
           { method: "DELETE" }
         )
         const admins = await this.store.device.getAdmins()

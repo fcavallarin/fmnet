@@ -75,7 +75,10 @@ console.log({ networkId, deviceId })
 A device that has not joined a network yet first creates its key material:
 
 ```js
-const deviceData = await sept.initDevice()
+const deviceData = {
+  ...await sept.initDevice(),
+  metadata: { name: "Laptop" },
+}
 ```
 
 The returned value can be transported to an admin through your UI, QR code or another out-of-band channel:
@@ -120,7 +123,7 @@ const metadata = await joiningSept.pairDevice(pin)
 
 The pairing PIN is short-lived. The joining device has no previously trusted admin key at this point, so pairing is the trust-bootstrap phase; read [Security](security.md#pairing-trust-bootstrap) before building a high-risk enrollment flow.
 
-Once the device has been successfully paired, the adminMetadata object provided during pairing is passed as the second argument to the success callback.
+Once the device has been successfully paired, the `adminMetadata` object provided during pairing is passed as the second argument to the success callback, while `deviceMetadata` is returned by `pairDevice()`.
 
 ## Register an application event
 
