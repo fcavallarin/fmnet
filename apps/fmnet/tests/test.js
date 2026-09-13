@@ -57,6 +57,11 @@ class FMnetTest {
       ...options,
       dataStore: createDs("cl4"),
     })
+
+    this.appDeviceIoT1 = await FMNet.create({
+      ...options,
+      dataStore: createDs("iot1"),
+    })
   }
 
   async sent_mess_and_assert(srcDevKey, dstDevKey, message) {
@@ -271,7 +276,6 @@ class FMnetTest {
     assert(!(this.appDevice1DeviceId in newMessages), "Still unread messages")
   }
 
-
   async test_grant_admin(testId) {
     let d2Identities = await this.appDevice2.listDevices()
     assert(
@@ -280,9 +284,9 @@ class FMnetTest {
     )
     let c = (await this.appDevice2.getContacts()).map(i => i.name)
     assert(!c.includes(this.appDevice3Name, "Device2 contacts includes Device3, this test may be incomplete"))
-    
+
     await this.appAdmin.grantAdmin(this.appDevice2Name)
-    
+
     await this.appDevice2.sync()
     c = (await this.appDevice2.getContacts()).map(i => i.name)
     assert(c.includes(this.appDevice3Name), "Device2 contacts don't includes Device3")
@@ -323,6 +327,57 @@ class FMnetTest {
 
   }
 
+
+  async test_device_type(testId) {
+    this.appDeviceIoT1Name = "iot1"
+    const deviceIoT1Data = await this.appDeviceIoT1.initDevice(this.appDeviceIoT1Name, "iot")
+    console.log(`Init iot1 done`)
+    const pin = await this.appAdmin.addDevice(deviceIoT1Data)
+    console.log(`IoT1 added`)
+    await this.appDeviceIoT1.pairDevice(pin)
+    console.log(`IoT1 paired`)
+
+    await sleep(2000)
+    this.appDeviceIoT1DeviceId = await this.appDeviceIoT1.getDeviceId()
+
+    const admIdentities = await this.appAdmin.listDevices()
+    assert(
+      admIdentities.map(d => d.name).includes(this.appDeviceIoT1Name),
+      `Missing IoT1 identity from Admin list`
+    )
+    assert(
+      (await this.appAdmin.getDeviceIdentity(this.appDeviceIoT1DeviceId)).type == "iot",
+      `Missing IoT1 identity type from Admin list`
+    )
+
+    await this.appDevice2.sync()
+    const d2Identities = await this.appDevice2.listDevices()
+    assert(
+      d2Identities.map(d => d.name).includes(this.appDeviceIoT1Name),
+      `Missing IoT1 identity from Device2 list (Device2 is now admin)`
+    )
+    assert(
+      (await this.appDevice2.getDeviceIdentity(this.appDeviceIoT1DeviceId)).type == "iot",
+      `Missing IoT1 identity type from Device2 list (Device2 is now admin)`
+    )
+
+    await this.appAdmin.grantChat(
+      this.appDevice4Name,
+      this.appDeviceIoT1Name,
+    )
+    await this.appDevice4.sync()
+    await this.appDeviceIoT1.sync()
+
+    const d4Identities = await this.appDevice4.listDevices()
+    assert(
+      d4Identities.map(d => d.name).includes(this.appDeviceIoT1Name),
+      `Missing IoT1 identity from Device4 list`
+    )
+    assert(
+      (await this.appDevice4.getDeviceIdentity(this.appDeviceIoT1DeviceId)).type == "iot",
+      `Missing IoT1 identity type from Device4 list`
+    )
+  }
 
 
   async test_tunnel(testId) {

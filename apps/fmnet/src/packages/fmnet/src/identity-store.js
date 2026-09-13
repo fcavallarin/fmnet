@@ -50,7 +50,7 @@ export class IdentityStore {
     return null
   }
 
-  async set(deviceId, name) {
+  async set(deviceId, name, type) {
     this.assertFamily();
     const nname = this.normalizeName(name)
     const i = await this.kvStore.get(
@@ -60,10 +60,10 @@ export class IdentityStore {
       const { devices } = i
       if (!devices.includes(deviceId)) {
         devices.push(deviceId)
-        await this.kvStore.set(nname, { devices })
+        await this.kvStore.set(nname, { ...i, devices })
       }
     } else {
-      await this.kvStore.set(nname, { devices: [deviceId] })
+      await this.kvStore.set(nname, {type,  devices: [deviceId] })
     }
   }
   async list() {
@@ -71,8 +71,7 @@ export class IdentityStore {
     const identities = await this.kvStore.all()
     return identities.map(i => ({
       name: i.key,
-      devices: i.value.devices,
-      type: i.value.type
+      ...i.value,
     }))
   }
 
@@ -82,7 +81,7 @@ export class IdentityStore {
       const idx = kv.value.devices.indexOf(deviceId)
       if (idx > -1) {
         kv.value.devices.splice(idx, 1)
-        if (kv.value.length > 0) {
+        if (kv.value.devices.length > 0) {
           await this.kvStore.set(kv.key, kv.value)
         } else {
           await this.kvStore.delete(kv.key)

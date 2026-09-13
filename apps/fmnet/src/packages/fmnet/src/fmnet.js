@@ -56,8 +56,12 @@ export class FMNet {
       const i = await this.getLocalIdentity()
       for (const deviceName in deviceData.metadata.identities) {
         if (deviceName !== i.name) {
-          for (const id of deviceData.metadata.identities[deviceName]) {
-            await this.identityStore.set(id, deviceName)
+          for (const id of deviceData.metadata.identities[deviceName].devices) {
+            await this.identityStore.set(
+              id,
+              deviceName,
+              deviceData.metadata.identities[deviceName].type
+            )
           }
         }
       }
@@ -79,7 +83,11 @@ export class FMNet {
 
     // Device added to the network, only admins will get this event
     this.septClient.on("device.add", async deviceData => {
-      await this.identityStore.set(deviceData.id, deviceData.metadata.deviceName)
+      await this.identityStore.set(
+        deviceData.id,
+        deviceData.metadata.deviceName,
+        deviceData.metadata.deviceType
+      )
       this.eventBus.dispatch("device.add", deviceData)
     })
 
@@ -373,23 +381,28 @@ export class FMNet {
     const adminDevices = {}
     for (const a of await this.getAdmins()) {
       const { devices } = await this.identityStore.getByName(a)
-      adminDevices[a] = devices
+      adminDevices[a] = { devices }
     }
 
     const deviceName = deviceData.metadata.name
+    const deviceType = deviceData.metadata.type
 
     const pin = await this.septClient.addDevice(
       deviceData,
       {
         deviceMetadata: {
-          identities: { ...adminDevices, [deviceName]: [deviceData.deviceId] }
+          identities: {
+            ...adminDevices,
+            [deviceName]: { type: deviceType, devices: [deviceData.deviceId] }
+          }
         },
         adminMetadata: {
-          deviceName: deviceName
+          deviceName,
+          deviceType
         }
       }
     )
-    await this.identityStore.set(deviceData.deviceId, deviceName)
+    await this.identityStore.set(deviceData.deviceId, deviceName, deviceType)
     return pin
   };
 
@@ -400,9 +413,9 @@ export class FMNet {
     }
   }
 
-  async initDevice(name) {
+  async initDevice(name, type) {
     const deviceData = await this.septClient.initDevice();
-    deviceData.metadata = { name }
+    deviceData.metadata = { name, type }
     return deviceData;
   };
 
@@ -426,8 +439,9 @@ export class FMNet {
       await this.septClient.getNetworkId()
     )
     for (const name in metadata?.identities || {}) {
-      for (const id of metadata.identities[name]) {
-        await this.identityStore.set(id, name)
+      const type = metadata.identities[name].type
+      for (const id of metadata.identities[name].devices) {
+        await this.identityStore.set(id, name, type)
       }
     }
     await this.registerDataChannelService()
@@ -479,14 +493,14 @@ export class FMNet {
   }
 
   async grant(srcName, dstName, eventTypes, metadata = {}) {
-    const srcDevices = (await this.identityStore.getByName(srcName)).devices
-    const dstDevices = (await this.identityStore.getByName(dstName)).devices
-    for (const s of srcDevices) {
-      for (const d of dstDevices) {
+    const srcDevices = await this.identityStore.getByName(srcName)
+    const dstDevices = await this.identityStore.getByName(dstName)
+    for (const s of srcDevices.devices) {
+      for (const d of dstDevices.devices) {
         await this.septClient.grant(s, d, eventTypes, {
           identities: {
-            [srcName]: srcDevices,
-            [dstName]: dstDevices,
+            [srcName]: { devices: srcDevices.devices, type: srcDevices.type },
+            [dstName]: { devices: dstDevices.devices, type: dstDevices.type }
           },
           ...metadata
         })
@@ -506,15 +520,16 @@ export class FMNet {
 
   async grantAdmin(name) {
     const identities = await this.identityStore.list()
-    const { devices } = await this.identityStore.getByName(name)
-    for (const d of devices) {
+    const i = await this.identityStore.getByName(name)
+    for (const d of i.devices) {
       const metadata = {
         adminMetadata: {
-          deviceName: name
+          deviceName: name,
+          deviceType: i.type
         },
         devicesMetadata: {
           identities: Object.fromEntries(
-            identities.map(({ name, devices }) => [name, devices])
+            identities.map(({ name, devices, type }) => [name, { devices, type }])
           )
         }
       }
@@ -542,29 +557,6 @@ export class FMNet {
     const { devices } = await this.identityStore.getByName(dstName)
     await this.septClient.send(eventName, data, devices)
   }
-
-  // async getNewMessages() {
-  //   console.warn("deprecated")
-  //   const lastSequence = await this.appState.get("lastSequence")
-
-  //   const filters = {
-  //     isIncoming: true
-  //   }
-  //   if (lastSequence) {
-  //     filters['sequence__gt'] = lastSequence
-  //   }
-  //   const messages = await this.getMessages(filters)
-  //   if (messages.length === 0) {
-  //     return []
-  //   }
-
-  //   await this.appState.set(
-  //     "lastSequence",
-  //     Math.max(...messages.map(m => m.sequence))
-  //   )
-  //   return messages
-  // }
-
 
   async getMessagesFrom(fromName, filters = {}) {
     return await this.getMessages({
