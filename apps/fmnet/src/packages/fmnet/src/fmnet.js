@@ -90,7 +90,7 @@ export class FMNet {
 
     this.septClient.register(
       "message", async ({ payload, senderDeviceId, timestamp, eventId }) => {
-        const senderName = await this.identityStore.getByDevice(senderDeviceId)
+        const senderName = (await this.identityStore.getByDevice(senderDeviceId)).name
         await this.appState.set("unreads", cur => {
           const next = cur ? { ...cur } : {}
           if (next[senderDeviceId]) {
@@ -277,7 +277,8 @@ export class FMNet {
   }
 
   async getDeviceIdsByName(deviceName) {
-    return await this.identityStore.getByName(deviceName)
+    const { devices } = await this.identityStore.getByName(deviceName)
+    return devices
   }
 
   async getDeviceIdByName(deviceName) {
@@ -351,7 +352,8 @@ export class FMNet {
   };
 
   async getIdentityDevices(name) {
-    return await this.identityStore.getByName(name)
+    const { devices } = await this.identityStore.getByName(name)
+    return devices
   }
 
   async getDeviceIdentity(deviceId) {
@@ -361,7 +363,7 @@ export class FMNet {
     }
     return {
       deviceId,
-      name: i
+      ...i
     }
   }
 
@@ -370,7 +372,8 @@ export class FMNet {
     const deviceId = await this.septClient.getDeviceId()
     const adminDevices = {}
     for (const a of await this.getAdmins()) {
-      adminDevices[a] = await this.identityStore.getByName(a)
+      const { devices } = await this.identityStore.getByName(a)
+      adminDevices[a] = devices
     }
 
     const deviceName = deviceData.metadata.name
@@ -476,8 +479,8 @@ export class FMNet {
   }
 
   async grant(srcName, dstName, eventTypes, metadata = {}) {
-    const srcDevices = await this.identityStore.getByName(srcName)
-    const dstDevices = await this.identityStore.getByName(dstName)
+    const srcDevices = (await this.identityStore.getByName(srcName)).devices
+    const dstDevices = (await this.identityStore.getByName(dstName)).devices
     for (const s of srcDevices) {
       for (const d of dstDevices) {
         await this.septClient.grant(s, d, eventTypes, {
@@ -492,8 +495,10 @@ export class FMNet {
   }
 
   async revoke(srcName, dstName, eventTypes, metadata) {
-    for (const s of await this.identityStore.getByName(srcName)) {
-      for (const d of await this.identityStore.getByName(dstName)) {
+    const srcDevices = (await this.identityStore.getByName(srcName)).devices
+    const dstDevices = (await this.identityStore.getByName(dstName)).devices
+    for (const s of srcDevices) {
+      for (const d of dstDevices) {
         await this.septClient.revoke(s, d, eventTypes, metadata)
       }
     }
@@ -501,7 +506,8 @@ export class FMNet {
 
   async grantAdmin(name) {
     const identities = await this.identityStore.list()
-    for (const d of await this.identityStore.getByName(name)) {
+    const { devices } = await this.identityStore.getByName(name)
+    for (const d of devices) {
       const metadata = {
         adminMetadata: {
           deviceName: name
@@ -518,13 +524,14 @@ export class FMNet {
   }
 
   async revokeAdmin(name) {
-    for (const d of await this.identityStore.getByName(name)) {
+    const { devices } = await this.identityStore.getByName(name)
+    for (const d of devices) {
       await this.septClient.revokeAdmin(d)
     }
   }
 
   async sendMessage(dstName, message) {
-    const dstDevices = await this.identityStore.getByName(dstName)
+    const dstDevices = (await this.identityStore.getByName(dstName)).devices
     if (!dstDevices || dstDevices.length === 0) {
       throw new Error(`No devices associated to ${dstName}`)
     }
@@ -532,8 +539,8 @@ export class FMNet {
   }
 
   async send(dstName, eventName, data) {
-    const dstDevices = await this.identityStore.getByName(dstName)
-    await this.septClient.send(eventName, data, dstDevices)
+    const { devices } = await this.identityStore.getByName(dstName)
+    await this.septClient.send(eventName, data, devices)
   }
 
   // async getNewMessages() {
@@ -586,7 +593,7 @@ export class FMNet {
     const unreads = await this.appState.get("unreads")
     const ret = []
     for (const m of messages) {
-      const sender = await this.identityStore.getByDevice(m.senderDeviceId)
+      const sender = (await this.identityStore.getByDevice(m.senderDeviceId)).name
       ret.push({
         message: m.payload,
         sender,
@@ -663,8 +670,10 @@ export class FMNet {
   }
 
   async assertPermission(srcName, dstName, eventType) {
-    for (const s of await this.identityStore.getByName(srcName)) {
-      for (const d of await this.identityStore.getByName(dstName)) {
+    const srcDevices = (await this.identityStore.getByName(srcName)).devices
+    const dstDevices = (await this.identityStore.getByName(dstName)).devices
+    for (const s of srcDevices) {
+      for (const d of dstDevices) {
         const sp = await this.checkPolicy(s, d, eventType)
         if (!sp) {
           throw new Error(`Missing ${eventType} permission from ${s} to ${d}`)
@@ -786,7 +795,8 @@ export class FMNet {
   }
 
   async isAdmin(name) {
-    for (const d of await this.identityStore.getByName(name)) {
+    const { devices } = await this.identityStore.getByName(name)
+    for (const d of devices) {
       if (! await this.septClient.isAdmin(d)) {
         return false
       }
@@ -797,7 +807,8 @@ export class FMNet {
   async getAdmins() {
     const admins = new Set()
     for (const a of await this.septClient.getAdmins()) {
-      admins.add(await this.identityStore.getByDevice(a.deviceId))
+      const i = await this.identityStore.getByDevice(a.deviceId)
+      admins.add(i.name)
     }
     return [...admins]
   }

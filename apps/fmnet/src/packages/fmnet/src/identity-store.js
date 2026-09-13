@@ -28,16 +28,23 @@ export class IdentityStore {
 
   async getByName(name) {
     this.assertFamily();
-    return await this.kvStore.get(
+    const i = await this.kvStore.get(
       this.normalizeName(name)
     )
+    if (!i) {
+      throw new Error(`Device identity '${name}' not found`)
+    }
+    return i
   }
 
   async getByDevice(deviceId) {
     this.assertFamily();
     for (const kv of await this.kvStore.all()) {
-      if (kv.value.includes(deviceId)) {
-        return kv.key
+      if (kv.value.devices.includes(deviceId)) {
+        return {
+          ...kv.value,
+          name: kv.key,
+        }
       }
     }
     return null
@@ -46,14 +53,17 @@ export class IdentityStore {
   async set(deviceId, name) {
     this.assertFamily();
     const nname = this.normalizeName(name)
-    const existing = await this.getByName(nname);
-    if (existing) {
-      if (!existing.includes(deviceId)) {
-        existing.push(deviceId)
-        await this.kvStore.set(nname, existing)
+    const i = await this.kvStore.get(
+      this.normalizeName(name)
+    )
+    if (i) {
+      const { devices } = i
+      if (!devices.includes(deviceId)) {
+        devices.push(deviceId)
+        await this.kvStore.set(nname, { devices })
       }
     } else {
-      await this.kvStore.set(nname, [deviceId])
+      await this.kvStore.set(nname, { devices: [deviceId] })
     }
   }
   async list() {
@@ -61,17 +71,18 @@ export class IdentityStore {
     const identities = await this.kvStore.all()
     return identities.map(i => ({
       name: i.key,
-      devices: i.value
+      devices: i.value.devices,
+      type: i.value.type
     }))
   }
 
   async deleteDevice(deviceId) {
     this.assertFamily();
     for (const kv of await this.kvStore.all()) {
-      const idx = kv.value.indexOf(deviceId)
+      const idx = kv.value.devices.indexOf(deviceId)
       if (idx > -1) {
-        kv.value.splice(idx, 1)
-        if(kv.value.length > 0){
+        kv.value.devices.splice(idx, 1)
+        if (kv.value.length > 0) {
           await this.kvStore.set(kv.key, kv.value)
         } else {
           await this.kvStore.delete(kv.key)
