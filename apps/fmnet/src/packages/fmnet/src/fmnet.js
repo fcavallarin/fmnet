@@ -54,13 +54,14 @@ export class FMNet {
 
     this.septClient.on("policy.update", async deviceData => {
       const i = await this.getLocalIdentity()
-      for (const deviceName in deviceData.metadata.identities) {
+      const { identities } = deviceData.metadata
+      for (const deviceName in identities) {
         if (deviceName !== i.name) {
-          for (const id of deviceData.metadata.identities[deviceName].devices) {
+          for (const id of identities[deviceName].devices) {
             await this.identityStore.set(
               id,
               deviceName,
-              deviceData.metadata.identities[deviceName].type
+              identities[deviceName].type
             )
           }
         }
@@ -71,7 +72,11 @@ export class FMNet {
     this.septClient.on("admin.grant", async deviceData => {
       const deviceId = await this.septClient.getDeviceId()
       if (deviceData.deviceId !== deviceId) {
-        await this.identityStore.set(deviceData.deviceId, deviceData.metadata.deviceName)
+        await this.identityStore.set(
+          deviceData.deviceId,
+          deviceData.metadata.deviceName,
+          deviceData.metadata.deviceType
+        )
       }
 
       this.eventBus.dispatch("admin.grant", deviceData)
@@ -624,6 +629,9 @@ export class FMNet {
 
     if (await this.isCurrentDeviceAdmin()) {
       for (const d of await this.identityStore.list()) {
+        if (d.type === "iot") {
+          continue
+        }
         contacts[d.name] = { unreadsNumber: 0, unreads: [] }
       }
     } else {
@@ -631,6 +639,9 @@ export class FMNet {
         if (g.policy.allowedEventTypes.includes("message")) {
           const did = g.dstDeviceId === deviceId ? g.srcDeviceId : g.dstDeviceId
           const i = await this.getDeviceIdentity(did)
+          if (i.type === "iot") {
+            continue
+          }
           contacts[i.name] = { unreadsNumber: 0, unreads: [] }
         }
       }
@@ -648,6 +659,9 @@ export class FMNet {
     const unreads = await this.appState.get("unreads")
     for (const u in unreads) {
       const i = await this.getDeviceIdentity(u)
+      if (i.type === "iot") {
+        continue
+      }
       contacts[i.name].unreads = unreads[u]
       contacts[i.name].unreadsNumber = unreads[u].length
     }

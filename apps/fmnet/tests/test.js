@@ -350,6 +350,12 @@ class FMnetTest {
       `Missing IoT1 identity type from Admin list`
     )
 
+    const admContacts = await this.appAdmin.getContacts()
+    assert(
+      !admContacts.map(d => d.name).includes(this.appDeviceIoT1Name),
+      `IoT1 should not be in the contact list of Admin`
+    )
+
     await this.appDevice2.sync()
     const d2Identities = await this.appDevice2.listDevices()
     assert(
@@ -361,9 +367,10 @@ class FMnetTest {
       `Missing IoT1 identity type from Device2 list (Device2 is now admin)`
     )
 
-    await this.appAdmin.grantChat(
+    await this.appAdmin.grant(
       this.appDevice4Name,
       this.appDeviceIoT1Name,
+      "iot.action"
     )
     await this.appDevice4.sync()
     await this.appDeviceIoT1.sync()
@@ -376,6 +383,11 @@ class FMnetTest {
     assert(
       (await this.appDevice4.getDeviceIdentity(this.appDeviceIoT1DeviceId)).type == "iot",
       `Missing IoT1 identity type from Device4 list`
+    )
+    const d4Contacts = await this.appDevice4.getContacts()
+    assert(
+      !d4Contacts.map(d => d.name).includes(this.appDeviceIoT1Name),
+      `IoT1 should not be in the contact list of Device4`
     )
   }
 
