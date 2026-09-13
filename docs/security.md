@@ -227,14 +227,9 @@ It is also not intended to provide anonymity against the relay.
 
 Before a stable/security-sensitive release, consider making these items explicit release blockers or tracked issues:
 
-- add regression coverage that the relay-facing event body does not expose plaintext `type`;
-- add tamper tests proving that changing only `eventId` fails relay and recipient signature verification;
 - consider proof-of-work or equivalent abuse controls for permissionless network bootstrap on shared public relays;
-- decide whether deterministic `eventId` derivation should be independently recomputed/enforced by the server or remain a sender convention;
-- document and test replay/duplicate behavior;
+- Introduce sender-controlled, signed ordering information—such as a per-device monotonic sequence and a reference to the previous event ID. The server-assigned sequence should remain only as a relay cursor for retrieval and pagination.
 - review bootstrap abuse/preemption protections;
-- add transactional local event + recipient persistence;
-- define schema migrations for long-lived mobile installations;
 - define compromised-device/key-rotation recovery behavior;
 - independent cryptographic/protocol review.
 
