@@ -17,7 +17,8 @@ export class FMNet {
       "device.add",
       "device.invalidate",
       "admin.grant",
-      "admin.revoke"
+      "admin.revoke",
+      "iot.notify"
     ])
     this.tcpTunnelStatus = {
       REQUESTED: "requested",
@@ -133,6 +134,18 @@ export class FMNet {
       "tcptunnel.egress", async ({ payload, senderDeviceId }) => {
         const { tunnelId, host, port, dcmId, status } = payload
         await this.handleTcpTunnelEgress(tunnelId, host, port, dcmId, status, senderDeviceId)
+      }
+    )
+
+    this.septClient.register(
+      "iot.notify", async ({ payload, senderDeviceId, timestamp, eventId }) => {
+        const senderName = (await this.identityStore.getByDevice(senderDeviceId)).name
+        this.eventBus.dispatch("iot.notify", {
+          payload,
+          sender: senderName,
+          timestamp,
+          eventId
+        })
       }
     )
   }
@@ -551,15 +564,14 @@ export class FMNet {
   }
 
   async sendMessage(dstName, message) {
-    const dstDevices = (await this.identityStore.getByName(dstName)).devices
-    if (!dstDevices || dstDevices.length === 0) {
-      throw new Error(`No devices associated to ${dstName}`)
-    }
-    await this.septClient.send("message", message, dstDevices)
+    await this.send(dstName, "message", message)
   }
 
   async send(dstName, eventName, data) {
     const { devices } = await this.identityStore.getByName(dstName)
+    if (!devices || devices.length === 0) {
+      throw new Error(`No devices associated to ${dstName}`)
+    }
     await this.septClient.send(eventName, data, devices)
   }
 
@@ -629,7 +641,7 @@ export class FMNet {
 
     if (await this.isCurrentDeviceAdmin()) {
       for (const d of await this.identityStore.list()) {
-        if (d.type === "iot") {
+        if (d.type !== undefined) {
           continue
         }
         contacts[d.name] = { unreadsNumber: 0, unreads: [] }
@@ -639,7 +651,7 @@ export class FMNet {
         if (g.policy.allowedEventTypes.includes("message")) {
           const did = g.dstDeviceId === deviceId ? g.srcDeviceId : g.dstDeviceId
           const i = await this.getDeviceIdentity(did)
-          if (i.type === "iot") {
+          if (i.type !== undefined) {
             continue
           }
           contacts[i.name] = { unreadsNumber: 0, unreads: [] }
@@ -659,7 +671,7 @@ export class FMNet {
     const unreads = await this.appState.get("unreads")
     for (const u in unreads) {
       const i = await this.getDeviceIdentity(u)
-      if (i.type === "iot") {
+      if (i.type !== undefined) {
         continue
       }
       contacts[i.name].unreads = unreads[u]
@@ -822,9 +834,82 @@ export class FMNet {
   async getChatPermissions(deviceName) {
     const devices = []
     for (const d of await this.listDevices(false)) {
+      if (d.type !== undefined) {
+        continue
+      }
       devices.push({
         deviceName: d.name,
-        granted: await this.hasPermission(d.name, deviceName, "message")
+        granted: (
+          await this.hasPermission(d.name, deviceName, "message")
+          && await this.hasPermission(deviceName, d.name, "message")
+        )
+      })
+    }
+    return devices
+  }
+
+  async getIoTDevices() {
+    const devices = await this.listDevices()
+    const iotDevices = devices.filter(d => d.type === "iot")
+    if (await this.isCurrentDeviceAdmin()) {
+      return iotDevices
+    }
+    const localIdentity = await this.getLocalIdentity()
+    const visibleIoTDevices = []
+    for(const d of iotDevices) {
+      if(await this.hasIoTPermission(localIdentity.name, d.name)){
+        visibleIoTDevices.push(d)
+      }
+    }
+    return visibleIoTDevices
+  }
+
+  async grantIoT(srcName, dstName) {
+    const si = await this.identityStore.getByName(srcName)
+    const di = await this.identityStore.getByName(dstName)
+    if (si.type !== undefined) {
+      throw new Error(`Device ${srcName} is not a user`)
+    }
+    if (di.type !== "iot") {
+      throw new Error(`Device ${dstName} is not an IoT`)
+    }
+    await this.grant(srcName, dstName, ["iot.call"])
+    await this.grant(dstName, srcName, ["iot.notify"])
+  }
+
+  async revokeIoT(srcName, dstName) {
+    const si = await this.identityStore.getByName(srcName)
+    const di = await this.identityStore.getByName(dstName)
+    if (si.type !== undefined) {
+      throw new Error(`Device ${srcName} is not a user`)
+    }
+    if (di.type !== "iot") {
+      throw new Error(`Device ${dstName} is not an IoT`)
+    }
+    await this.revoke(srcName, dstName, ["iot.call"])
+    await this.revoke(dstName, srcName, ["iot.notify"])
+  }
+
+  async sendIoTCommand(dstName, command, params) {
+    return await this.send(dstName, "iot.call", { command, params })
+  }
+
+  async hasIoTPermission(srcName, dstName) {
+    return (
+      await this.hasPermission(dstName, srcName, "iot.notify")
+      && await this.hasPermission(srcName, dstName, "iot.call")
+    )
+  }
+
+  async getIoTPermissions(deviceName) {
+    const devices = []
+    for (const d of await this.listDevices(false)) {
+      if (d.type !== "iot") {
+        continue
+      }
+      devices.push({
+        deviceName: d.name,
+        granted: await this.hasIoTPermission(deviceName, d.name)
       })
     }
     return devices

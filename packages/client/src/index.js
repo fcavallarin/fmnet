@@ -826,7 +826,6 @@ export class SeptClient {
     return await this.store.deviceGraphEdge.getGraph();
   }
 
-
   register = (eventType, handler, serial = true) => {
     if (this.systemEventTypes.includes(eventType)) {
       throw new Error(`Cannot register eventType '${eventType}'`)

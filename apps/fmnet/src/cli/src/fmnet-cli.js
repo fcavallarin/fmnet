@@ -87,13 +87,10 @@ export class FmnetCli {
       this.info(formatMessage(ui, message))
     })
 
-    // this.fmnet.on?.("tunnel.opened", tunnel => {
-    //   this.success(`Tunnel opened: ${tunnel.tunnelId}`)
-    // })
+    this.fmnet.on?.("iot.notify", event => {
+      this.info(formatMessage(ui, {...event, message: event.payload}))
+    })
 
-    // this.fmnet.on?.("tunnel.closed", tunnel => {
-    //   this.warning(`Tunnel closed: ${tunnel.tunnelId}`)
-    // })
   }
 
   registerCustomActions(configPath) {

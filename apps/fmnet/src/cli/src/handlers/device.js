@@ -52,6 +52,14 @@ export class DeviceHandler extends BaseHandler {
         await this.fmnet.revokeChat(args[1], args[2])
         break
 
+        case 'grant-iot':
+        await this.fmnet.grantIoT(args[1], args[2])
+        break
+
+      case 'revoke-iot':
+        await this.fmnet.revokeIoT(args[1], args[2])
+        break
+
       case 'grant-admin':
         await this.fmnet.grantAdmin(args[1])
         break
@@ -72,6 +80,8 @@ export class DeviceHandler extends BaseHandler {
       "  device revoke-tunnel from-name to-name",
       "  device grant-chat from-name to-name",
       "  device revoke-chat from-name to-name",
+      "  device grant-iot from-name to-name",
+      "  device revoke-iot from-name to-name",
       "  device list",
       "  device id"
     ].join("\n")

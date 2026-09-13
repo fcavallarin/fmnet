@@ -328,7 +328,7 @@ class FMnetTest {
   }
 
 
-  async test_device_type(testId) {
+  async test_device_type_iot(testId) {
     this.appDeviceIoT1Name = "iot1"
     const deviceIoT1Data = await this.appDeviceIoT1.initDevice(this.appDeviceIoT1Name, "iot")
     console.log(`Init iot1 done`)
@@ -367,10 +367,9 @@ class FMnetTest {
       `Missing IoT1 identity type from Device2 list (Device2 is now admin)`
     )
 
-    await this.appAdmin.grant(
+    await this.appAdmin.grantIoT(
       this.appDevice4Name,
       this.appDeviceIoT1Name,
-      "iot.action"
     )
     await this.appDevice4.sync()
     await this.appDeviceIoT1.sync()
@@ -388,6 +387,23 @@ class FMnetTest {
     assert(
       !d4Contacts.map(d => d.name).includes(this.appDeviceIoT1Name),
       `IoT1 should not be in the contact list of Device4`
+    )
+    let d4IoTs = await this.appDevice4.getIoTDevices()
+    assert(
+      d4IoTs.map(d => d.name).includes(this.appDeviceIoT1Name),
+      `IoT1 should be in the IoT list of Device4`
+    )
+
+    await this.appAdmin.revokeIoT(
+      this.appDevice4Name,
+      this.appDeviceIoT1Name,
+    )
+    await this.appDevice4.sync()
+    await this.appDeviceIoT1.sync()
+    d4IoTs = await this.appDevice4.getIoTDevices()
+    assert(
+      !d4IoTs.map(d => d.name).includes(this.appDeviceIoT1Name),
+      `IoT1 should not be in the IoT list of Device4`
     )
   }
 
