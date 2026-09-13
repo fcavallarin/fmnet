@@ -1,29 +1,10 @@
 import { logger } from './logger.js';
+import { BaseStore } from './base-store.js';
 
 
-
-export class IdentityStore {
+export class IdentityStore extends BaseStore{
   constructor(initKVStore, familyId) {
-    this.initKVStore = initKVStore
-    this.familyId = familyId;
-    this.kvStore = null;
-    if (familyId) {
-      this.setFamilyId(familyId)
-    }
-  }
-
-  normalizeName(name) {
-    return name.trim()
-  }
-
-  setFamilyId(familyId) {
-    this.familyId = familyId;
-    this.kvStore = this.initKVStore(`fmnet:identity:${familyId}`)
-  }
-  assertFamily() {
-    if (!this.familyId) {
-      throw new Error("Family not set")
-    }
+    super(initKVStore, familyId, "identity")
   }
 
   async getByName(name) {

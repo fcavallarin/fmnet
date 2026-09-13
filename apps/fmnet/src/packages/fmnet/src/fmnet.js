@@ -3,6 +3,7 @@ import { DataChannelService } from './tunnel/datachannel-service.js'
 import { TcpTunnelIngress, TcpTunnelEgress } from './tcptunnel.js'
 import { logger, setLogger, setLogLevel } from './logger.js';
 import { IdentityStore } from './identity-store.js';
+import { IoTStore } from './iot-store.js';
 import { EventBus } from './event-bus.js';
 
 
@@ -41,10 +42,14 @@ export class FMNet {
       dataStore: this.options?.dataStore,
       restEndpoint: this.options?.restEndpoint
     })
-
+    const networkId = await this.septClient.getNetworkId()
     this.identityStore = new IdentityStore(
       this.septClient.appStorage,
-      await this.septClient.getNetworkId()
+      networkId
+    )
+    this.iotStore = new IoTStore(
+      this.septClient.appStorage,
+      networkId
     )
     this.appState = this.septClient.appStorage("fmnet:state")
     this.webRTCAdapter = this.options.webRTCAdapter
@@ -139,6 +144,9 @@ export class FMNet {
 
     this.septClient.register(
       "iot.notify", async ({ payload, senderDeviceId, timestamp, eventId }) => {
+        if(payload.action === "available-actions"){
+          await this.iotStore.set(senderDeviceId, payload.data)
+        }
         const senderName = (await this.identityStore.getByDevice(senderDeviceId)).name
         this.eventBus.dispatch("iot.notify", {
           payload,
@@ -148,6 +156,11 @@ export class FMNet {
         })
       }
     )
+  }
+
+  setStoresFamilyId(networkId){
+    this.identityStore.setFamilyId(networkId)
+    this.iotStore.setFamilyId(networkId)
   }
 
   async handleTcpTunnelEgress(tunnelId, host, port, dcmId, status, senderDeviceId) {
@@ -370,7 +383,8 @@ export class FMNet {
 
   async bootstrap(adminName) {
     const networkId = await this.septClient.bootstrap()
-    this.identityStore.setFamilyId(networkId);
+    // this.identityStore.setFamilyId(networkId);
+    this.setStoresFamilyId(networkId)
     const deviceId = await this.septClient.getDeviceId()
     await this.identityStore.set(deviceId, adminName)
     await this.registerDataChannelService()
@@ -453,7 +467,8 @@ export class FMNet {
 
   async pairDevice(pin) {
     const metadata = await this.septClient.pairDevice(pin)
-    this.identityStore.setFamilyId(
+    // this.identityStore.setFamilyId(
+    this.setStoresFamilyId(
       await this.septClient.getNetworkId()
     )
     for (const name in metadata?.identities || {}) {
@@ -913,5 +928,21 @@ export class FMNet {
       })
     }
     return devices
+  }
+
+  async requestIoTActions(deviceName){
+    const i = await this.getLocalIdentity()
+    if(! await this.hasIoTPermission(i.name, deviceName)){
+      throw new Error(`Not autorized`)
+    }
+    await this.send(deviceName, "iot.call", {command: "get-actions"})
+  }
+
+  async getIoTActions(deviceName){
+    const i = await this.identityStore.getByName(deviceName)
+    if(!i){
+      throw new Error(`Device ${deviceName} not found`)
+    }
+    return await this.iotStore.get(i.devices[0])
   }
 }

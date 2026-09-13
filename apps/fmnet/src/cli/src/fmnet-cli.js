@@ -182,7 +182,7 @@ export class FmnetCli {
         localIdentity = await this.fmnet.getLocalIdentity()
         for (const d of await this.fmnet.listDevices()) {
           if (localIdentity.name !== d.name) {
-            this.success(`${d.name}`)
+            this.success(`${d.name}${d.type ? " - " + d.type : ""}`)
           }
         }
         break
@@ -314,6 +314,7 @@ ${ui.title("Commands")}
   ${ui.title("help")}
   ${ui.title("status")}
   ${ui.title("devices")}
+  ${ui.title("admins")}
 
   ${ui.title("sync")}
   ${ui.title("whoami")}

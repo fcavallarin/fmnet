@@ -394,6 +394,22 @@ class FMnetTest {
       `IoT1 should be in the IoT list of Device4`
     )
 
+    this.appDeviceIoT1.septClient.register("iot.call", async ({ payload, senderDeviceId }) => {
+      if (payload.command === "get-actions") {
+        await this.appDeviceIoT1.septClient.send("iot.notify", {
+          action: "available-actions",
+          data: ["test"]
+        }, [senderDeviceId])
+      }
+    })
+
+    await this.appDevice4.requestIoTActions(this.appDeviceIoT1Name)
+    await this.appDeviceIoT1.sync()
+    await this.appDevice4.sync()
+    const d4IoTActions = await this.appDevice4.getIoTActions(this.appDeviceIoT1Name)
+
+    assert(d4IoTActions[0] === "test", "Failed to sync IoT actions")
+
     await this.appAdmin.revokeIoT(
       this.appDevice4Name,
       this.appDeviceIoT1Name,
