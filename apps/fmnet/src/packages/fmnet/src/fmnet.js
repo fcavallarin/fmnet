@@ -941,7 +941,7 @@ export class FMNet {
   async getIoTActions(deviceName){
     const i = await this.identityStore.getByName(deviceName)
     if(!i){
-      throw new Error(`Device ${deviceName} not found`)
+      return null
     }
     return await this.iotStore.get(i.devices[0])
   }

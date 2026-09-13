@@ -1,7 +1,5 @@
 import { logger } from './logger.js';
 
-
-
 export class BaseStore {
   constructor(initKVStore, familyId, namespace) {
     this.initKVStore = initKVStore
@@ -9,7 +7,7 @@ export class BaseStore {
     this.namespace = namespace
     this.kvStore = null;
     if (familyId) {
-      this._setFamilyId(familyId)
+      this.setFamilyId(familyId)
     }
   }
 
@@ -22,7 +20,6 @@ export class BaseStore {
     this.kvStore = this.initKVStore(`fmnet:${this.namespace}:${familyId}`)
   }
   
-
   assertFamily() {
     if (!this.familyId) {
       throw new Error("Family not set")
