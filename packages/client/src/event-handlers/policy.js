@@ -7,14 +7,13 @@ export class PolicyHandler extends BaseEventHandler {
     switch (this.event) {
       case "update":
         const networkId = this.payload.networkId;
+        const localNetwork = await this.store.network.get();
+
+        if (!localNetwork || networkId !== localNetwork.id) {
+          throw new Error("Policy update belongs to a different network");
+        }
         await this.update(networkId, this.payload.devices, this.payload.policies)
-        // this.uiEvents.dispatch("sept.policy.update", {
-        //   policies: this.payload.policies.map(p => ({
-        //     srcDeviceId: p.srcDevice.deviceId,
-        //     dstDeviceId: p.dstDevice.deviceId,
-        //     metadata: p.metadata
-        //   })),
-        // })
+
         this.uiEvents.dispatch("sept.policy.update", {
           policies: this.payload.policies,
           metadata: this.payload.metadata,

@@ -686,7 +686,7 @@ export class SeptClient {
     const purl = new URL(this.restEndpoint);
     purl.protocol = purl.protocol === "https:" ? "wss:" : "ws:"
     const wsEndpoint = purl.toString();
-    this.wsStatus = "tickedRequested"
+    this.wsStatus = "ticketRequested"
     const ticketRes = await this._callRest("get-relay-ticket")
     this.wsStatus = "connecting"
     const queue = new AsyncQueue((i) => this._handleEvents([i]))
@@ -762,31 +762,51 @@ export class SeptClient {
       throw new Error("Device must be admin")
     }
     const deviceStore = this.store.device
-    let networkId = null;
+    // let networkId = null;
+    // const dstDevice = await deviceStore.get(dstDeviceId);
+    // if (!networkId) {
+    //   networkId = dstDevice.networkId;
+    // } else {
+    //   if (networkId !== dstDevice.networkId) {
+    //     throw new Error("Source devices must belong to the same network")
+    //   }
+    // }
+
+    // if (!networkId) {
+    //   throw new Error("Source devices list is empty")
+    // }
+    // const srcDevice = await deviceStore.get(srcDeviceId);
+
+    // if (networkId !== srcDevice.networkId) {
+    //   throw new Error("Source devices and destination devices must belong to the same network")
+    // }
+    const networkId = await this.getNetworkId();
+
     const dstDevice = await deviceStore.get(dstDeviceId);
-    if (!networkId) {
-      networkId = dstDevice.networkId;
-    } else {
-      if (networkId !== dstDevice.networkId) {
-        throw new Error("Source devices must belong to the same network")
-      }
+    if (!dstDevice) {
+      throw new Error(`Destination device ${dstDeviceId} not found`);
     }
 
-    if (!networkId) {
-      throw new Error("Source devices list is empty")
-    }
     const srcDevice = await deviceStore.get(srcDeviceId);
+    if (!srcDevice) {
+      throw new Error(`Source device ${srcDeviceId} not found`);
+    }
 
-    if (networkId !== srcDevice.networkId) {
-      throw new Error("Source devices and destination devices must belong to the same network")
+    if (
+      srcDevice.networkId !== networkId ||
+      dstDevice.networkId !== networkId
+    ) {
+      throw new Error(
+        "Source and destination devices must belong to the current network"
+      );
     }
 
     const policy = {
       allowedEventTypes
     }
-    await this.store.deviceGraphEdge.setPolicy(srcDeviceId, dstDeviceId, policy)
+
     const evtPayload = {
-      networkId,  // @TODO [security]: should the client validate networkId? is it possible that admin of networkX updates the policy of networkY?
+      networkId,
       devices: [
         {
           id: dstDevice.id,
@@ -815,6 +835,7 @@ export class SeptClient {
       evtPayload,
       [srcDeviceId, dstDeviceId, ...admRecipients]
     )
+    await this.store.deviceGraphEdge.setPolicy(srcDeviceId, dstDeviceId, policy)
   }
 
   getDeviceId = async () => {

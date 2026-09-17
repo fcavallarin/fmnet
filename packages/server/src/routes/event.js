@@ -46,12 +46,27 @@ export async function createEvent(request, env, params, ctx) {
 
 
   const relay = env.RELAY.get(env.RELAY.idFromName(networkId));
-
-  for (const recipient of recipients) {
+  const uniqueRecipients = [
+    ...new Map(recipients.map(r => [r.deviceId, r])).values()
+  ];
+  const createdAt = now()
+  for (const recipient of uniqueRecipients) {
     await db.write(
-      `INSERT OR IGNORE INTO pending_event (device_id, event_id, encrypted_payload_key, created_at)
-       VALUES (?, ?, ?, ?)`,
-      [recipient.deviceId, eventId, recipient.encryptedPayloadKey, now()]);
+      `
+      INSERT INTO pending_event (
+        device_id,  
+        event_id,
+        encrypted_payload_key,
+        created_at
+      )
+      SELECT id, ?, ?, ?
+      FROM device
+      WHERE id = ?
+        AND network_id = ?
+        AND revoked_at IS NULL;
+      `,
+      [eventId, recipient.encryptedPayloadKey, createdAt, recipient.deviceId, networkId]
+    );
 
     const recipientEvent = {
       eventId, networkId, senderDeviceId, encryptedPayload, sequence, signature, timestamp,

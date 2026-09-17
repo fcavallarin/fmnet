@@ -108,7 +108,7 @@ export type UiEventHandler<TPayload = unknown> = (
 
 export type WebSocketStatus =
   | "disconnected"
-  | "tickedRequested"
+  | "ticketRequested"
   | "connecting"
   | "connected"
   | "reconnecting"

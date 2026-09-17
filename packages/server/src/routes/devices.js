@@ -134,14 +134,6 @@ export async function getPairedDevice(request, env, params) {
     throw httpError(404, "Unauthorized")
   }
   const db = new D1Adapter(() => env.DB)
-  // const pairingData = await db.read(
-  //   `SELECT *
-  //    FROM device_pairing
-  //    WHERE network_id = ?
-  //    AND redeemed_at IS NOT NULL
-  //    AND initiator_device_id = ?`
-  //   , [auth.networkId, auth.deviceId]
-  // )
 
   const pairingData = await db.readOne(
     `SELECT *
@@ -156,7 +148,6 @@ export async function getPairedDevice(request, env, params) {
   if(pairingData === null){
     return json({ ok: false, device: null });
   }
-
 
   if(pairingData.redeemedAt === null){
     return json({ ok: true, device: null });

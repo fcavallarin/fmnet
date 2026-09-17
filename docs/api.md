@@ -232,7 +232,7 @@ Current implementation states include values such as:
 
 ```text
 disconnected
-tickedRequested
+ticketRequested
 connecting
 connected
 reconnecting

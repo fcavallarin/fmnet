@@ -74,7 +74,7 @@ SEPT is an encrypted event protocol for trusted devices with **device-local auth
 
 It is not a VPN, an overlay network, a message broker, or a chat protocol. The relay handles transport, delivery, and storage, but it is **not the source of truth for application permissions**.
 
-Capabilities and authorization policies live on the devices themselves. Each device decides locally whether another device is allowed to perform a given action.
+Capabilities and authorization policies live on the devices themselves. Each device decides locally whether another device is allowed to process a given event.
 
 FMNet is one application built on top of SEPT, adding messaging, IoT actions, WebRTC connections, and TCP tunnels.
 
