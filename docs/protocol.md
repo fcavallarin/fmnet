@@ -142,7 +142,7 @@ When receiving an event, the relay:
 3. verifies the relay-facing event signature;
 4. increments a network-wide/current server event sequence counter;
 5. stores the encrypted event;
-6. creates one pending row per recipient with that recipient's wrapped payload key;
+6. creates one pending row for each valid, non-revoked recipient belonging to the same network;
 7. pushes the recipient-specific event through the network Durable Object if the recipient is connected;
 8. invokes the server-side `event.received` plugin hook.
 
@@ -163,9 +163,9 @@ The client then:
 7. ACKs the event to the relay;
 8. routes SEPT system events or invokes a registered application handler.
 
-A policy-denied application event is not delivered to the application handler.
+ACK means that the relay no longer needs to deliver the event to this recipient. For accepted events, local persistence occurs before ACK. ACK does not imply successful handler execution.
 
-ACK represents successful receipt and local acceptance of the event; it does not mean that an application or system handler has completed successfully.
+A policy-denied application event is not delivered to the application handler.
 
 ## Synchronization and delivery
 

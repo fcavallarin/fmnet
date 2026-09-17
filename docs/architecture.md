@@ -139,7 +139,8 @@ sequenceDiagram
   B->>R: ACK event id
   B->>B: Dispatch local handler
 ```
-ACK confirms relay delivery and local persistence, not successful handler execution. Failed system-event handlers remain locally unprocessed and are retried independently of relay delivery.
+
+For accepted events, ACK occurs after local persistence and before handler execution. Policy-denied events are discarded and ACKed without being persisted.
 
 Offline recipients obtain the same pending events through `sync()`.
 

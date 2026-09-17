@@ -50,6 +50,7 @@ export async function createEvent(request, env, params, ctx) {
     ...new Map(recipients.map(r => [r.deviceId, r])).values()
   ];
   const createdAt = now()
+  let rcptCnt = 0
   for (const recipient of uniqueRecipients) {
     const result = await db.write(
       `
@@ -82,8 +83,11 @@ export async function createEvent(request, env, params, ctx) {
         deviceId: recipient.deviceId
       }
     });
+    rcptCnt++
   }
-
+  if(rcptCnt === 0){
+    await db.write(`DELETE FROM event WHERE id=?`, [eventId]);
+  }
   return json({
     ok: verified, networkId, sequence
   });
