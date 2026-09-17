@@ -13,7 +13,12 @@
   ],
   "scripts": {
     "install:client": "npm install -w @sept/client -w @sept/core -w @sept/crypto",
-    "install:fmnet:cli": "mkdir apps/fmnet/src/cli/data && npm install -w fmnet-cli",
-    "scaffold:server": "node scripts/scaffold-server.js"
+    "install:fmnet:cli": "mkdir -p apps/fmnet/src/cli/data && npm install -w fmnet-cli",
+    "scaffold:server": "node scripts/scaffold-server.js",
+    "fmnet:cli": "cd apps/fmnet/src/cli && node src/index.js",
+    "test:fmnet": "cd apps/fmnet/tests && node test.js",
+    "test:sept": "cd packages/client/tests && node test.js",
+    "fmnet:server:init": "cd apps/worker && rm -rf .wrangler/state/v3/d1/miniflare-D1DatabaseObject/* && wrangler d1 migrations apply DB --local > /dev/null && echo done",
+    "fmnet:server": "cd apps/worker && wrangler dev"
   }
 }

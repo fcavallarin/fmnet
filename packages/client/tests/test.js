@@ -1,5 +1,11 @@
 import { canonicalJson } from "@sept/core";
 import { BaseSeptApp } from "./base_app.js";
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { rm, mkdir } from 'node:fs/promises';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const NUM_DEVICES = 4
 
@@ -15,9 +21,12 @@ async function sleep(ms) {
 
 class SeptTest {
   async init() {
-    this.appAdmin = await BaseSeptApp.create("admin")
+    const dataDir = path.resolve(__dirname, "data")
+    await rm(dataDir, { recursive: true, force: true });
+    await mkdir(dataDir, { recursive: true });
+    this.appAdmin = await BaseSeptApp.create("admin", dataDir)
     for (let i = 1; i <= NUM_DEVICES; i++) {
-      this[`appDevice${i}`] = await BaseSeptApp.create(`device${i}`)
+      this[`appDevice${i}`] = await BaseSeptApp.create(`device${i}`, dataDir)
     }
   }
 

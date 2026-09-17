@@ -2,7 +2,7 @@
 
 > Private communication and trusted-device networking.
 
-**SEPT** is a privacy-first protocol and JavaScript SDK for sending typed, encrypted events between trusted devices through a relay that is not part of the application authorization model.
+**SEPT** is a privacy-first protocol and JavaScript SDK for typed, encrypted events between trusted devices. Authorization is enforced locally by each device: the relay transports events, but does not decide which events a device is allowed to process.
 
 **FMNet** is an application built on SEPT. It adds private messaging, application-defined remote actions, peer-to-peer WebRTC data channels, and TCP tunnelling over WebRTC.
 | Project | What it is |
@@ -68,6 +68,17 @@ Private signing and encryption keys stay on devices. Authorization decisions for
 The relay necessarily observes transport metadata such as device/network identifiers, timing and event sizes. See [Security](docs/security.md) for the exact current confidentiality boundary and implementation caveats.
 
 ---
+## What SEPT is — and what it isn't
+
+SEPT is an encrypted event protocol for trusted devices with **device-local authorization**.
+
+It is not a VPN, an overlay network, a message broker, or a chat protocol. The relay handles transport, delivery, and storage, but it is **not the source of truth for application permissions**.
+
+Capabilities and authorization policies live on the devices themselves. Each device decides locally whether another device is allowed to perform a given action.
+
+FMNet is one application built on top of SEPT, adding messaging, IoT actions, WebRTC connections, and TCP tunnels.
+
+---
 ## Installation modes
 
 The monorepo exposes separate installation paths depending on what you want to run or develop:
@@ -95,7 +106,7 @@ npm run install:fmnet:cli
 ### Run
 
 ```bash
-./run.sh
+npm run fmnet:cli
 ```
 
 Use two terminals or two machines:
@@ -104,7 +115,7 @@ Use two terminals or two machines:
 - **Device B** initializes a device and joins through explicit pairing.
 
 ```text
-$ ./run.sh
+$ npm run fmnet:cli
 
 Insert your name: DeviceB
 
@@ -191,6 +202,25 @@ Device connection / DataChannelManager
 │   └── TCP socket #1 / DataChannel
 └── application DataChannels
 ```
+
+---
+## Run local server and tests
+
+Initialize the local database and start the FMNet server:
+
+```bash
+npm run fmnet:server:init  # Resets the local DB.
+npm run fmnet:server
+```
+
+Keep the server running and, from another terminal, run the test suites:
+
+```bash
+npm run test:sept
+npm run test:fmnet
+```
+
+`fmnet:server:init` deletes the existing local D1 database and reapplies all migrations. It does not affect remote databases.
 
 ---
 ## Repository map

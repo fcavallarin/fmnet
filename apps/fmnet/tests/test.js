@@ -3,6 +3,12 @@ import { FMNet } from "@fmnet/core";
 import Database from 'better-sqlite3';
 import { webRTCAdapter, TCPAdapter } from "@fmnet/node";
 import { canonicalJson } from "@sept/core";
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { rm, mkdir } from 'node:fs/promises';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function assert(cond, err) {
   if (!cond) {
@@ -16,11 +22,14 @@ async function sleep(ms) {
 
 class FMnetTest {
   async init() {
+    const dataDir = path.resolve(__dirname, "data")
+    await rm(dataDir, { recursive: true, force: true });
+    await mkdir(dataDir, { recursive: true });
     function createDs(name) {
       return {
         type: "better-sqlite",
         open: () => {
-          const db = new Database(`./data/${name}.db`);
+          const db = new Database(path.resolve(dataDir, `${name}.db`))
           db.pragma('journal_mode = WAL');
           return db;
         },

@@ -41,8 +41,9 @@ export class BaseSeptApp {
     this.clientName = clientName;
   }
 
-  async init() {
-    const fmDbPath = path.resolve(`./data/fm-${this.clientName}.db`);
+  async init(dataDir) {
+
+    const fmDbPath = path.resolve(dataDir, `fm-${this.clientName}.db`);
 
     this.septClient = await SeptClient.create({
       secretKeyProvider: async () => deserializeBin(`oZDipiLZnJq-SAR2Qwde7D-fkWmM3OaLi9N18WubdOU`),
@@ -56,21 +57,6 @@ export class BaseSeptApp {
     })
 
 
-    // this.septClient.on("export.device", async deviceData => {
-    //   writeJsonFile(`./data/cl-${this.clientName}.json`, deviceData)
-    // })
-
-    // this.septClient.on("policy.update", async deviceData => {
-    //   const deviceId = await this.septClient.getDeviceId()
-    //   if (deviceData.srcDeviceId === deviceId) {
-    //     await this.identityStore.set(deviceData.dstDeviceId, deviceData.metadata.dstName)
-    //   }
-
-    //   if (deviceData.dstDeviceId === deviceId) {
-    //     await this.identityStore.set(deviceData.srcDeviceId, deviceData.metadata.srcName)
-    //   }
-    // })
-
     this.septClient.register(
       "message", ({ payload }) => {
         console.log(`---RECV---`)
@@ -79,9 +65,9 @@ export class BaseSeptApp {
       }
     )
   }
-  static async create(clientName) {
+  static async create(clientName, dataDir) {
     const i = new this(clientName);
-    await i.init()
+    await i.init(dataDir)
     return i;
 
   }
