@@ -51,7 +51,7 @@ export async function createEvent(request, env, params, ctx) {
   ];
   const createdAt = now()
   for (const recipient of uniqueRecipients) {
-    await db.write(
+    const result = await db.write(
       `
       INSERT INTO pending_event (
         device_id,  
@@ -67,7 +67,9 @@ export async function createEvent(request, env, params, ctx) {
       `,
       [eventId, recipient.encryptedPayloadKey, createdAt, recipient.deviceId, networkId]
     );
-
+    if (result.meta.changes === 0) {
+      continue;
+    }
     const recipientEvent = {
       eventId, networkId, senderDeviceId, encryptedPayload, sequence, signature, timestamp,
       encryptedPayloadKey: recipient.encryptedPayloadKey

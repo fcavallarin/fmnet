@@ -135,9 +135,11 @@ sequenceDiagram
   B->>B: Verify sender signature
   B->>B: Unwrap key + decrypt payload
   B->>B: Check local policy
-  B->>B: Persist + dispatch handler
+  B->>B: Persist accepted event
   B->>R: ACK event id
+  B->>B: Dispatch local handler
 ```
+ACK confirms relay delivery and local persistence, not successful handler execution. Failed system-event handlers remain locally unprocessed and are retried independently of relay delivery.
 
 Offline recipients obtain the same pending events through `sync()`.
 

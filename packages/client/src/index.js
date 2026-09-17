@@ -703,7 +703,7 @@ export class SeptClient {
         this.sync().then(() => {
           resolve()
         }, err => {
-          reject()
+          reject(err)
         })
       });
 
@@ -762,24 +762,6 @@ export class SeptClient {
       throw new Error("Device must be admin")
     }
     const deviceStore = this.store.device
-    // let networkId = null;
-    // const dstDevice = await deviceStore.get(dstDeviceId);
-    // if (!networkId) {
-    //   networkId = dstDevice.networkId;
-    // } else {
-    //   if (networkId !== dstDevice.networkId) {
-    //     throw new Error("Source devices must belong to the same network")
-    //   }
-    // }
-
-    // if (!networkId) {
-    //   throw new Error("Source devices list is empty")
-    // }
-    // const srcDevice = await deviceStore.get(srcDeviceId);
-
-    // if (networkId !== srcDevice.networkId) {
-    //   throw new Error("Source devices and destination devices must belong to the same network")
-    // }
     const networkId = await this.getNetworkId();
 
     const dstDevice = await deviceStore.get(dstDeviceId);

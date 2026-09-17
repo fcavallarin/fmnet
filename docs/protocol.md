@@ -159,11 +159,13 @@ The client then:
 3. unwraps the payload key using recipient private X25519 key + sender public X25519 key;
 4. decrypts and parses `{type,payload}`;
 5. evaluates the sender-to-recipient local policy for `type`;
-6. persists the event;
-7. routes SEPT system events or invokes a registered application handler;
-8. ACKs the event to the relay.
+6. persists the event locally;
+7. ACKs the event to the relay;
+8. routes SEPT system events or invokes a registered application handler.
 
 A policy-denied application event is not delivered to the application handler.
+
+ACK represents successful receipt and local acceptance of the event; it does not mean that an application or system handler has completed successfully.
 
 ## Synchronization and delivery
 
@@ -206,7 +208,7 @@ These are handled internally rather than through application `register()`
 handlers. After updating local state, the client emits the corresponding local
 client event documented in the [Client API](api.md#client-events).
 
-A received system event is applied only when the sender is locally recognized as an admin. Protocol events are treated as non-skippable: if processing fails, the client avoids ACKing the failing event so the next synchronization can retry it.
+A received system event is applied only when the sender is locally recognized as an admin. System events are treated as non-skippable during local processing. If a system-event handler fails, the event remains locally unprocessed and is retried during a subsequent processing pass. This retry is independent of relay delivery: the event has already been ACKed after it was successfully received and persisted.
 
 ## Pairing
 

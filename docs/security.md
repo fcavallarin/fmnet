@@ -108,9 +108,11 @@ Admins are privileged and currently bypass ordinary `allowedEventTypes` checks.
 
 Policy, admin and device lifecycle changes are distributed as reserved `sept.*` events.
 
-The receive pipeline applies system-event handlers only when the sender is locally recognized as an admin. A failed system event is intentionally not silently skipped/ACKed, so subsequent synchronization can fail again until the root cause is addressed.
+The receive pipeline applies system-event handlers only when the sender is locally recognized as an admin.
 
-This behavior favors consistency over availability for protocol state changes.
+Relay ACK and local processing are intentionally separate. Once an accepted event has been verified and persisted locally, it is ACKed to the relay. If a system-event handler subsequently fails, the event remains locally unprocessed and is retried during a later processing pass.
+
+This prevents handler failures from depending on relay redelivery while still ensuring that protocol-state changes are not silently skipped.
 
 ## Pairing trust bootstrap
 
@@ -209,7 +211,7 @@ The relay maintains per-recipient pending rows and ACK deletion. Clients also pe
 
 `eventId` is now cryptographically bound to the sender signature verified by recipients, which prevents a relay from silently substituting the identifier used for ACK/deduplication.
 
-Replay and duplicate handling is nevertheless still under active development. Explicit protocol tests should cover duplicate delivery, an event received-but-not-yet-ACKed, self-addressed events, retry behavior and server-side pending-row cleanup before production-security claims are made.
+Replay and duplicate handling is nevertheless still under active development. Explicit protocol tests should cover duplicate delivery, an event persisted-but-not-yet-ACKed, self-addressed events, retry behavior and server-side pending-row cleanup before production-security claims are made.
 
 ## Side channels and non-goals
 
