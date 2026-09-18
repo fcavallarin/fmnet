@@ -106,7 +106,7 @@ npm run install:fmnet:cli
 ### Run
 
 ```bash
-npm run fmnet:cli
+npm run fmnet:cli -- [endpoint]
 ```
 
 Use two terminals or two machines:

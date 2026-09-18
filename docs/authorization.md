@@ -77,8 +77,8 @@ The client:
 
 1. loads the current policy;
 2. merges the requested event types without duplicates;
-3. updates local graph state;
-4. sends `sept.policy.update` to affected devices and other admins.
+3. sends `sept.policy.update` to affected devices and other admins;
+4. updates local graph state.
 
 `metadata` is application-defined context carried with the system event; it is not part of the authorization decision itself.
 

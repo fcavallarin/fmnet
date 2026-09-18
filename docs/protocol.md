@@ -165,7 +165,7 @@ The client then:
 
 ACK means that the relay no longer needs to deliver the event to this recipient. For accepted events, local persistence occurs before ACK. ACK does not imply successful handler execution.
 
-A policy-denied application event is not delivered to the application handler.
+A policy-denied application event is discarded and ACKed without being persisted or delivered to the application handler.
 
 ## Synchronization and delivery
 

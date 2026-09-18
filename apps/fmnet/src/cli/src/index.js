@@ -9,14 +9,15 @@ import path from 'node:path';
 import qrcode from 'qrcode-terminal';
 
 
-async function main() {
+async function main(endpoint) {
   const dbName = process.env.DBNAME || "app"
+  const restEndpoint = endpoint || process.env.FMNET_REST_ENDPOINT || "https://sept.filippo-572.workers.dev"
   const fmnet = await FMNet.create({
     webRTCAdapter: webRTCAdapter,
     tcpAdapter: new TCPAdapter(),
     // logLevel: "debug",
-    restEndpoint: process.env.FMNET_REST_ENDPOINT || "https://sept.filippo-572.workers.dev",
-    secretKeyProvider: async () => new Uint8Array(32),
+    restEndpoint,
+    secretKeyProvider: async () => new Uint8Array(32),  // Secret encription is "disabled"
     dataStore: betterSqliteDataStore(`./data/${dbName}.db`)
   })
   const networkId = await fmnet.getNetworkId()
@@ -53,7 +54,7 @@ async function main() {
     }
     rl.close()
   }
-  console.log("Connecting ... \n")
+  console.log(`Connecting to ... ${restEndpoint}\n`)
   await fmnet.connect()
   const cli = new FmnetCli(
     fmnet
@@ -62,4 +63,4 @@ async function main() {
 
 }
 
-main()
+main(process.argv[2])
