@@ -244,9 +244,11 @@ error
 
 These strings are implementation-level status values and should not yet be treated as a frozen enum.
 
-### `sync()`
+### `sync(retry?)`
 
-Pulls pending events through REST and feeds them into the normal receive pipeline.
+Pulls pending events through REST and feeds them into the normal receive  pipeline.
+
+When `retry` is `true`, failed requests are retried every two seconds until synchronization succeeds. It defaults to `false`.
 
 ### `startPolling(time)`
 

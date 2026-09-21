@@ -82,9 +82,16 @@ export class SeptClient {
       // "export.device",
     ])
 
+    this.connectionStatuses = {
+      CONNECTED: "connected",
+      DISCONNECTED: "disconnected",
+      CONNECTING: "connecting",
+      DISCONNECTING: "disconnecting"
+    }
+
     this.registeredEvents = {}
     this.ws = null
-    this.wsStatus = "disconnected"
+    this.wsStatus = this.connectionStatuses.DISCONNECTED
   }
 
   static async create(options) {
@@ -677,18 +684,28 @@ export class SeptClient {
   };
 
   connect = async () => {
-    if (this.wsStatus === "connected") {
+    if(
+      this.wsStatus === this.connectionStatuses.CONNECTED
+      || this.wsStatus === this.connectionStatuses.CONNECTING
+    ){
       return
     }
-
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
     const settings = await this.store.settings.get()
     const networkId = await this.getNetworkId()
     const purl = new URL(this.restEndpoint);
     purl.protocol = purl.protocol === "https:" ? "wss:" : "ws:"
     const wsEndpoint = purl.toString();
-    this.wsStatus = "ticketRequested"
-    const ticketRes = await this._callRest("get-relay-ticket")
-    this.wsStatus = "connecting"
+    this.wsStatus = this.connectionStatuses.CONNECTING
+    let ticketRes = null
+    while (ticketRes === null) {
+      try {
+        ticketRes = await this._callRest("get-relay-ticket")
+      } catch {
+        await sleep(2000)
+      }
+    }
+
     const queue = new AsyncQueue((i) => this._handleEvents([i]))
     const wsUrl = `${wsEndpoint}ws?` +
       `networkId=${networkId}&` +
@@ -699,8 +716,8 @@ export class SeptClient {
     return new Promise((resolve, reject) => {
       this.ws.addEventListener("open", () => {
         this.uiEvents.dispatch("connection.open", {})
-        this.wsStatus = "connected"
-        this.sync().then(() => {
+        this.sync(true).then(() => {
+          this.wsStatus = this.connectionStatuses.CONNECTED
           resolve()
         }, err => {
           reject(err)
@@ -714,33 +731,23 @@ export class SeptClient {
 
       this.ws.addEventListener("close", () => {
         this.uiEvents.dispatch("connection.close", {})
-        if (this.wsStatus == "connected") {
-          this.wsStatus = "reconnecting"
-          this.sync().then(() => this.connect())
-        } else {
-          this.wsStatus = "closed"
+        const s = this.wsStatus
+        this.wsStatus = this.connectionStatuses.DISCONNECTED
+        if (s === this.connectionStatuses.DISCONNECTING) {
+          return
         }
+        this.sync(true).then(() => this.connect())
       });
 
       this.ws.addEventListener("error", (err) => {
         this.uiEvents.dispatch("connection.error", {})
-        if (this.wsStatus == "connected") {
-          this.wsStatus = "reconnectingOnError"
-          this.sync().then(() => this.connect())
-        } else {
-          this.wsStatus = "error"
-        }
-        const error = new Error(
-          err?.message ?? "WebSocket connection error"
-        )
-        reject(error)
       });
     })
   }
 
   disconnect = async () => {
-    if (this.ws && this.wsStatus !== "closing") {
-      this.wsStatus = "closing"
+    if (this.ws && this.wsStatus !== this.connectionStatuses.DISCONNECTING) {
+      this.wsStatus = this.connectionStatuses.DISCONNECTING
       await this.ws.close();
     }
   }
@@ -866,8 +873,19 @@ export class SeptClient {
     return policy.allowedEventTypes.includes(eventType)
   }
 
-  sync = async () => {
-    return await this._getEvents();
+  sync = async (retry = false) => {
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+    while (true) {
+      try {
+        return await this._getEvents();
+      } catch (err) {
+        if (retry) {
+          await sleep(2000)
+        } else {
+          throw err
+        }
+      }
+    }
   }
 
   getStoredEvents = async (filters = {}) => {

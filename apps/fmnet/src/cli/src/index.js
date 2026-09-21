@@ -54,7 +54,7 @@ async function main(endpoint) {
     }
     rl.close()
   }
-  console.log(`Connecting to ... ${restEndpoint}\n`)
+  console.log(`Connecting to ${restEndpoint}\n`)
   await fmnet.connect()
   const cli = new FmnetCli(
     fmnet

@@ -297,7 +297,7 @@ export class SeptClient {
     eventType: EventType,
   ) => Promise<boolean>;
 
-  sync: () => Promise<void>;
+  sync: (retry?: boolean) => Promise<void>;
 
   getStoredEvents: <TPayload = unknown>(
     filters?: EventFilters,
