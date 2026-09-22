@@ -1,14 +1,18 @@
 # SEPT / FMNet
 
-> Private communication and trusted-device networking.
+**SEPT** is an asynchronous event protocol for devices and services, with end-to-end encryption, distributed ACLs, and offline delivery.
 
-**SEPT** is a privacy-first protocol and JavaScript SDK for typed, encrypted events between trusted devices. Authorization is enforced locally by each device: the relay transports events, but does not decide which events a device is allowed to process.
+Events are encrypted and authenticated end-to-end. Authorization is evaluated by the endpoints rather than delegated to the relay, while the relay handles routing, persistence, and delivery when recipients are offline.
+
+SEPT is designed for systems where communication is event-driven and connectivity may be intermittent, including IoT and edge devices, remote services, and distributed applications.
 
 **FMNet** is an application built on SEPT. It adds private messaging, application-defined remote actions, peer-to-peer WebRTC data channels, and TCP tunnelling over WebRTC.
+
 | Project | What it is |
 | --- | --- |
-| **SEPT** | Device identity, pairing, encrypted events, local authorization policies, persistence, relay synchronization and connection lifecycle. |
+| **SEPT** | Device identity, pairing, end-to-end encrypted events, distributed ACLs, persistent event delivery, relay synchronization, and connection lifecycle. |
 | **FMNet** | A real application and integration test for SEPT: chat, remote actions, WebRTC connections and TCP tunnels. |
+
 
 Start here:
 - [SEPT quick start](docs/sept-quickstart.md)
@@ -58,8 +62,9 @@ SEPT is the event and authorization layer underneath those operations; WebRTC/TC
                     │ Cloudflare Worker/D1   │
                     │ R2 / Durable Object    │
                     │                        │
-                    │ routing + pending      │
-                    │ events + sequencing    │
+                    │                        │
+                    │ routing + offline      |
+                    |event storage + delivery│
                     └────────────────────────┘
 ```
 
@@ -70,13 +75,13 @@ The relay necessarily observes transport metadata such as device/network identif
 ---
 ## What SEPT is — and what it isn't
 
-SEPT is an encrypted event protocol for trusted devices with **device-local authorization**.
+SEPT is an asynchronous event protocol for devices and services. Events are end-to-end encrypted, **authorization is enforced through distributed ACLs**, and delivery does not require sender and recipient to be online at the same time.
 
-It is not a VPN, an overlay network, a message broker, or a chat protocol. The relay handles transport, delivery, and storage, but it is **not the source of truth for application permissions**.
+It is not a VPN, an overlay network, or an application-specific protocol. SEPT defines how events are authenticated, authorized, stored, and delivered; applications define what those events mean.
 
-Capabilities and authorization policies live on the devices themselves. Each device decides locally whether another device is allowed to process a given event.
+The relay handles routing, persistence, and delivery, but application **authorization remains with the endpoints**.
 
-FMNet is one application built on top of SEPT, adding messaging, IoT actions, WebRTC connections, and TCP tunnels.
+FMNet is one application built on SEPT, adding messaging, IoT actions, WebRTC connections, and TCP tunnels.
 
 ---
 ## Installation modes
@@ -282,6 +287,7 @@ The implementation is actively dogfooded and has been exercised with:
 
 - encrypted messaging between paired devices;
 - application-defined events/actions;
+- IoT and remote-device control through application-defined events;
 - local capability enforcement;
 - multiple concurrent SSH sessions;
 - large SCP transfers;
