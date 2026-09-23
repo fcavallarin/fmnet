@@ -5,7 +5,7 @@ export class DeviceHandler extends BaseHandler {
     const [subcommand] = args
 
     switch (subcommand) {
-      case "list": {
+      case "permissions": {
         const graph = await this.fmnet.getDeviceGraph()
 
         if (!graph?.length) {
@@ -15,7 +15,7 @@ export class DeviceHandler extends BaseHandler {
 
         console.dir(graph, {
           depth: null,
-          colors: colorsEnabled,
+          colors: true,
         })
 
         break
@@ -27,10 +27,10 @@ export class DeviceHandler extends BaseHandler {
         this.cli.log(`Paring pin: ${pin}`)
         break
       case 'grant':
-        await this.fmnet.grant(args[1], args[2], args[3])
+        await this.fmnet.grant(args[1], args[2], [args[3]])
         break
       case 'revoke':
-        await this.fmnet.revoke(args[1], args[2], args[3])
+        await this.fmnet.revoke(args[1], args[2], [args[3]])
         break
       case "id":
         this.cli.log(await this.fmnet.getDeviceId())
@@ -82,7 +82,7 @@ export class DeviceHandler extends BaseHandler {
       "  device revoke-chat from-name to-name",
       "  device grant-iot from-name to-name",
       "  device revoke-iot from-name to-name",
-      "  device list",
+      "  device permissions",
       "  device id"
     ].join("\n")
   }
