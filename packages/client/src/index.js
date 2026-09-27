@@ -832,8 +832,22 @@ export class SeptClient {
     return settings.deviceId || null;
   }
 
-  getDeviceGraph = async () => {
+  async _getDeviceGraph() {
     return await this.store.deviceGraphEdge.getGraph();
+  }
+
+  getDeviceGraph = async () => {
+    console.warn("Deprecated getDeviceGraph(). Use getACL instead")
+    return await this._getDeviceGraph()
+  }
+
+  getACL = async () => {
+    const graph = await this._getDeviceGraph()
+    return graph.map(g => ({
+      srcDeviceId: g.srcDeviceId,
+      dstDeviceId: g.dstDeviceId,
+      policy: g.policy
+    }))
   }
 
   register = (eventType, handler, serial = true) => {
@@ -963,7 +977,7 @@ export class SeptClient {
       })
     }
 
-    for (const g of await this.getDeviceGraph()) {
+    for (const g of await this._getDeviceGraph()) {
       evtPayload.policies.push({
         dstDeviceId: g.dstDeviceId,
         srcDeviceId: g.srcDeviceId,
@@ -1078,7 +1092,7 @@ export class SeptClient {
     const curDeviceId = await this.getDeviceId()
     const admins = await this.store.device.getAdmins()
     const recipients = admins.filter(d => d.id !== curDeviceId).map(d => d.id)
-    const graph = await this.getDeviceGraph()
+    const graph = await this._getDeviceGraph()
     for (const g of graph) {
       if (g.srcDeviceId === deviceId) {
         recipients.push(g.dstDeviceId)

@@ -140,12 +140,10 @@ export interface AdminDevice {
   cryptPublicKey: Uint8Array | null;
 }
 
-export interface DeviceGraphEdge {
-  id: number;
+export interface ACLItem {
   srcDeviceId: DeviceId;
   dstDeviceId: DeviceId;
   policy: Policy;
-  createdAt: string;
 }
 
 export type StoredBoolean = 0 | 1 | boolean;
@@ -270,7 +268,7 @@ export class SeptClient {
 
   getNetworkId: () => Promise<NetworkId | null>;
   getDeviceId: () => Promise<DeviceId | null>;
-  getDeviceGraph: () => Promise<DeviceGraphEdge[]>;
+  getDeviceGraph: () => Promise<ACLItem[]>;
 
   register: <TPayload = unknown, TResult = unknown>(
     eventType: EventType,

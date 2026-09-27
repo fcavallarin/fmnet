@@ -194,9 +194,25 @@ Returns whether a locally known device currently has role `admin`.
 
 Returns whether the local device is an admin.
 
-### `getDeviceGraph()`
+### `getACL()`
 
 Returns the locally stored directed device/policy graph.
+
+Example:
+
+```json
+[
+  {
+    srcDeviceId: 'dev_pB32vlsVOaZC8ZCnrmZ85VRamhSsKqeC',
+    dstDeviceId: 'dev_vlXKrHmaK4ES-_tZsuxFtwwew0WufIJj',
+    policy: {
+      allowedEventTypes: [
+        'message'
+      ]
+    }
+  }
+]
+```
 
 ## Admin/device management
 
