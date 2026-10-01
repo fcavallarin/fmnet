@@ -1,0 +1,568 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>SeptClient | @sept/client</title><meta name="description" content="Documentation for @sept/client"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="../index.html" class="title">@sept/client</a>
+<div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<ul role="listbox" id="tsd-search-results"></ul>
+<div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+<div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<ul class="tsd-breadcrumb" aria-label="Breadcrumb">
+<li><a href="" aria-current="page">SeptClient</a></li></ul>
+<h1>Class SeptClient</h1></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L308">index.d.ts:308</a></li></ul></aside>
+<section class="tsd-panel-group tsd-index-group">
+<section class="tsd-panel tsd-index-panel">
+<details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h5 class="tsd-index-heading uppercase">Index</h5></summary>
+<div class="tsd-accordion-details">
+<section class="tsd-index-section">
+<h3 class="tsd-index-heading tsd-anchor-link" id="properties">Properties<a href="#properties" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-index-list"><a href="#adddevice" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>add<wbr/>Device</span></a>
+<a href="#appstorage" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>app<wbr/>Storage</span></a>
+<a href="#bootstrap" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>bootstrap</span></a>
+<a href="#callrest" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>call<wbr/>Rest</span></a>
+<a href="#checkpolicy" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>check<wbr/>Policy</span></a>
+<a href="#connect" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>connect</span></a>
+<a href="#disconnect" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>disconnect</span></a>
+<a href="#getadmins" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Admins</span></a>
+<a href="#getconnectionstatus" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Connection<wbr/>Status</span></a>
+<a href="#getdevicegraph" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Device<wbr/>Graph</span></a>
+<a href="#getdeviceid" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Device<wbr/>Id</span></a>
+<a href="#getdevices" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Devices</span></a>
+<a href="#getnetworkid" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Network<wbr/>Id</span></a>
+<a href="#getpolicy" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Policy</span></a>
+<a href="#getstoredevents" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Stored<wbr/>Events</span></a>
+<a href="#grant" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>grant</span></a>
+<a href="#grantadmin" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>grant<wbr/>Admin</span></a>
+<a href="#initdevice" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>init<wbr/>Device</span></a>
+<a href="#invalidatedevice" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>invalidate<wbr/>Device</span></a>
+<a href="#isadmin" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>is<wbr/>Admin</span></a>
+<a href="#iscurrentdeviceadmin" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>is<wbr/>Current<wbr/>Device<wbr/>Admin</span></a>
+<a href="#on" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>on</span></a>
+<a href="#pairdevice" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>pair<wbr/>Device</span></a>
+<a href="#register" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>register</span></a>
+<a href="#registerconcurrent" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>register<wbr/>Concurrent</span></a>
+<a href="#resetdevice" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>reset<wbr/>Device</span></a>
+<a href="#revoke" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>revoke</span></a>
+<a href="#revokeadmin" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>revoke<wbr/>Admin</span></a>
+<a href="#send" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>send</span></a>
+<a href="#startpolling" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>start<wbr/>Polling</span></a>
+<a href="#stoppolling" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>stop<wbr/>Polling</span></a>
+<a href="#sync" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>sync</span></a>
+</div></section>
+<section class="tsd-index-section">
+<h3 class="tsd-index-heading tsd-anchor-link" id="methods">Methods<a href="#methods" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-index-list"><a href="#create" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>create</span></a>
+</div></section></div></details></section></section>
+<details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Properties"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h2 class="tsd-anchor-link" id="properties-1">Properties<a href="#properties-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
+<section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="adddevice"><span>add<wbr/>Device</span><a href="#adddevice" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">addDevice</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">&lt;</span><br/>    <span class="tsd-signature-type tsd-kind-type-parameter">TDeviceMetadata</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-type tsd-kind-type-parameter">TAdminMetadata</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">deviceData</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/PairingDeviceData.html" class="tsd-signature-type tsd-kind-interface">PairingDeviceData</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">metadata</span><span class="tsd-signature-symbol">?:</span> <a href="../interfaces/AddDeviceMetadata.html" class="tsd-signature-type tsd-kind-interface">AddDeviceMetadata</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TDeviceMetadata</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type tsd-kind-type-parameter">TAdminMetadata</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">pairingTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/AddDeviceResult.html" class="tsd-signature-type tsd-kind-interface">AddDeviceResult</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TAdminMetadata</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Starts admin-side pairing for a new device.</p>
+<p>The initial REST request is awaited. Once accepted, this method returns a
+short-lived PIN together with a <code>pairing</code> promise while completion polling
+continues asynchronously.</p>
+<p><code>metadata.deviceMetadata</code> is delivered to the device joining the network.
+<code>metadata.adminMetadata</code> is retained for the admin completing the pairing.</p>
+<p>The returned <code>pairing</code> promise resolves with the paired device ID and the
+admin-side metadata when pairing completes successfully. It rejects if
+pairing fails, times out, or the asynchronous completion flow throws.</p>
+<p>Callers may ignore the <code>pairing</code> promise when they only need to initiate
+pairing and display the PIN.</p>
+</div>
+<div class="tsd-type-declaration">
+<h4>Type Declaration</h4>
+<ul class="tsd-parameters">
+<li class="tsd-parameter-signature">
+<ul class="tsd-signatures">
+<li class="tsd-signature"><span class="tsd-signature-symbol">&lt;</span><br/>    <span class="tsd-signature-type tsd-kind-type-parameter">TDeviceMetadata</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-type tsd-kind-type-parameter">TAdminMetadata</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">deviceData</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/PairingDeviceData.html" class="tsd-signature-type tsd-kind-interface">PairingDeviceData</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">metadata</span><span class="tsd-signature-symbol">?:</span> <a href="../interfaces/AddDeviceMetadata.html" class="tsd-signature-type tsd-kind-interface">AddDeviceMetadata</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TDeviceMetadata</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type tsd-kind-type-parameter">TAdminMetadata</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">pairingTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/AddDeviceResult.html" class="tsd-signature-type tsd-kind-interface">AddDeviceResult</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TAdminMetadata</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+<li class="tsd-description">
+<section class="tsd-panel">
+<h4>Type Parameters</h4>
+<ul class="tsd-type-parameter-list">
+<li><span><span class="tsd-kind-type-parameter">TDeviceMetadata</span> = <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></span></li>
+<li><span><span class="tsd-kind-type-parameter">TAdminMetadata</span> = <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></span></li></ul></section>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">deviceData</span>: <a href="../interfaces/PairingDeviceData.html" class="tsd-signature-type tsd-kind-interface">PairingDeviceData</a></span></li>
+<li><span><code class="tsd-tag">Optional</code><span class="tsd-kind-parameter">metadata</span>: <a href="../interfaces/AddDeviceMetadata.html" class="tsd-signature-type tsd-kind-interface">AddDeviceMetadata</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TDeviceMetadata</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type tsd-kind-type-parameter">TAdminMetadata</span><span class="tsd-signature-symbol">&gt;</span></span></li>
+<li><span><code class="tsd-tag">Optional</code><span class="tsd-kind-parameter">pairingTimeout</span>: <span class="tsd-signature-type">number</span></span>
+<div class="tsd-comment tsd-typography"><p>Pairing timeout in seconds.</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/AddDeviceResult.html" class="tsd-signature-type tsd-kind-interface">AddDeviceResult</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TAdminMetadata</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-defaultValue">
+<h4 class="tsd-anchor-link" id="default-value">Default Value<a href="#default-value" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>60</code></p>
+</div>
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-5">pin</span><span class="hl-1">, </span><span class="hl-5">pairing</span><span class="hl-1"> } = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">sept</span><span class="hl-1">.</span><span class="hl-6">addDevice</span><span class="hl-1">(</span><span class="hl-2">deviceData</span><span class="hl-1">, {</span><br/><span class="hl-1">  </span><span class="hl-2">deviceMetadata:</span><span class="hl-1"> { </span><span class="hl-2">name:</span><span class="hl-1"> </span><span class="hl-3">&quot;server&quot;</span><span class="hl-1"> },</span><br/><span class="hl-1">  </span><span class="hl-2">adminMetadata:</span><span class="hl-1"> { </span><span class="hl-2">connection:</span><span class="hl-1"> </span><span class="hl-3">&quot;office&quot;</span><span class="hl-1"> },</span><br/><span class="hl-1">})</span><br/><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">pin</span><span class="hl-1">)</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-5">deviceId</span><span class="hl-1">, </span><span class="hl-5">metadata</span><span class="hl-1"> } = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">pairing</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L456">index.d.ts:456</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="appstorage"><span>app<wbr/>Storage</span><a href="#appstorage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">appStorage</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">namespace</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <a href="../interfaces/AppStorage.html" class="tsd-signature-type tsd-kind-interface">AppStorage</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Returns namespaced persistent application storage.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example-1">Example<a href="#example-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">store</span><span class="hl-1"> = </span><span class="hl-2">sept</span><span class="hl-1">.</span><span class="hl-6">appStorage</span><span class="hl-1">(</span><span class="hl-3">&quot;fmnet&quot;</span><span class="hl-1">)</span><br/><br/><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">store</span><span class="hl-1">.</span><span class="hl-6">set</span><span class="hl-1">(</span><span class="hl-3">&quot;value&quot;</span><span class="hl-1">, </span><span class="hl-7">1</span><span class="hl-1">)</span><br/><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">store</span><span class="hl-1">.</span><span class="hl-6">set</span><span class="hl-1">(</span><span class="hl-3">&quot;value&quot;</span><span class="hl-1">, </span><span class="hl-2">current</span><span class="hl-1"> </span><span class="hl-4">=&gt;</span><span class="hl-1"> (</span><span class="hl-2">current</span><span class="hl-1"> ?? </span><span class="hl-7">0</span><span class="hl-1">) + </span><span class="hl-7">1</span><span class="hl-1">)</span><br/><br/><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">store</span><span class="hl-1">.</span><span class="hl-6">get</span><span class="hl-1">(</span><span class="hl-3">&quot;value&quot;</span><span class="hl-1">)</span><br/><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">store</span><span class="hl-1">.</span><span class="hl-6">keys</span><span class="hl-1">()</span><br/><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">store</span><span class="hl-1">.</span><span class="hl-6">all</span><span class="hl-1">()</span><br/><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">store</span><span class="hl-1">.</span><span class="hl-6">delete</span><span class="hl-1">(</span><span class="hl-3">&quot;value&quot;</span><span class="hl-1">)</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L676">index.d.ts:676</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="bootstrap"><span>bootstrap</span><a href="#bootstrap" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">bootstrap</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Creates a new SEPT network and the first admin/root device.</p>
+</div>
+<div class="tsd-type-declaration">
+<h4>Type Declaration</h4>
+<ul class="tsd-parameters">
+<li class="tsd-parameter-signature">
+<ul class="tsd-signatures">
+<li class="tsd-signature"><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
+<li class="tsd-description">
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4><p>The newly created network ID.</p>
+</li></ul></li></ul></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L398">index.d.ts:398</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="callrest"><span>call<wbr/>Rest</span><a href="#callrest" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">callRest</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TJson</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <a href="../interfaces/RestCallOptions.html" class="tsd-signature-type tsd-kind-interface">RestCallOptions</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/RestCallResult.html" class="tsd-signature-type tsd-kind-interface">RestCallResult</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TJson</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Calls a custom relay endpoint using the SEPT signed-request client.</p>
+<p>Useful as an escape hatch for application-specific relay plugins, such as
+push-token registration. Prefer protocol-level methods when they exist.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example-2">Example<a href="#example-2" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">sept</span><span class="hl-1">.</span><span class="hl-6">callRest</span><span class="hl-1">(</span><span class="hl-3">&quot;register-push-token&quot;</span><span class="hl-1">, {</span><br/><span class="hl-1">  </span><span class="hl-2">method:</span><span class="hl-1"> </span><span class="hl-3">&quot;POST&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">body:</span><span class="hl-1"> { </span><span class="hl-2">token</span><span class="hl-1"> },</span><br/><span class="hl-1">})</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L388">index.d.ts:388</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="checkpolicy"><span>check<wbr/>Policy</span><a href="#checkpolicy" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">checkPolicy</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">srcDeviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">dstDeviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">eventType</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Returns whether <code>srcDeviceId</code> is locally authorized to send <code>eventType</code> to
+<code>dstDeviceId</code>.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-remarks">
+<h4 class="tsd-anchor-link" id="remarks">Remarks<a href="#remarks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p>Admin devices currently return <code>true</code> without requiring an explicit edge
+capability.</p>
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L592">index.d.ts:592</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="connect"><span>connect</span><a href="#connect" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">connect</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Obtains a relay ticket, opens the WebSocket connection and synchronizes
+pending events.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-remarks">
+<h4 class="tsd-anchor-link" id="remarks-1">Remarks<a href="#remarks-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p>This method is bound as a public arrow function and can be passed as a
+callback without losing <code>this</code>.</p>
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L492">index.d.ts:492</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="disconnect"><span>disconnect</span><a href="#disconnect" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">disconnect</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Closes the current WebSocket connection.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L495">index.d.ts:495</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getadmins"><span>get<wbr/>Admins</span><a href="#getadmins" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">getAdmins</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/AdminDevice.html" class="tsd-signature-type tsd-kind-interface">AdminDevice</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Returns a simplified list of locally known admin devices.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L693">index.d.ts:693</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getconnectionstatus"><span>get<wbr/>Connection<wbr/>Status</span><a href="#getconnectionstatus" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">getConnectionStatus</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <a href="../types/ConnectionStatus.html" class="tsd-signature-type tsd-kind-type-alias">ConnectionStatus</a></div>
+<div class="tsd-comment tsd-typography"><p>Returns the current public connection status.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L498">index.d.ts:498</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getdevicegraph"><span>get<wbr/>Device<wbr/>Graph</span><a href="#getdevicegraph" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">getDeviceGraph</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ACLItem.html" class="tsd-signature-type tsd-kind-interface">ACLItem</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Returns the locally stored directed device/policy graph.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example-3">Example<a href="#example-3" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">graph</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">sept</span><span class="hl-1">.</span><span class="hl-6">getDeviceGraph</span><span class="hl-1">()</span><br/><span class="hl-8">// [{</span><br/><span class="hl-8">//   srcDeviceId: &quot;dev_...&quot;,</span><br/><span class="hl-8">//   dstDeviceId: &quot;dev_...&quot;,</span><br/><span class="hl-8">//   policy: { allowedEventTypes: [&quot;message&quot;] },</span><br/><span class="hl-8">// }]</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L519">index.d.ts:519</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getdeviceid"><span>get<wbr/>Device<wbr/>Id</span><a href="#getdeviceid" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">getDeviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Returns the current local device ID, or <code>null</code> when uninitialized.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L504">index.d.ts:504</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getdevices"><span>get<wbr/>Devices</span><a href="#getdevices" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">getDevices</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Device.html" class="tsd-signature-type tsd-kind-interface">Device</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Returns locally known non-revoked devices.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L682">index.d.ts:682</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getnetworkid"><span>get<wbr/>Network<wbr/>Id</span><a href="#getnetworkid" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">getNetworkId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Returns the current network ID, or <code>null</code> when no network is configured.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L501">index.d.ts:501</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getpolicy"><span>get<wbr/>Policy</span><a href="#getpolicy" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">getPolicy</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">srcDeviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">dstDeviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Policy.html" class="tsd-signature-type tsd-kind-interface">Policy</a> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Returns the local directed policy, if present.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L569">index.d.ts:569</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getstoredevents"><span>get<wbr/>Stored<wbr/>Events</span><a href="#getstoredevents" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">getStoredEvents</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">filters</span><span class="tsd-signature-symbol">?:</span> <a href="../interfaces/EventFilters.html" class="tsd-signature-type tsd-kind-interface">EventFilters</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/StoredEvent.html" class="tsd-signature-type tsd-kind-interface">StoredEvent</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Queries locally stored events using the current store filtering DSL.</p>
+<p>Stored events include handler-processing state through <code>processedAt</code>,
+<code>handlerResult</code> and <code>handlerFailed</code>.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-see">
+<h4 class="tsd-anchor-link" id="see">See<a href="#see" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p>EventFilters</p>
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L618">index.d.ts:618</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="grant"><span>grant</span><a href="#grant" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">grant</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">srcDeviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">dstDeviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">eventTypes</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">metadata</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Adds event types to a directed policy and distributes a policy update.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L625">index.d.ts:625</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="grantadmin"><span>grant<wbr/>Admin</span><a href="#grantadmin" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">grantAdmin</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">deviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">metadata</span><span class="tsd-signature-symbol">?:</span> <a href="../interfaces/GrantAdminMetadata.html" class="tsd-signature-type tsd-kind-interface">GrantAdminMetadata</a><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Promotes a device to admin.</p>
+<p>Distributes <code>sept.admin.grant</code>, updates relay transport/admin state, and
+sends current device/policy state to the promoted device.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L648">index.d.ts:648</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="initdevice"><span>init<wbr/>Device</span><a href="#initdevice" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">initDevice</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/PairingDeviceData.html" class="tsd-signature-type tsd-kind-interface">PairingDeviceData</a><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Initializes signing and encryption keys for a device that has not joined a
+network yet.</p>
+</div>
+<div class="tsd-type-declaration">
+<h4>Type Declaration</h4>
+<ul class="tsd-parameters">
+<li class="tsd-parameter-signature">
+<ul class="tsd-signatures">
+<li class="tsd-signature"><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/PairingDeviceData.html" class="tsd-signature-type tsd-kind-interface">PairingDeviceData</a><span class="tsd-signature-symbol">&gt;</span></li>
+<li class="tsd-description">
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/PairingDeviceData.html" class="tsd-signature-type tsd-kind-interface">PairingDeviceData</a><span class="tsd-signature-symbol">&gt;</span></h4><p>Transport-safe device ID and serialized public keys.</p>
+</li></ul></li></ul></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L482">index.d.ts:482</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="invalidatedevice"><span>invalidate<wbr/>Device</span><a href="#invalidatedevice" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">invalidateDevice</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">deviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Invalidates a device.</p>
+<p>Distributes <code>sept.device.invalidate</code> to relevant peers/admins, updates relay
+state and marks the device revoked locally.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L690">index.d.ts:690</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="isadmin"><span>is<wbr/>Admin</span><a href="#isadmin" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">isAdmin</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">deviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Returns whether a locally known device currently has role <code>admin</code>.</p>
+<p>May return <code>null</code> when the device is not locally known.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L579">index.d.ts:579</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="iscurrentdeviceadmin"><span>is<wbr/>Current<wbr/>Device<wbr/>Admin</span><a href="#iscurrentdeviceadmin" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">isCurrentDeviceAdmin</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Returns whether the local device is currently an admin.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L582">index.d.ts:582</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="on"><span>on</span><a href="#on" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">on</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">eventName</span><span class="tsd-signature-symbol">:</span> <a href="../types/UiEventName.html" class="tsd-signature-type tsd-kind-type-alias">UiEventName</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">handler</span><span class="tsd-signature-symbol">:</span> <a href="../types/UiEventHandler.html" class="tsd-signature-type tsd-kind-type-alias">UiEventHandler</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></div>
+<div class="tsd-comment tsd-typography"><p>Subscribes to events emitted locally by the SEPT client.</p>
+<p>Client events are different from application events registered with
+<a href="#register" class="tsd-kind-property">register</a>: their names and payloads are defined by SEPT.</p>
+<p>System events are emitted after the client successfully processes a
+reserved SEPT protocol event and updates local state.</p>
+<p>Current system-event payloads:</p>
+<ul>
+<li><code>policy.update</code>: <code>{ policies, metadata }</code></li>
+<li><code>admin.grant</code>: <code>{ deviceId, metadata }</code></li>
+<li><code>admin.revoke</code>: <code>{ deviceId, metadata }</code></li>
+<li><code>device.add</code>: <code>{ id, networkId, signPublicKey, cryptPublicKey, metadata }</code></li>
+<li><code>device.invalidate</code>: <code>{ deviceId }</code></li>
+</ul>
+<p>Current connection-event payloads:</p>
+<ul>
+<li><code>connection.open</code>: <code>{}</code> after the WebSocket opens</li>
+<li><code>connection.close</code>: <code>{}</code> after the WebSocket closes</li>
+<li><code>connection.error</code>: <code>{}</code> after a WebSocket error</li>
+<li><code>connection.message</code>: raw WebSocket message before normal processing</li>
+</ul>
+<p>Most applications should not need <code>connection.message</code>.</p>
+<p>Reserved wire-event names corresponding to system events are documented in
+<code>protocol.md#system-event-namespace</code>.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L359">index.d.ts:359</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="pairdevice"><span>pair<wbr/>Device</span><a href="#pairdevice" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">pairDevice</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TMetadata</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">pin</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TMetadata</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Redeems a pairing PIN on the joining-device side.</p>
+<p>Decrypts and installs the network/admin bootstrap state.</p>
+</div>
+<div class="tsd-type-declaration">
+<h4>Type Declaration</h4>
+<ul class="tsd-parameters">
+<li class="tsd-parameter-signature">
+<ul class="tsd-signatures">
+<li class="tsd-signature"><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TMetadata</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">pin</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TMetadata</span><span class="tsd-signature-symbol">&gt;</span></li>
+<li class="tsd-description">
+<section class="tsd-panel">
+<h4>Type Parameters</h4>
+<ul class="tsd-type-parameter-list">
+<li><span><span class="tsd-kind-type-parameter">TMetadata</span> = <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></span></li></ul></section>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">pin</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TMetadata</span><span class="tsd-signature-symbol">&gt;</span></h4><p>Pairing metadata intended for the joining device.</p>
+</li></ul></li></ul></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L472">index.d.ts:472</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="register"><span>register</span><a href="#register" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">register</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type tsd-kind-type-parameter">TResult</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">eventType</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">handler</span><span class="tsd-signature-symbol">:</span> <a href="../types/SeptEventHandler.html" class="tsd-signature-type tsd-kind-type-alias">SeptEventHandler</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type tsd-kind-type-parameter">TResult</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">serial</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></div>
+<div class="tsd-comment tsd-typography"><p>Registers an application event handler.</p>
+<p>The handler may return a value. After the handler settles, SEPT stores the
+result with the event and marks it as processed. If the handler throws or
+rejects, SEPT stores the error string and marks handler processing as failed.</p>
+<p>SEPT-reserved system event types cannot be registered through this API.</p>
+</div>
+<div class="tsd-type-declaration">
+<h4>Type Declaration</h4>
+<ul class="tsd-parameters">
+<li class="tsd-parameter-signature">
+<ul class="tsd-signatures">
+<li class="tsd-signature"><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type tsd-kind-type-parameter">TResult</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">eventType</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">handler</span><span class="tsd-signature-symbol">:</span> <a href="../types/SeptEventHandler.html" class="tsd-signature-type tsd-kind-type-alias">SeptEventHandler</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type tsd-kind-type-parameter">TResult</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">serial</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span></li>
+<li class="tsd-description">
+<section class="tsd-panel">
+<h4>Type Parameters</h4>
+<ul class="tsd-type-parameter-list">
+<li><span><span class="tsd-kind-type-parameter">TPayload</span> = <span class="tsd-signature-type">unknown</span></span></li>
+<li><span><span class="tsd-kind-type-parameter">TResult</span> = <span class="tsd-signature-type">unknown</span></span></li></ul></section>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">eventType</span>: <span class="tsd-signature-type">string</span></span></li>
+<li><span><span class="tsd-kind-parameter">handler</span>: <a href="../types/SeptEventHandler.html" class="tsd-signature-type tsd-kind-type-alias">SeptEventHandler</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type tsd-kind-type-parameter">TResult</span><span class="tsd-signature-symbol">&gt;</span></span></li>
+<li><span><code class="tsd-tag">Optional</code><span class="tsd-kind-parameter">serial</span>: <span class="tsd-signature-type">boolean</span></span>
+<div class="tsd-comment tsd-typography"><p>When <code>true</code>, later event processing waits for the handler.
+Defaults to <code>true</code>.</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example-4">Example<a href="#example-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-2">sept</span><span class="hl-1">.</span><span class="hl-6">register</span><span class="hl-1">(</span><span class="hl-3">&quot;message.send&quot;</span><span class="hl-1">, </span><span class="hl-4">async</span><span class="hl-1"> ({</span><br/><span class="hl-1">  </span><span class="hl-2">payload</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">senderDeviceId</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">timestamp</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">eventId</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">sequence</span><span class="hl-1">,</span><br/><span class="hl-1">}) </span><span class="hl-4">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-8">// ...</span><br/><span class="hl-1">})</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L546">index.d.ts:546</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="registerconcurrent"><span>register<wbr/>Concurrent</span><a href="#registerconcurrent" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">registerConcurrent</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type tsd-kind-type-parameter">TResult</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">eventType</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">handler</span><span class="tsd-signature-symbol">:</span> <a href="../types/SeptEventHandler.html" class="tsd-signature-type tsd-kind-type-alias">SeptEventHandler</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type tsd-kind-type-parameter">TResult</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></div>
+<div class="tsd-comment tsd-typography"><p>Registers an application handler that runs without blocking later event
+processing.</p>
+<p>Equivalent to <code>register(eventType, handler, false)</code>.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-remarks">
+<h4 class="tsd-anchor-link" id="remarks-2">Remarks<a href="#remarks-2" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p>Use only when the handler is safe to execute concurrently. Concurrent
+handlers run in the background, so their failures are recorded on the
+stored event but are not propagated by <a href="#sync" class="tsd-kind-property">sync</a>.</p>
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L563">index.d.ts:563</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="resetdevice"><span>reset<wbr/>Device</span><a href="#resetdevice" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">resetDevice</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Resets the local SEPT database through the configured datastore adapter.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L679">index.d.ts:679</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="revoke"><span>revoke</span><a href="#revoke" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">revoke</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">srcDeviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">dstDeviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">eventTypes</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">metadata</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Removes event types from a directed policy and distributes a policy update.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L635">index.d.ts:635</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="revokeadmin"><span>revoke<wbr/>Admin</span><a href="#revokeadmin" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">revokeAdmin</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">deviceId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Demotes an admin to a normal user.</p>
+<p>Distributes <code>sept.admin.revoke</code> and updates relay state.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L658">index.d.ts:658</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="send"><span>send</span><a href="#send" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">send</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">type</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">payload</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type tsd-kind-type-parameter">TPayload</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">dstDeviceIds</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Sends an application event.</p>
+<p>SEPT checks policy, encrypts, signs and persists the event, then submits it
+to the relay.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-throws">
+<h4 class="tsd-anchor-link" id="throws">Throws<a href="#throws" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p>If no valid recipients remain or local authorization denies the
+event for a recipient.</p>
+</div>
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example-5">Example<a href="#example-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">sept</span><span class="hl-1">.</span><span class="hl-6">send</span><span class="hl-1">(</span><br/><span class="hl-1">  </span><span class="hl-3">&quot;message.send&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  { </span><span class="hl-2">text:</span><span class="hl-1"> </span><span class="hl-3">&quot;hello&quot;</span><span class="hl-1"> },</span><br/><span class="hl-1">  [</span><span class="hl-2">deviceA</span><span class="hl-1">, </span><span class="hl-2">deviceB</span><span class="hl-1">],</span><br/><span class="hl-1">)</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L418">index.d.ts:418</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="startpolling"><span>start<wbr/>Polling</span><a href="#startpolling" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">startPolling</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">time</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></div>
+<div class="tsd-comment tsd-typography"><p>Starts periodic synchronization.</p>
+</div>
+<div class="tsd-type-declaration">
+<h4>Type Declaration</h4>
+<ul class="tsd-parameters">
+<li class="tsd-parameter-signature">
+<ul class="tsd-signatures">
+<li class="tsd-signature"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">time</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span></li>
+<li class="tsd-description">
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">time</span>: <span class="tsd-signature-type">number</span></span>
+<div class="tsd-comment tsd-typography"><p>Polling interval in seconds.</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L369">index.d.ts:369</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="stoppolling"><span>stop<wbr/>Polling</span><a href="#stoppolling" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">stopPolling</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></div>
+<div class="tsd-comment tsd-typography"><p>Stops the polling interval started by <a href="#startpolling" class="tsd-kind-property">startPolling</a>.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L372">index.d.ts:372</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="sync"><span>sync</span><a href="#sync" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">sync</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">retry</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>Pulls pending events through REST and feeds them into the normal receive
+pipeline.</p>
+<p>When <code>retry</code> is <code>true</code>, failed requests are retried every two seconds until
+synchronization succeeds.</p>
+</div>
+<div class="tsd-type-declaration">
+<h4>Type Declaration</h4>
+<ul class="tsd-parameters">
+<li class="tsd-parameter-signature">
+<ul class="tsd-signatures">
+<li class="tsd-signature"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">retry</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+<li class="tsd-description">
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><code class="tsd-tag">Optional</code><span class="tsd-kind-parameter">retry</span>: <span class="tsd-signature-type">boolean</span></span>
+<div class="tsd-comment tsd-typography"><p>Whether failed synchronization should retry indefinitely.</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-defaultValue">
+<h4 class="tsd-anchor-link" id="default-value-1">Default Value<a href="#default-value-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p><code>false</code></p>
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L608">index.d.ts:608</a></li></ul></aside></section></section></details>
+<details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
+<section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="create"><code class="tsd-tag">Static</code><span>create</span><a href="#create" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="create-1"><span class="tsd-kind-call-signature">create</span><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#createtdatabase">TDatabase</a> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/SeptClientOptions.html" class="tsd-signature-type tsd-kind-interface">SeptClientOptions</a><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#createtdatabase">TDatabase</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="" class="tsd-signature-type tsd-kind-class">SeptClient</a><span class="tsd-signature-symbol">&gt;</span><a href="#create-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Creates and initializes a SEPT client, database adapter and local stores.</p>
+</div>
+<section class="tsd-panel">
+<h4>Type Parameters</h4>
+<ul class="tsd-type-parameter-list">
+<li><span id="createtdatabase"><span class="tsd-kind-type-parameter">TDatabase</span> = <span class="tsd-signature-type">unknown</span></span></li></ul></section>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">options</span>: <a href="../interfaces/SeptClientOptions.html" class="tsd-signature-type tsd-kind-interface">SeptClientOptions</a><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#createtdatabase">TDatabase</a><span class="tsd-signature-symbol">&gt;</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="" class="tsd-signature-type tsd-kind-class">SeptClient</a><span class="tsd-signature-symbol">&gt;</span></h4>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example-6">Example<a href="#example-6" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">sept</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">SeptClient</span><span class="hl-1">.</span><span class="hl-6">create</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-2">restEndpoint</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">dataStore:</span><span class="hl-1"> {</span><br/><span class="hl-1">    </span><span class="hl-2">type:</span><span class="hl-1"> </span><span class="hl-3">&quot;better-sqlite&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-2">open</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-2">close</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-2">clearDb</span><span class="hl-1">,</span><br/><span class="hl-1">  },</span><br/><span class="hl-1">  </span><span class="hl-2">secretKeyProvider</span><span class="hl-1">,</span><br/><span class="hl-1">})</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/fcavallarin/fmnet/blob/c55e2b6c70131adac547c76fc0b5b4b4d4f02a35/packages/client/src/index.d.ts#L328">index.d.ts:328</a></li></ul></aside></div></li></ul></section></section></details></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div>
+<div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>On This Page</h3></summary>
+<div class="tsd-accordion-details">
+<details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Properties"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Properties</summary>
+<div><a href="#adddevice"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>add<wbr/>Device</span></a><a href="#appstorage"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>app<wbr/>Storage</span></a><a href="#bootstrap"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>bootstrap</span></a><a href="#callrest"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>call<wbr/>Rest</span></a><a href="#checkpolicy"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>check<wbr/>Policy</span></a><a href="#connect"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>connect</span></a><a href="#disconnect"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>disconnect</span></a><a href="#getadmins"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Admins</span></a><a href="#getconnectionstatus"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Connection<wbr/>Status</span></a><a href="#getdevicegraph"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Device<wbr/>Graph</span></a><a href="#getdeviceid"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Device<wbr/>Id</span></a><a href="#getdevices"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Devices</span></a><a href="#getnetworkid"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Network<wbr/>Id</span></a><a href="#getpolicy"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Policy</span></a><a href="#getstoredevents"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>get<wbr/>Stored<wbr/>Events</span></a><a href="#grant"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>grant</span></a><a href="#grantadmin"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>grant<wbr/>Admin</span></a><a href="#initdevice"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>init<wbr/>Device</span></a><a href="#invalidatedevice"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>invalidate<wbr/>Device</span></a><a href="#isadmin"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>is<wbr/>Admin</span></a><a href="#iscurrentdeviceadmin"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>is<wbr/>Current<wbr/>Device<wbr/>Admin</span></a><a href="#on"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>on</span></a><a href="#pairdevice"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>pair<wbr/>Device</span></a><a href="#register"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>register</span></a><a href="#registerconcurrent"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>register<wbr/>Concurrent</span></a><a href="#resetdevice"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>reset<wbr/>Device</span></a><a href="#revoke"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>revoke</span></a><a href="#revokeadmin"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>revoke<wbr/>Admin</span></a><a href="#send"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>send</span></a><a href="#startpolling"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>start<wbr/>Polling</span></a><a href="#stoppolling"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>stop<wbr/>Polling</span></a><a href="#sync"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>sync</span></a></div></details>
+<details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Methods</summary>
+<div><a href="#create"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>create</span></a></div></details></div></details></div>
+<div class="site-menu">
+<nav class="tsd-navigation"><a href="../modules.html">@sept/client</a>
+<ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+<li>Loading...</li></ul></nav></div></div></div><footer>
+<p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
+<div class="overlay"></div></body></html>

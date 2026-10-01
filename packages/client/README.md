@@ -36,7 +36,7 @@ const sept = await SeptClient.create({
 See the repository documentation:
 
 - [`docs/sept-quickstart.md`](../../docs/sept-quickstart.md)
-- [`docs/api.md`](../../docs/api.md)
+- [`docs/api`](../../docs/api/index.html)
 - [`docs/protocol.md`](../../docs/protocol.md)
 - [`docs/authorization.md`](../../docs/authorization.md)
 - [`docs/security.md`](../../docs/security.md)

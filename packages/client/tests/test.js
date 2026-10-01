@@ -41,24 +41,24 @@ class SeptTest {
     console.log(`Bootstrap done`)
 
     for (let i = 1; i <= NUM_DEVICES - 1; i++) {
-      let dPaired
-      const dP = new Promise(resolve => dPaired = resolve)
+      // let dPaired
+      // const dP = new Promise(resolve => dPaired = resolve)
       const deviceData = await this[`appDevice${i}`].initDevice()
       console.log(`Init device${i} done`)
-      const pin = await this.appAdmin.addDevice(deviceData, {}, dPaired)
+      const { pin, pairing } = await this.appAdmin.addDevice(deviceData, {} /*, dPaired*/)
       console.log(`Device${i} added`)
       await this[`appDevice${i}`].pairDevice(pin)
       await this[`appDevice${i}`].sync()
-      await dP
+      await pairing
       console.log(`Device ${i} paired`)
     }
 
     const i = NUM_DEVICES
-    let dPaired
-    const dP = new Promise(resolve => dPaired = resolve)
+    // let dPaired
+    // const dP = new Promise(resolve => dPaired = resolve)
     const deviceData = await this[`appDevice${i}`].initDevice()
     console.log(`Init device${i} done`)
-    const pin = await this.appAdmin.addDevice(deviceData, {}, dPaired)
+    const { pin, pairing:pairingErr } = await this.appAdmin.addDevice(deviceData, {}/*, dPaired*/)
     console.log(`Device${i} added`)
     let failed = false
     const wrongPin = String(
@@ -77,9 +77,16 @@ class SeptTest {
       failed = true
     }
     assert(failed, "getPairing should fail with an invalidated pairing session ..")
+    failed = false
+    try{
+      await pairingErr
+    } catch {
+      failed = true
+    }
+    assert(failed, "pairingPromise should throw an error")
     const deviceData2 = await this[`appDevice${i}`].initDevice()
     console.log(`Init device${i} second time done`)
-    const pin2 = await this.appAdmin.addDevice(deviceData2, {}, dPaired)
+    const { pin: pin2, pairing } = await this.appAdmin.addDevice(deviceData2, {} /*, dPaired*/)
     console.log(`Device${i} added second time`)
     await this[`appDevice${i}`].pairDevice(pin2)
     await this[`appDevice${i}`].sync()
@@ -87,7 +94,7 @@ class SeptTest {
       deviceData2.deviceId !== deviceData.deviceId,
       "A new pairing attempt must use a new deviceId"
     )
-    await dP
+    await pairing
     console.log(`Device ${i} paired`)
 
 

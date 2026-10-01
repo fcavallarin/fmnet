@@ -21,7 +21,7 @@ Start here:
 - [Authorization model](docs/authorization.md)
 - [Security model and current limitations](docs/security.md)
 - [Self-hosting the relay](docs/self-hosting.md)
-- [SEPT client API](docs/api.md)
+- [SEPT client API](docs/api/index.html)
 
 > **Project status:** SEPT and FMNet are under active development. The protocol and implementation have not received an independent security audit. See [Security](docs/security.md) before using the project in a high-risk environment.
 

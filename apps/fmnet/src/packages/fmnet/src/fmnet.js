@@ -144,7 +144,7 @@ export class FMNet {
 
     this.septClient.register(
       "iot.notify", async ({ payload, senderDeviceId, timestamp, eventId }) => {
-        if(payload.action === "available-actions"){
+        if (payload.action === "available-actions") {
           await this.iotStore.set(senderDeviceId, payload.data)
         }
         const senderName = (await this.identityStore.getByDevice(senderDeviceId)).name
@@ -158,7 +158,7 @@ export class FMNet {
     )
   }
 
-  setStoresFamilyId(networkId){
+  setStoresFamilyId(networkId) {
     this.identityStore.setFamilyId(networkId)
     this.iotStore.setFamilyId(networkId)
   }
@@ -419,7 +419,7 @@ export class FMNet {
     const deviceName = deviceData.metadata.name
     const deviceType = deviceData.metadata.type
 
-    const pin = await this.septClient.addDevice(
+    const { pin, pairing } = await this.septClient.addDevice(
       deviceData,
       {
         deviceMetadata: {
@@ -435,7 +435,7 @@ export class FMNet {
       }
     )
     await this.identityStore.set(deviceData.deviceId, deviceName, deviceType)
-    return pin
+    return { pin, pairing }
   };
 
   async invalidateDevice(deviceName) {
@@ -871,8 +871,8 @@ export class FMNet {
     }
     const localIdentity = await this.getLocalIdentity()
     const visibleIoTDevices = []
-    for(const d of iotDevices) {
-      if(await this.hasIoTPermission(localIdentity.name, d.name)){
+    for (const d of iotDevices) {
+      if (await this.hasIoTPermission(localIdentity.name, d.name)) {
         visibleIoTDevices.push(d)
       }
     }
@@ -930,17 +930,17 @@ export class FMNet {
     return devices
   }
 
-  async requestIoTActions(deviceName){
+  async requestIoTActions(deviceName) {
     const i = await this.getLocalIdentity()
-    if(! await this.hasIoTPermission(i.name, deviceName)){
+    if (! await this.hasIoTPermission(i.name, deviceName)) {
       throw new Error(`Not autorized`)
     }
-    await this.send(deviceName, "iot.call", {command: "get-actions"})
+    await this.send(deviceName, "iot.call", { command: "get-actions" })
   }
 
-  async getIoTActions(deviceName){
+  async getIoTActions(deviceName) {
     const i = await this.identityStore.getByName(deviceName)
-    if(!i){
+    if (!i) {
       return null
     }
     return await this.iotStore.get(i.devices[0])

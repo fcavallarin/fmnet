@@ -20,5 +20,8 @@
     "test:sept": "cd packages/client/tests && node test.js",
     "fmnet:server:init": "cd apps/worker && rm -rf .wrangler/state/v3/d1/miniflare-D1DatabaseObject/* && wrangler d1 migrations apply DB --local > /dev/null && echo done",
     "fmnet:server": "cd apps/worker && wrangler dev"
+  },
+  "devDependencies": {
+    "typedoc": "^0.28.20"
   }
 }

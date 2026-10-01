@@ -281,13 +281,20 @@ export class SeptClient {
     await this.store.event.setSequence(eventId, sequence)
   };
 
-  addDevice = async (deviceData, metadata, onPaired, onPairingError, pairingTimeout = 60) => {
-
+  addDevice = async (deviceData, metadata = {}, pairingTimeout = 60) => {
     const networkStore = this.store.network
     const networkId = (await networkStore.get()).id;
     const localDevice = await this._getDeviceData()
     const pin = randomDigits(4)
     const admins = await this.store.device.getAdmins()
+    let pairingOk, pairingError
+    const pairingPromise = new Promise((resolve, reject) => {
+      pairingOk = resolve
+      pairingError = reject
+    })
+    // Prevent ERR_UNHANDLED_REJECTION if the promise is not awaited
+    pairingPromise.catch(() => { })
+
     await this._callRest("devices/create-pairing", {
       method: "POST",
       body: {
@@ -335,7 +342,7 @@ export class SeptClient {
 
         // Paring failed
         if (r.json.ok === false) {
-          await onPairingError?.(deviceData.deviceId, "failed")
+          pairingError(new Error(`${deviceData.deviceId}: failed`))
           return
         }
 
@@ -343,7 +350,6 @@ export class SeptClient {
           continue
         }
 
-        // for (const d of r.json.devices) {
         const pairedDevice = JSON.parse(
           new TextDecoder().decode(
             decryptAsymmetric(
@@ -380,17 +386,19 @@ export class SeptClient {
           )
         }
 
-        await onPaired?.(pairedDevice.deviceId, pairedDevice.metadata)
+        pairingOk({
+          deviceId: pairedDevice.deviceId,
+          metadata: pairedDevice.metadata
+        })
         return
-        // }
       }
 
-      await onPairingError?.(deviceData.deviceId, "timeout")
+      pairingError(new Error(`${deviceData.deviceId}: timeout`))
     }
 
-    void pollPairing()
+    void pollPairing().catch(pairingError)
 
-    return pin
+    return { pin, pairing: pairingPromise }
   };
 
 
@@ -684,10 +692,10 @@ export class SeptClient {
   };
 
   connect = async () => {
-    if(
+    if (
       this.wsStatus === this.connectionStatuses.CONNECTED
       || this.wsStatus === this.connectionStatuses.CONNECTING
-    ){
+    ) {
       return
     }
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -907,6 +915,9 @@ export class SeptClient {
   }
 
   grant = async (srcDeviceId, dstDeviceId, eventTypes, metadata) => {
+    if (!Array.isArray(eventTypes)) {
+      throw new Error("eventTypes must be an array")
+    }
     const policy = await this.getPolicy(srcDeviceId, dstDeviceId);
     const allowedEventTypes = [...(policy?.allowedEventTypes || [])]
     for (const eventType of eventTypes) {
@@ -918,6 +929,9 @@ export class SeptClient {
   }
 
   revoke = async (srcDeviceId, dstDeviceId, eventTypes, metadata) => {
+    if (!Array.isArray(eventTypes)) {
+      throw new Error("eventTypes must be an array")
+    }
     const policy = await this.getPolicy(srcDeviceId, dstDeviceId);
     const allowedEventTypes = [...(policy?.allowedEventTypes || [])]
     for (const eventType of eventTypes) {

@@ -93,8 +93,8 @@ class FMnetTest {
     this.appDevice1Name = "user1"
     const device1Data = await this.appDevice1.initDevice(this.appDevice1Name)
     console.log(`Init device1 done`)
-    const pin1 = await this.appAdmin.addDevice(device1Data)
-    console.log(`Device1 added`)
+    const { pin: pin1 } = await this.appAdmin.addDevice(device1Data)
+    console.log(`Device1 added pin: ${pin1}`)
 
     await this.appDevice1.pairDevice(pin1)
     console.log(`Device 1 paired with pin ${pin1}`)
@@ -102,7 +102,7 @@ class FMnetTest {
     this.appDevice2Name = "user2"
     const device2Data = await this.appDevice2.initDevice(this.appDevice2Name)
     console.log(`Init device2 done`)
-    const pin2 = await this.appAdmin.addDevice(device2Data)
+    const { pin: pin2 } = await this.appAdmin.addDevice(device2Data)
     console.log(`Device2 added`)
     await this.appDevice2.pairDevice(pin2)
     console.log(`Device 2 paired`)
@@ -110,7 +110,7 @@ class FMnetTest {
     this.appDevice3Name = "user3"
     const device3Data = await this.appDevice3.initDevice(this.appDevice3Name)
     console.log(`Init device3 done`)
-    const pin3 = await this.appAdmin.addDevice(device3Data)
+    const { pin: pin3 } = await this.appAdmin.addDevice(device3Data)
     console.log(`Device3 added`)
     await this.appDevice3.pairDevice(pin3)
     console.log(`Device 3 paired`)
@@ -316,7 +316,7 @@ class FMnetTest {
     this.appDevice4Name = "user4"
     const device4Data = await this.appDevice4.initDevice(this.appDevice4Name)
     console.log(`Init device4 done`)
-    const pin4 = await this.appAdmin.addDevice(device4Data)
+    const { pin: pin4 } = await this.appAdmin.addDevice(device4Data)
     console.log(`Device4 added`)
     await this.appDevice4.pairDevice(pin4)
     console.log(`Device 4 paired`)
@@ -341,7 +341,7 @@ class FMnetTest {
     this.appDeviceIoT1Name = "iot1"
     const deviceIoT1Data = await this.appDeviceIoT1.initDevice(this.appDeviceIoT1Name, "iot")
     console.log(`Init iot1 done`)
-    const pin = await this.appAdmin.addDevice(deviceIoT1Data)
+    const { pin } = await this.appAdmin.addDevice(deviceIoT1Data)
     console.log(`IoT1 added`)
     await this.appDeviceIoT1.pairDevice(pin)
     console.log(`IoT1 paired`)

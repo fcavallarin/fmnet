@@ -23,7 +23,7 @@ export class DeviceHandler extends BaseHandler {
 
       case "add":
         const j = Buffer.from(args[1], "base64").toString("utf8")
-        const pin = await this.fmnet.addDevice(JSON.parse(j))
+        const { pin } = await this.fmnet.addDevice(JSON.parse(j))
         this.cli.log(`Paring pin: ${pin}`)
         break
       case 'grant':
@@ -52,7 +52,7 @@ export class DeviceHandler extends BaseHandler {
         await this.fmnet.revokeChat(args[1], args[2])
         break
 
-        case 'grant-iot':
+      case 'grant-iot':
         await this.fmnet.grantIoT(args[1], args[2])
         break
 
