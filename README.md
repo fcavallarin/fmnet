@@ -23,7 +23,7 @@ The easiest way to try FMNet is with two CLI instances, representing two devices
 ### Install
 
 ```bash
-npm install
+npm install && npm run install:cli
 ```
 
 ### Start the first device
@@ -31,7 +31,7 @@ npm install
 Run FMNet:
 
 ```bash
-npm run fmnet:cli
+npm run cli
 ```
 
 On first launch, choose a device name and create a new network.
@@ -55,7 +55,7 @@ Device A is now the first administrator of the new network.
 In another terminal or on another machine:
 
 ```bash
-npm run fmnet:cli
+npm run cli
 ```
 
 Choose another device name and select **Join a network**:

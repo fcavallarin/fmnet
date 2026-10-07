@@ -13,11 +13,11 @@
     "@sept-protocol/client": "^0.1.1"
   },
   "scripts": {
-    "install:fmnet:cli": "mkdir -p apps/fmnet/src/cli/data && npm install -w fmnet-cli",
-    "fmnet:cli": "cd apps/fmnet/src/cli && node src/index.js",
-    "test:fmnet": "cd apps/fmnet/tests && node test.js",
-    "fmnet:server:init": "cd apps/worker && rm -rf .wrangler/state/v3/d1/miniflare-D1DatabaseObject/* && wrangler d1 migrations apply DB --local > /dev/null && echo done",
-    "fmnet:server": "cd apps/worker && wrangler dev"
+    "install:cli": "mkdir -p apps/fmnet/src/cli/data && npm install -w fmnet-cli",
+    "cli": "cd apps/fmnet/src/cli && node src/index.js",
+    "test": "cd apps/fmnet/tests && node test.js",
+    "server:init": "cd apps/worker && rm -rf .wrangler/state/v3/d1/miniflare-D1DatabaseObject/* && wrangler d1 migrations apply DB --local > /dev/null && echo done",
+    "server": "cd apps/worker && wrangler dev"
   },
   "devDependencies": {
     "typedoc": "^0.28.20"
