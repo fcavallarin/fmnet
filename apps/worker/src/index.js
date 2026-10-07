@@ -1,6 +1,6 @@
-import { createSeptServer, httpError, readJson, getAuth, jsonResponse } from '@sept/server'
-export { DORelay } from '@sept/server'
-import { now, isExpired, D1Adapter } from '@sept/core';
+import { createSeptServer, httpError, readJson, getAuth, jsonResponse } from '@sept-protocol/server'
+export { DORelay } from '@sept-protocol/server'
+import { now, isExpired, D1Adapter } from '@sept-protocol/core';
 
 
 

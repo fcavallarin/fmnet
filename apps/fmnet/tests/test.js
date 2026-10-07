@@ -1,8 +1,8 @@
-import { randomDigits } from "../../../packages/crypto/src/random.js";
+import { randomDigits } from "@sept-protocol/crypto";
 import { FMNet } from "@fmnet/core";
 import Database from 'better-sqlite3';
 import { webRTCAdapter, TCPAdapter } from "@fmnet/node";
-import { canonicalJson } from "@sept/core";
+import { canonicalJson } from "@sept-protocol/core";
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { rm, mkdir } from 'node:fs/promises';

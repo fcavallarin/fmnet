@@ -1,197 +1,137 @@
-# Architecture
+# FMNet architecture
 
-SEPT separates **device trust and application authorization** from the relay used to transport events.
+FMNet is an application built on [SEPT](https://github.com/fcavallarin/sept).
 
-The current JavaScript implementation is intentionally pragmatic: protocol logic, persistence and runtime orchestration live together in `@sept/client`. The project does not currently claim a formal `proto`/`sdk` package boundary; that boundary is expected to become clearer through interoperability and future ports.
+This document covers FMNet-specific behavior only. SEPT protocol details, device identity, pairing internals, relay synchronization, encryption and distributed ACL evaluation are documented in the SEPT repository.
 
-## Components
+## Overview
 
-```mermaid
-flowchart LR
-  AppA[Application / FMNet] --> ClientA[SEPT client A]
-  AppB[Application / FMNet] --> ClientB[SEPT client B]
+FMNet uses SEPT for asynchronous authenticated events and authorization.
 
-  ClientA --> StoreA[(Local SQLite)]
-  ClientB --> StoreB[(Local SQLite)]
+It adds:
 
-  ClientA -->|signed HTTP + encrypted events| Relay[SEPT relay]
-  ClientB -->|signed HTTP + encrypted events| Relay
+- private messaging;
+- application-defined remote actions;
+- WebRTC connection establishment;
+- application DataChannels;
+- TCP tunnelling over WebRTC.
 
-  Relay --> D1[(D1 operational index)]
-  Relay --> DO[Durable Object relay]
-  Relay -. optional / evolving .-> R2[(R2)]
-
-  ClientA -. application layer .-> WebRTCA[FMNet WebRTC]
-  ClientB -. application layer .-> WebRTCB[FMNet WebRTC]
-  WebRTCA <--> WebRTCB
+```text
+                    SEPT relay
+                       ▲   ▲
+                       │   │
+                 FMNet signalling
+                       │   │
+┌──────────────────────┴─┐ ┌─┴──────────────────────┐
+│       Device A         │ │       Device B         │
+│                       │ │                        │
+│  FMNet                │ │  FMNet                 │
+│  ├── messaging        │ │  ├── messaging         │
+│  ├── remote actions   │ │  ├── remote actions    │
+│  ├── WebRTC manager   │ │  ├── WebRTC manager    │
+│  └── TCP tunnels      │ │  └── TCP tunnels       │
+│           │           │ │           │            │
+│         SEPT          │ │         SEPT            │
+└───────────┬───────────┘ └───────────┬────────────┘
+            │                         │
+            └──── WebRTC DataChannels ┘
 ```
 
-### `@sept/client`
+## Pairing and authorization
 
-The client currently owns:
+FMNet uses SEPT's device pairing and authorization model rather than defining a separate trust mechanism.
 
-- device key generation and local identity;
-- network bootstrap and pairing;
-- event encryption, signing, verification and decryption;
-- directed authorization policies;
-- admin/device lifecycle;
-- local SQLite-backed state;
-- REST synchronization;
-- WebSocket connection/reconnection;
-- application event registration and dispatch;
-- a small namespaced application KV store.
+From the FMNet CLI, a new device supplies its pairing data to an administrator:
 
-### `@sept/core`
-
-Cross-runtime primitives:
-
-- canonical JSON;
-- binary/base64url serialization;
-- deterministic IDs;
-- generic utilities;
-- request helpers;
-- SQL adapters;
-- event bus;
-- async queue.
-
-### `@sept/crypto`
-
-Cryptographic primitives used by client/server:
-
-- Ed25519 signing and verification;
-- X25519 key agreement;
-- HKDF-SHA256 key derivation;
-- XChaCha20-Poly1305 authenticated encryption;
-- SHA-256 hashing;
-- secure random values.
-
-### `@sept/server`
-
-The server package provides the reference relay implementation:
-
-- bootstrap registration;
-- signed request authentication for established devices;
-- pairing coordination;
-- encrypted event acceptance and pending-recipient storage;
-- relay-side event sequencing;
-- ACK processing;
-- WebSocket ticketing and Durable Object push delivery;
-- a plugin surface for custom routes and server-side event notifications.
-
-### `apps/worker`
-
-Cloudflare deployment composition around `@sept/server`. It wires D1, Durable Objects and other Cloudflare bindings and currently demonstrates an FMNet push-notification plugin.
-
-### FMNet
-
-FMNet is intentionally above SEPT. It uses typed SEPT events to coordinate application behavior, including messaging and WebRTC setup. TCP tunnels and application DataChannels do not change the SEPT trust model; they are application features authorized/negotiated through SEPT events.
-
-## Trust boundaries
-
-```mermaid
-flowchart TB
-  subgraph TrustedDeviceA[Trusted device A]
-    KeyA[Private signing key\nPrivate encryption key]
-    PolicyA[Local policies]
-    EventA[Decrypted events]
-  end
-
-  subgraph RelayBoundary[Relay / infrastructure]
-    Pub[Device signing public keys]
-    Meta[Network/device routing metadata]
-    Cipher[Encrypted event payloads\nWrapped payload keys]
-    Seq[Relay-assigned sequence]
-  end
-
-  subgraph TrustedDeviceB[Trusted device B]
-    KeyB[Private signing key\nPrivate encryption key]
-    PolicyB[Local policies]
-    EventB[Decrypted events]
-  end
-
-  TrustedDeviceA --> RelayBoundary --> TrustedDeviceB
+```text
+fmnet> device add <b64-client-data>
 ```
 
-The relay is intentionally **not the source of truth for application authorization**. A recipient evaluates the sender's locally stored policy after verifying/decrypting an event.
+The administrator receives a short-lived PIN, which is entered on the joining device.
 
-The relay is still trusted for availability, transport routing, pending-event delivery and relay-assigned ordering. It also participates in initial pairing trust bootstrap before a new device has a trusted admin key. These are distinct from content confidentiality and application authorization; see [Security](security.md).
+Pairing and authorization are separate operations. A paired non-admin device remains default-deny until the required event types are granted.
 
-## Event flow
+Examples:
 
-```mermaid
-sequenceDiagram
-  participant A as Sender device
-  participant R as SEPT relay
-  participant B as Recipient device
-
-  A->>A: Check local policy
-  A->>A: Encrypt {type,payload}
-  A->>A: Wrap payload key for B
-  A->>A: Sign event material
-  A->>R: Signed HTTP request + encrypted event
-  R->>R: Authenticate sender / verify relay signature
-  R->>R: Assign sequence + create pending event
-  R-->>B: Push through Durable Object (if connected)
-  B->>B: Verify sender signature
-  B->>B: Unwrap key + decrypt payload
-  B->>B: Check local policy
-  B->>B: Persist accepted event
-  B->>R: ACK event id
-  B->>B: Dispatch local handler
+```text
+fmnet> device grant DeviceB DeviceA message
+fmnet> device grant-tunnel DeviceB DeviceA
+fmnet> device grant DeviceB DeviceA customaction.door-open
 ```
 
-For accepted events, ACK occurs after local persistence and before handler execution. Policy-denied events are discarded and ACKed without being persisted.
+The exact SEPT policy format and authorization algorithm are intentionally not duplicated here.
 
-Offline recipients obtain the same pending events through `sync()`.
+## Messaging
 
-## Pairing flow
+FMNet messages are application-level SEPT events.
 
-Pairing is the mechanism that introduces a new device and its public keys into a network.
+SEPT is responsible for secure delivery and authorization; FMNet is responsible for interpreting and exposing the message functionality.
 
-```mermaid
-sequenceDiagram
-  participant N as New device
-  participant A as Admin device
-  participant R as Relay
+## Remote actions
 
-  N->>N: initDevice(): create signing/encryption keys
-  N-->>A: deviceData through app/QR/out-of-band channel
-  A->>R: create pairing + short PIN + encrypted payloads
-  A-->>N: PIN
-  N->>R: redeem pairing with deviceId + PIN
-  R-->>N: encrypted network/admin bootstrap data
-  N->>N: decrypt and store network + admin public keys
-  A->>R: poll redeemed pairings
-  R-->>A: encrypted admin payload
-  A->>A: store new device
-  A->>A: notify other admins via sept.device.add
+Remote actions are application-defined operations represented by explicit event types.
+
+This allows individual capabilities to be granted independently instead of giving a device unrestricted remote-control access.
+
+For example:
+
+```text
+customaction.door-open
 ```
 
-Only the admin device that initiated a pairing can retrieve/consume its admin-side completion payload. The relay stores opaque encrypted pairing payloads, but the new device necessarily relies on the relay during this initial bootstrap because it has no existing trust anchor yet.
+can be granted independently from messaging or TCP tunnelling.
 
-## Persistence model
+## WebRTC
 
-The client uses local SQLite-backed stores for:
+SEPT events are used for the control/signalling path needed by FMNet.
 
-- settings and local private-key material (with a configurable secret-key provider where used);
-- network identity;
-- device public keys/roles/revocation state;
-- directed graph edges and policies;
-- incoming/outgoing events and recipients;
-- application KV state.
+Once a WebRTC peer connection has been established, peer-to-peer DataChannels carry direct application traffic.
 
-This local state is what lets authorization remain available without asking the relay for permission on every application event.
+A connection can be reused for multiple DataChannels instead of renegotiating a new peer connection for every operation.
 
-The relay uses D1 as an operational index for networks, devices, pending events, pairings and event sequence state. A pending event is removed for a device when that device ACKs it; the encrypted event row can be removed once no pending recipients remain.
+## TCP tunnelling
 
-## Runtime boundaries vs protocol boundaries
+FMNet maps a local TCP listener to a TCP endpoint reachable from another FMNet device.
 
-The repository currently favors working cross-runtime code over a prematurely formalized package taxonomy. For example, SQLite persistence is part of the current client implementation even though a future Go implementation may choose a simpler storage surface.
+Example:
 
-A useful rule when interpreting the code is:
+```text
+Device A                          Device B
+127.0.0.1:2222                    127.0.0.1:22
+       │                                ▲
+       │                                │
+       └── local TCP ─ DataChannel ─ TCP┘
+```
 
-- **wire/protocol behavior:** key material, canonicalization, signing/encryption, pairing semantics, event verification, system events and authorization semantics;
-- **runtime/SDK behavior:** SQLite query helpers, event filtering ergonomics, namespaced KV storage, REST/WebSocket lifecycle and platform adapters;
-- **application behavior:** FMNet messages, custom actions, WebRTC sessions and TCP tunnels.
+The tunnel can be opened with:
 
-The exact `protocol` vs `SDK` package split is intentionally not frozen yet.
+```text
+fmnet> tunnel open DeviceB 127.0.0.1 22 2222
+```
+
+and used with an ordinary TCP client:
+
+```bash
+ssh -p 2222 <username>@127.0.0.1
+```
+
+Each TCP connection gets its own WebRTC DataChannel.
+
+Multiple sockets and multiple tunnels can therefore share a single WebRTC peer connection.
+
+## FMNet / SEPT boundary
+
+| Concern | Project |
+| --- | --- |
+| Device identity | SEPT |
+| Pairing protocol | SEPT |
+| Encrypted event transport | SEPT |
+| Event authorization / ACLs | SEPT |
+| Relay and offline delivery | SEPT |
+| Messaging semantics | FMNet |
+| Remote actions | FMNet |
+| WebRTC integration | FMNet |
+| Application DataChannels | FMNet |
+| TCP tunnelling | FMNet |
+
+The FMNet repository should reference SEPT for protocol-level documentation rather than carrying a second copy of it.

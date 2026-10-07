@@ -1,6 +1,6 @@
 {
   "name": "@fmnet/core",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "type": "module",
   "private": true,
   "main": "./src/fmnet.js",
@@ -8,6 +8,6 @@
     ".": "./src/fmnet.js"
   },
   "dependencies": {
-    "@sept/client": "*"
+    "@sept-protocol/client": "^0.1.1"
   }
 }

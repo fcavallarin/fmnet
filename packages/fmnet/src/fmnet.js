@@ -1,4 +1,4 @@
-import { SeptClient } from '@sept/client';
+import { SeptClient } from '@sept-protocol/client';
 import { DataChannelService } from './tunnel/datachannel-service.js'
 import { TcpTunnelIngress, TcpTunnelEgress } from './tcptunnel.js'
 import { logger, setLogger, setLogLevel } from './logger.js';

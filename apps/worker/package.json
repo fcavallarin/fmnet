@@ -1,6 +1,6 @@
 {
   "name": "fmnet-server",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@sept/server": "*"
+    "@sept-protocol/server": "^0.1.1"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.12.4",

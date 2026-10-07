@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@sept/client": "*",
-    "@sept/core": "*"
+    "@sept-protocol/client": "^0.1.1",
+    "@sept-protocol/core": "^0.1.1"
   }
 }

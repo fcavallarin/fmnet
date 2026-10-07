@@ -1,187 +1,139 @@
-# SEPT / FMNet
+# FMNet
 
-**SEPT** is an asynchronous event protocol for devices and services, with end-to-end encryption, distributed ACLs, and offline delivery.
+FMNet is an application built on [SEPT](https://github.com/fcavallarin/sept).
 
-Events are encrypted and authenticated end-to-end. Authorization is evaluated by the endpoints rather than delegated to the relay, while the relay handles routing, persistence, and delivery when recipients are offline.
+It adds application-level features on top of SEPT, including:
 
-SEPT is designed for systems where communication is event-driven and connectivity may be intermittent, including IoT and edge devices, remote services, and distributed applications.
+- TCP tunnelling over WebRTC
+- private messaging
+- application-defined remote actions
+- peer-to-peer WebRTC data channels
 
-**FMNet** is an application built on SEPT. It adds private messaging, application-defined remote actions, peer-to-peer WebRTC data channels, and TCP tunnelling over WebRTC.
+SEPT itself is maintained in a separate repository. Device identity, pairing primitives, encrypted event delivery, distributed ACLs, relay behavior and the SEPT JavaScript API are documented in the [SEPT repository](https://github.com/fcavallarin/sept).
 
-| Project | What it is |
-| --- | --- |
-| **SEPT** | Device identity, pairing, end-to-end encrypted events, distributed ACLs, persistent event delivery, relay synchronization, and connection lifecycle. |
-| **FMNet** | A real application and integration test for SEPT: chat, remote actions, WebRTC connections and TCP tunnels. |
-
-
-Start here:
-- [SEPT quick start](docs/sept-quickstart.md)
-- [Architecture](docs/architecture.md)
-- [Protocol overview](docs/protocol.md)
-- [Authorization model](docs/authorization.md)
-- [Security model and current limitations](docs/security.md)
-- [Self-hosting the relay](docs/self-hosting.md)
-- [SEPT client API](docs/api/index.html)
-
-> **Project status:** SEPT and FMNet are under active development. The protocol and implementation have not received an independent security audit. See [Security](docs/security.md) before using the project in a high-risk environment.
-
----
 ## See FMNet in action
 
 ![FMNet CLI demo](docs/demo/cli/fmnet-demo-quick.gif)
 
-A trusted device can message another device, invoke an application-defined action, or open a TCP tunnel to a private service:
 
-```text
-message send apu "hello there"
-run-action apu door-open
-tunnel open apu 127.0.0.1 22 2222
-ssh -p 2222 127.0.0.1
-```
+## Quick start
 
-SEPT is the event and authorization layer underneath those operations; WebRTC/TCP tunnelling is an FMNet feature built on top.
-
----
-## Architecture at a glance
-
-```text
-┌──────────────────────┐                         ┌──────────────────────┐
-│       Device A       │                         │       Device B       │
-│                      │                         │                      │
-│  FMNet / your app    │                         │  FMNet / your app    │
-│          │           │                         │          │           │
-│      SEPT client     │                         │      SEPT client     │
-│   keys + policies    │                         │   keys + policies    │
-│   local event store  │                         │   local event store  │
-└──────────┬───────────┘                         └──────────┬───────────┘
-           │ signed request                                 │ signed request
-           │ encrypted event                                │ encrypted event
-           ▼                                                ▼
-                    ┌────────────────────────┐
-                    │      SEPT relay        │
-                    │ Cloudflare Worker/D1   │
-                    │ R2 / Durable Object    │
-                    │                        │
-                    │                        │
-                    │ routing + offline      |
-                    |event storage + delivery│
-                    └────────────────────────┘
-```
-
-Private signing and encryption keys stay on devices. Authorization decisions for application events are evaluated from policies stored locally by SEPT clients rather than delegated to the relay.
-
-The relay necessarily observes transport metadata such as device/network identifiers, timing and event sizes. See [Security](docs/security.md) for the exact current confidentiality boundary and implementation caveats.
-
----
-## What SEPT is — and what it isn't
-
-SEPT is an asynchronous event protocol for devices and services. Events are end-to-end encrypted, **authorization is enforced through distributed ACLs**, and delivery does not require sender and recipient to be online at the same time.
-
-It is not a VPN, an overlay network, or an application-specific protocol. SEPT defines how events are authenticated, authorized, stored, and delivered; applications define what those events mean.
-
-The relay handles routing, persistence, and delivery, but application **authorization remains with the endpoints**.
-
-FMNet is one application built on SEPT, adding messaging, IoT actions, WebRTC connections, and TCP tunnels.
-
----
-## Installation modes
-
-The monorepo exposes separate installation paths depending on what you want to run or develop:
-
-| Command | Purpose |
-| --- | --- |
-| `npm install` | Install the complete development workspace, including server/Worker tooling. |
-| `npm run install:client` | Install the SEPT JavaScript client workspaces only. |
-| `npm run install:fmnet:cli` | Install the workspaces required by the FMNet Node.js CLI. |
-| `npm run scaffold:server -- <name>` | Generate a standalone SEPT Cloudflare deployment under `deployments/<name>`. |
-
-See [SEPT quick start](docs/sept-quickstart.md) for direct client usage and [Self-hosting](docs/self-hosting.md) for server deployment.
-
----
-## Quick start: run FMNet
-
-The easiest way to exercise the complete stack today is the FMNet CLI. The development configuration can use the public development relay, so initial testing does not require deploying Cloudflare resources.
+The easiest way to try FMNet is with two CLI instances, representing two devices.
 
 ### Install
 
 ```bash
-npm run install:fmnet:cli
+npm install
 ```
 
-### Run
+### Start the first device
+
+Run FMNet:
 
 ```bash
-npm run fmnet:cli -- [endpoint]
+npm run fmnet:cli
 ```
 
-Use two terminals or two machines:
+On first launch, choose a device name and create a new network.
 
-- **Device A** creates a network.
-- **Device B** initializes a device and joins through explicit pairing.
+For example:
 
 ```text
-$ npm run fmnet:cli
+Insert your name: DeviceA
 
+What do you want to do?
+1. Create a new network
+2. Join a network
+
+Select option: 1
+```
+
+Device A is now the first administrator of the new network.
+
+### Start the second device
+
+In another terminal or on another machine:
+
+```bash
+npm run fmnet:cli
+```
+
+Choose another device name and select **Join a network**:
+
+```text
 Insert your name: DeviceB
 
 What do you want to do?
 1. Create a new network
 2. Join a network
 
-Select option:
+Select option: 2
 ```
+
+The new device displays its pairing data as a base64-encoded string.
 
 ### Pair Device B
 
-On the admin device:
+On Device A, add the new device using the pairing data shown by Device B:
 
 ```text
 fmnet> device add <b64-client-data>
 ```
 
-The CLI returns a short-lived PIN. Enter that PIN on Device B to complete the pairing flow.
+Device A returns a short-lived PIN.
 
-### Grant application capabilities
+Enter that PIN on Device B to complete the pairing.
 
-SEPT is default-deny for non-admin devices. Pairing adds a device to the trust graph; it does not automatically authorize arbitrary application events.
+Pairing establishes the device relationship, but it does not automatically grant arbitrary FMNet capabilities.
 
-Allow Device B to send messages to Device A:
+### Grant capabilities
+
+FMNet uses SEPT's default-deny authorization model.
+
+For example, to allow Device B to send messages to Device A:
 
 ```text
 fmnet> device grant DeviceB DeviceA message
 ```
 
-Allow Device B to open a TCP tunnel on Device A:
+To allow Device B to open TCP tunnels on Device A:
 
 ```text
 fmnet> device grant-tunnel DeviceB DeviceA
 ```
 
-For application-defined actions, grant the corresponding event types as required by the application:
+Application-defined actions use their own event types. For example:
 
 ```text
-fmnet> device grant DeviceA DeviceB customaction.response
 fmnet> device grant DeviceB DeviceA customaction.door-open
+fmnet> device grant DeviceA DeviceB customaction.response
 ```
 
-List available commands:
+### Send a message
+
+Once the corresponding capability has been granted:
 
 ```text
-fmnet> help
+fmnet> message send DeviceA "hello there"
 ```
 
-For direct SDK usage, see [SEPT quick start](docs/sept-quickstart.md).
+### Run an action
 
----
-## TCP tunnels
+For an application-defined action:
 
-TCP tunnelling is an **FMNet feature**, not part of the SEPT wire protocol.
+```text
+fmnet> run-action DeviceA door-open
+```
 
-Expose SSH on Device B as local port `2222` on Device A:
+### Open a TCP tunnel
+
+Expose a TCP service reachable from Device B as a local port on Device A:
 
 ```text
 fmnet> tunnel open DeviceB 127.0.0.1 22 2222
 ```
+
+This maps:
 
 ```text
 Device A                          Device B
@@ -190,130 +142,133 @@ Device A                          Device B
        └──── TCP over WebRTC tunnel ────┘
 ```
 
-Then connect normally:
+You can then use the local endpoint normally:
 
 ```bash
 ssh -p 2222 <username>@127.0.0.1
 ```
 
-FMNet maintains a reusable WebRTC peer connection when needed. Each TCP socket uses its own WebRTC DataChannel, so multiple TCP sessions can share one peer connection concurrently.
+Run:
 
 ```text
-Device connection / DataChannelManager
+fmnet> help
+```
+
+to see the commands supported by the current CLI.
+
+## How FMNet uses SEPT
+
+FMNet deliberately does not reimplement the concerns handled by SEPT.
+
+SEPT provides the underlying:
+
+- device identity;
+- network membership and pairing;
+- end-to-end encrypted events;
+- authorization and distributed ACLs;
+- offline event delivery;
+- relay synchronization.
+
+FMNet assigns application meaning to those events and adds direct peer-to-peer communication where appropriate.
+
+```text
+┌──────────────────────┐                         ┌──────────────────────┐
+│       Device A       │                         │       Device B       │
+│                      │                         │                      │
+│        FMNet         │                         │        FMNet         │
+│          │           │                         │          │           │
+│        SEPT          │                         │        SEPT          │
+└──────────┬───────────┘                         └──────────┬───────────┘
+           │                                                │
+           └──────── encrypted events / signalling ─────────┘
+                            via SEPT
+
+           ┌────────────────────────────────────────────────┐
+           │              WebRTC peer connection            │
+           │  application DataChannels / TCP tunnel traffic │
+           └────────────────────────────────────────────────┘
+```
+
+The SEPT protocol, SDK API, authorization rules and security model are intentionally not duplicated here.
+
+## Messaging
+
+Messaging is an FMNet application feature implemented using SEPT events.
+
+A device must be explicitly authorized to send the corresponding event type to another device.
+
+```text
+fmnet> message send DeviceA "hello there"
+```
+
+SEPT handles transport, authentication, encryption, authorization and offline delivery. FMNet defines the message semantics and user-facing command.
+
+## Remote actions
+
+FMNet supports application-defined remote actions.
+
+For example:
+
+```text
+fmnet> run-action DeviceA door-open
+```
+
+The action itself is application-specific. Authorization is expressed using SEPT event types, allowing each action to be granted independently.
+
+For example:
+
+```text
+customaction.door-open
+customaction.response
+```
+
+This makes it possible to expose a small set of actions without granting a device broader access.
+
+## WebRTC and TCP tunnels
+
+FMNet can establish a reusable WebRTC peer connection between two devices.
+
+The peer connection can carry multiple independent DataChannels:
+
+```text
+Device connection
+├── application DataChannel
 ├── TCP tunnel #1
 │   ├── TCP socket #1 / DataChannel
 │   └── TCP socket #2 / DataChannel
-├── TCP tunnel #2
-│   └── TCP socket #1 / DataChannel
-└── application DataChannels
+└── TCP tunnel #2
+    └── TCP socket #1 / DataChannel
 ```
 
----
-## Run local server and tests
+Each TCP socket uses its own DataChannel, while multiple sockets can share the same underlying peer connection.
 
-Initialize the local database and start the FMNet server:
+This allows normal TCP applications such as SSH or SCP to communicate with services on another FMNet device without exposing those services publicly.
 
-```bash
-npm run fmnet:server:init  # Resets the local DB.
-npm run fmnet:server
-```
+## Repository scope
 
-Keep the server running and, from another terminal, run the test suites:
+This repository contains FMNet.
 
-```bash
-npm run test:sept
-npm run test:fmnet
-```
+The old top-level `packages/` directory contained the SEPT implementation and is being removed now that SEPT lives in its own repository.
 
-`fmnet:server:init` deletes the existing local D1 database and reapplies all migrations. It does not affect remote databases.
+Documentation specific to the SEPT protocol, SDK, relay, authorization model and security model belongs in:
 
----
-## Repository map
+https://github.com/fcavallarin/sept
 
-```text
-packages/
-├── client/   @sept/client  — SEPT client, local stores, pairing, policies, sync and WS lifecycle
-├── core/     @sept/core    — canonical JSON, serialization, IDs, queues, event bus, SQL adapters
-├── crypto/   @sept/crypto  — signing, hashing, symmetric/asymmetric encryption primitives
-└── server/   @sept/server  — relay HTTP routes, request authentication and Durable Object relay
-    └── templates/cloudflare/ — generic self-hosted SEPT deployment template
+FMNet documentation should cover only the application built on top of it.
 
-apps/
-├── worker/   — reference/FMNet Cloudflare deployment composed from @sept/server
-└── fmnet/    — FMNet application, CLI and mobile client
+## Project status
 
-deployments/
-└── <name>/   — generated self-hosted SEPT server deployments
-```
+FMNet is under active development.
 
-The monorepo is intentional: FMNet acts as a real consumer of SEPT and exercises the protocol across Node.js, React Native/Expo and Cloudflare Workers.
+The project is currently useful for experimenting with:
 
-The generic self-hosted relay is generated from `packages/server/templates/cloudflare`; `apps/worker` remains the reference application deployment and may include FMNet-specific integrations such as push notifications.
+- encrypted device-to-device messaging;
+- explicitly authorized remote actions;
+- private service access;
+- WebRTC data channels;
+- TCP and SSH tunnelling.
 
----
-## Why plain JavaScript?
-
-SEPT is written in **plain JavaScript** deliberately. Portability is a project requirement, and the same code is intended to run across:
-
-- Node.js;
-- browsers;
-- React Native and Expo;
-- Cloudflare Workers.
-
-Avoiding a mandatory compile step also keeps the protocol implementation easy to inspect and embed. Type declarations can describe the public API without changing the runtime implementation.
-
----
-## Public relay and self-hosting
-
-The public development relay is intended for development and testing while the project is evolving.
-
-For control over availability, retention and transport metadata, generate your own relay deployment from the Cloudflare template:
-
-```bash
-npm run scaffold:server -- my-sept
-cd deployments/my-sept
-wrangler d1 create --binding DB --update-config my-sept
-wrangler r2 bucket create --binding STORAGE --update-config my-sept
-wrangler d1 migrations apply my-sept --remote
-wrangler deploy
-```
-
-See [Self-hosting](docs/self-hosting.md) for the complete deployment and operations guide.
-
----
-## Current status
-
-The implementation is actively dogfooded and has been exercised with:
-
-- encrypted messaging between paired devices;
-- application-defined events/actions;
-- IoT and remote-device control through application-defined events;
-- local capability enforcement;
-- multiple concurrent SSH sessions;
-- large SCP transfers;
-- multiple TCP sockets over a reusable WebRTC peer connection;
-- mobile push integration;
-- remote deployment.
-
-Current work is focused on real-world testing, bug fixing, documentation, API stabilization and broader compatibility testing.
-
----
-## Security notice
-
-SEPT and FMNet have **not received an independent security audit**.
-
-Do not treat the current implementation as a finished security product. Review the protocol, key lifecycle, pairing trust bootstrap, relay configuration, local storage and application authorization model for your threat model.
-
-Read [docs/security.md](docs/security.md) for the current guarantees, non-goals and known implementation caveats.
-
----
-## Contributing
-
-The project is still evolving quickly. Bug reports, architecture feedback, interoperability experiments, platform compatibility reports and real-world test results are welcome.
-
-For substantial changes, open an issue first and describe the intended use case and protocol/API impact.
-
----
+The underlying SEPT protocol and implementation have not received an independent security audit. See the SEPT repository for its current security documentation and limitations.
 
 ## License
 
